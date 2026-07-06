@@ -1,0 +1,66 @@
+{
+    "name": "roundingwell/hl7",
+    "description": "An ADT/HL7 parser providing structured messages",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "RoundingWell",
+            "email": "dev@roundingwell.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4"
+    },
+    "require-dev": {
+        "carthage-software/mago": "^1.29",
+        "ergebnis/composer-normalize": "^2.52",
+        "phpunit/phpunit": "^13.1",
+        "rregeer/phpunit-coverage-check": "^0.3.1",
+        "symfony/var-dumper": "^8.0"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "RoundingWell\\HL7\\": "src/"
+        },
+        "files": [
+            "bootstrap.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RoundingWell\\HL7\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "coverage-check": "coverage-check tmp/phpunit/clover.xml 100",
+        "coverage-open": "open tmp/phpunit/coverage/index.html",
+        "lint": "mago lint",
+        "format": "mago format",
+        "analyze": "mago analyze",
+        "phpunit": "phpunit -d memory_limit=4G",
+        "fix": [
+            "mago lint --fix",
+            "mago format"
+        ],
+        "test": [
+            "@phpunit",
+            "@coverage-check"
+        ],
+        "verify": [
+            "@lint",
+            "@analyze",
+            "@test"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        },
+        "platform": {
+            "php": "8.5"
+        },
+        "sort-packages": true
+    }
+}
