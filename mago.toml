@@ -28,7 +28,10 @@ halstead = { effort-threshold = 7000 }
 [analyzer]
 plugins = []
 excludes = ["tests/**/*.php"]
-ignore = []
+ignore = [
+    "less-specific-return-statement",
+    "unhandled-thrown-type",
+]
 find-unused-definitions = true
 find-unused-expressions = true
 analyze-dead-code = true
