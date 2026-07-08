@@ -83,6 +83,7 @@ final readonly class MessageFactory
             'A01' => new Message\A01($segments),
             'A03' => new Message\A03($segments),
             'A06' => new Message\A06($segments),
+            'A08' => new Message\A08($segments),
             default => new Message($segments),
         };
     }
