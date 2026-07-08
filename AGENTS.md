@@ -78,6 +78,7 @@ When all tasks are complete, perform the final validation steps:
 Prefer composition over inheritance.
 Use test-driven development (TDD) practices.
 Tasks may only be completed when tests pass.
+Keep documentation in `README.md` up-to-date with changes made.
 Use [conventional commits](https://www.conventionalcommits.org/) for commit messages.
 
 ### Running Tools
