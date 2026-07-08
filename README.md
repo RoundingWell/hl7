@@ -84,7 +84,7 @@ Unknown segments are still parsed: their fields are exposed as `ST` values so no
 
 ## Supported types
 
-**Messages:** `A01`
+**Messages:** `A01`, `A03`, `A06`, `A08`
 
 **Segments:** `DG1`, `DRG`, `EVN`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
 
