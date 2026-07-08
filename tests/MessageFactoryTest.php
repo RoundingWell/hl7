@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
 use RoundingWell\HL7\Message\A01;
+use RoundingWell\HL7\Message\A03;
 use RoundingWell\HL7\MessageFactory;
 
 #[CoversClass(MessageFactory::class)]
@@ -30,6 +31,13 @@ final class MessageFactoryTest extends TestCase
         $message = $this->messageFactory->parseFile($this->messagePath('adt-a01'));
 
         $this->assertInstanceOf(A01::class, $message);
+    }
+
+    public function testShouldParseA03File(): void
+    {
+        $message = $this->messageFactory->parseFile($this->messagePath('adt-a03'));
+
+        $this->assertInstanceOf(A03::class, $message);
     }
 
     public function testParseFileThrowsWhenTheFileDoesNotExist(): void

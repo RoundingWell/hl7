@@ -81,6 +81,7 @@ final readonly class MessageFactory
     {
         return match ($event) {
             'A01' => new Message\A01($segments),
+            'A03' => new Message\A03($segments),
             default => new Message($segments),
         };
     }
