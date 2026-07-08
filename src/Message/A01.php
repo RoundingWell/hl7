@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace RoundingWell\HL7\Message;
 
 use RoundingWell\HL7\Message;
+use RoundingWell\HL7\Segment\EVN;
+use RoundingWell\HL7\Segment\PID;
+use RoundingWell\HL7\Segment\PV1;
 
 /**
  * A01: Admit
@@ -37,4 +40,20 @@ use RoundingWell\HL7\Message;
  * 24. UB2 (Uniform Billing Data) (optional)
  * 25. PDA (Patient Death and Autopsy) (optional)
  */
-final readonly class A01 extends Message {}
+final readonly class A01 extends Message
+{
+    public function getEVN(): EVN
+    {
+        return $this->getRequiredSegment('EVN');
+    }
+
+    public function getPID(): PID
+    {
+        return $this->getRequiredSegment('PID');
+    }
+
+    public function getPV1(): PV1
+    {
+        return $this->getRequiredSegment('PV1');
+    }
+}
