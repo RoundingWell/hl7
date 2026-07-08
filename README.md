@@ -53,7 +53,7 @@ foreach ($pid->getPatientName() as $name) {
 }
 
 // Multiple occurrences of the same segment (e.g. DG1) are available too.
-$diagnoses = $message->getAllSegments('DG1');
+$diagnoses = $message->listDG1();
 ```
 
 Composite data types expose their components as public, readonly properties, and those
