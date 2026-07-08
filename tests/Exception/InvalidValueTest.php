@@ -56,4 +56,12 @@ final class InvalidValueTest extends TestCase
             InvalidValue::maxValue('NM', 100)->getMessage(),
         );
     }
+
+    public function testNotNumericStatesTheOffendingValue(): void
+    {
+        $this->assertSame(
+            'Value of SNM must be numeric, got 12A',
+            InvalidValue::notNumeric('SNM', '12A')->getMessage(),
+        );
+    }
 }

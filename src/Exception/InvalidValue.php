@@ -25,4 +25,9 @@ final class InvalidValue extends \InvalidArgumentException implements HL7Excepti
     {
         return new self("Value of {$type} must be less than or equal to {$max}");
     }
+
+    public static function notNumeric(string $type, string $value): self
+    {
+        return new self("Value of {$type} must be numeric, got {$value}");
+    }
 }

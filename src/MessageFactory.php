@@ -6,7 +6,6 @@ namespace RoundingWell\HL7;
 
 use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
-use RoundingWell\HL7\Message\A01;
 use RoundingWell\HL7\Segment\MSH;
 
 final readonly class MessageFactory
@@ -81,7 +80,7 @@ final readonly class MessageFactory
     private function create(string $event, array $segments): Message
     {
         return match ($event) {
-            'A01' => new A01($segments),
+            'A01' => new Message\A01($segments),
             default => new Message($segments),
         };
     }
