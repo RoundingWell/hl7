@@ -15,7 +15,9 @@ use RoundingWell\HL7\Segment\PV1;
 use RoundingWell\HL7\Segment\PV2;
 
 /**
- * A01: Admit
+ * A08: Update Patient Information
+ *
+ * A08 reuses the HAPI ADT_A01 message structure.
  *
  * Segments:
  *
@@ -45,7 +47,7 @@ use RoundingWell\HL7\Segment\PV2;
  * 24. UB2 (Uniform Billing Data) (optional)
  * 25. PDA (Patient Death and Autopsy) (optional)
  */
-final readonly class A01 extends Message
+final readonly class A08 extends Message
 {
     public function getEVN(): EVN
     {

@@ -7,7 +7,7 @@ namespace RoundingWell\HL7\Tests\Message;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RoundingWell\HL7\Message\A01;
+use RoundingWell\HL7\Message\A06;
 use RoundingWell\HL7\Segment\DG1;
 use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
@@ -21,15 +21,15 @@ use RoundingWell\HL7\Segment\PV2;
 /**
  * @mago-expect lint:too-many-methods
  */
-#[CoversClass(A01::class)]
-final class A01Test extends TestCase
+#[CoversClass(A06::class)]
+final class A06Test extends TestCase
 {
-    private A01 $message;
+    private A06 $message;
 
     #[Override]
     protected function setUp(): void
     {
-        $this->message = new A01([
+        $this->message = new A06([
             new MSH(),
             new EVN(),
             new PID(),
@@ -39,26 +39,26 @@ final class A01Test extends TestCase
 
     public function testGetEvnReturnsTheEventTypeSegment(): void
     {
-        // A01 is an Admit event; the EVN describing it is required and must be directly accessible.
+        // A06 changes an outpatient to an inpatient; the EVN describing the change is required.
         $this->assertInstanceOf(EVN::class, $this->message->getEVN());
     }
 
     public function testGetPidReturnsThePatientIdentificationSegment(): void
     {
-        // An admit always concerns a patient; PID access must resolve without an optional check.
+        // The patient whose status changes is always identified; PID must resolve without an optional check.
         $this->assertInstanceOf(PID::class, $this->message->getPID());
     }
 
     public function testGetPv1ReturnsThePatientVisitSegment(): void
     {
-        // The visit being admitted is required; PV1 must be reachable as a typed segment.
+        // The visit whose patient class changes is required; PV1 must be reachable as a typed segment.
         $this->assertInstanceOf(PV1::class, $this->message->getPV1());
     }
 
     public function testGetPv2ReturnsThePatientVisitAdditionalInformationSegment(): void
     {
         // PV2 carries additional visit detail; when present it must be reachable as a typed segment.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new PV2()]);
+        $message = new A06([new MSH(), new EVN(), new PID(), new PV1(), new PV2()]);
 
         $this->assertInstanceOf(PV2::class, $message->getPV2());
     }
@@ -72,7 +72,7 @@ final class A01Test extends TestCase
     public function testGetDrgReturnsTheDiagnosisRelatedGroupSegment(): void
     {
         // DRG classifies the visit for billing; when present it must be reachable as a typed segment.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new DRG()]);
+        $message = new A06([new MSH(), new EVN(), new PID(), new PV1(), new DRG()]);
 
         $this->assertInstanceOf(DRG::class, $message->getDRG());
     }
@@ -86,7 +86,7 @@ final class A01Test extends TestCase
     public function testListNk1ReturnsEveryNextOfKinSegment(): void
     {
         // NK1 repeats; every occurrence must be returned so no associated party is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new NK1(), new NK1()]);
+        $message = new A06([new MSH(), new EVN(), new PID(), new PV1(), new NK1(), new NK1()]);
 
         $nk1 = $message->listNK1();
 
@@ -103,7 +103,7 @@ final class A01Test extends TestCase
     public function testListObxReturnsEveryObservationSegment(): void
     {
         // OBX repeats; every observation must be returned so no result is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new OBX(), new OBX()]);
+        $message = new A06([new MSH(), new EVN(), new PID(), new PV1(), new OBX(), new OBX()]);
 
         $obx = $message->listOBX();
 
@@ -120,7 +120,7 @@ final class A01Test extends TestCase
     public function testListDg1ReturnsEveryDiagnosisSegment(): void
     {
         // DG1 repeats; every diagnosis must be returned so no diagnosis is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new DG1(), new DG1()]);
+        $message = new A06([new MSH(), new EVN(), new PID(), new PV1(), new DG1(), new DG1()]);
 
         $dg1 = $message->listDG1();
 
