@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class XCN implements Type
+final readonly class XCN extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $id = new ST(),
         public FNx $familyName = new FNx(),

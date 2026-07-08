@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Hierarchic Designator
  */
-final readonly class HD implements Type
+final readonly class HD extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public IS $namespaceId = new IS(300),
         public ST $universalId = new ST(),

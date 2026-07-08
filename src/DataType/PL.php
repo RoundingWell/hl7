@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class PL implements Type
+final readonly class PL extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public HD $pointOfCare = new HD(),
         public HD $room = new HD(),

@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class CX implements Type
+final readonly class CX extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $id = new ST(),
         public ST $identifierCheckDigit = new ST(),

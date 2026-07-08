@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Street Address
  */
-final readonly class SAD implements Type
+final readonly class SAD extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $streetAddress = new ST(),
         public ST $streetName = new ST(),

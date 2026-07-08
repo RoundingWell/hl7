@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Family Name
  */
-final readonly class FNx implements Type
+final readonly class FNx extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $surname = new ST(),
         public ST $ownSurnamePrefix = new ST(),

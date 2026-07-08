@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Financial Class
  */
-final readonly class FC implements Type
+final readonly class FC extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public CWE $financialClassCode = new CWE(),
         public DTM $effectiveDate = new DTM(),

@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Entity Identifier
  */
-final readonly class EI implements Type
+final readonly class EI extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $id = new ST(),
         public IS $namespaceId = new IS(363),

@@ -30,7 +30,7 @@ final class SNM implements Type, \Stringable
     }
 
     #[\Override]
-    public function setRaw(Encoding $encoding, string $value): void
+    public function setRaw(Encoding $encoding, string $value, int $depth = 0): void
     {
         if ($value === '') {
             return;

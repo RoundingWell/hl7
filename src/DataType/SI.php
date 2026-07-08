@@ -7,7 +7,6 @@ namespace RoundingWell\HL7\DataType;
 use ReflectionProperty;
 use RoundingWell\HL7\Encoding;
 
-
 /**
  * Sequence Identifier
  */
@@ -27,7 +26,7 @@ final class SI implements Type, \Stringable
     }
 
     #[\Override]
-    public function setRaw(Encoding $encoding, string $value): void
+    public function setRaw(Encoding $encoding, string $value, int $depth = 0): void
     {
         if ($value === '') {
             return;

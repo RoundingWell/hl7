@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class XPN implements Type
+final readonly class XPN extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public FNx $familyName = new FNx(),
         public ST $givenName = new ST(),

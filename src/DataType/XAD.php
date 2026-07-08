@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class XAD implements Type
+final readonly class XAD extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public SAD $streetAddress = new SAD(),
         public ST $otherDesignation = new ST(),

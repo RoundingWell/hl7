@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Date/Time Range
  */
-final readonly class DR implements Type
+final readonly class DR extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public TS $start = new TS(),
         public TS $end = new TS(),

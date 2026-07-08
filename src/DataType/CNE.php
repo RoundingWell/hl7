@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class CNE implements Type
+final readonly class CNE extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $identifier = new ST(),
         public ST $text = new ST(),

@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Job Code/Class
  */
-final readonly class JCC implements Type
+final readonly class JCC extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public CWE $jobCode = new CWE(),
         public CWE $jobClass = new CWE(),

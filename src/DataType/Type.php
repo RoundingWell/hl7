@@ -8,5 +8,5 @@ use RoundingWell\HL7\Encoding;
 
 interface Type
 {
-    public function setRaw(Encoding $encoding, string $value): void;
+    public function setRaw(Encoding $encoding, string $value, int $depth = 0): void;
 }

@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class CP implements Type
+final readonly class CP extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public MO $price = new MO(),
         public ID $priceType = new ID(205),

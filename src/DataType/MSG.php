@@ -7,10 +7,8 @@ namespace RoundingWell\HL7\DataType;
 /**
  * Message Type
  */
-final readonly class MSG implements Type
+final readonly class MSG extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ID $messageType = new ID(76),
         public ID $triggerEvent = new ID(77),

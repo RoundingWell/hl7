@@ -9,10 +9,8 @@ namespace RoundingWell\HL7\DataType;
  *
  * @mago-expect lint:excessive-parameter-list
  */
-final readonly class XTN implements Type
+final readonly class XTN extends Composite
 {
-    use HasComponents;
-
     public function __construct(
         public ST $telephoneNumber = new ST(),
         public ST $telecommunicationUseCode = new ST(),
