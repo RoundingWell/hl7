@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace RoundingWell\HL7\Message;
 
 use RoundingWell\HL7\Message;
+use RoundingWell\HL7\Segment\DG1;
+use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
+use RoundingWell\HL7\Segment\NK1;
+use RoundingWell\HL7\Segment\OBX;
 use RoundingWell\HL7\Segment\PID;
 use RoundingWell\HL7\Segment\PV1;
+use RoundingWell\HL7\Segment\PV2;
 
 /**
  * A08: Update Patient Information
@@ -57,5 +62,39 @@ final readonly class A08 extends Message
     public function getPV1(): PV1
     {
         return $this->getRequiredSegment('PV1');
+    }
+
+    /**
+     * @return list<NK1>
+     */
+    public function listNK1(): array
+    {
+        return $this->getAllSegments('NK1');
+    }
+
+    public function getPV2(): ?PV2
+    {
+        return $this->getSegment('PV2');
+    }
+
+    /**
+     * @return list<OBX>
+     */
+    public function listOBX(): array
+    {
+        return $this->getAllSegments('OBX');
+    }
+
+    /**
+     * @return list<DG1>
+     */
+    public function listDG1(): array
+    {
+        return $this->getAllSegments('DG1');
+    }
+
+    public function getDRG(): ?DRG
+    {
+        return $this->getSegment('DRG');
     }
 }
