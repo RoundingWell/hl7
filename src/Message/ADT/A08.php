@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RoundingWell\HL7\Message;
+namespace RoundingWell\HL7\Message\ADT;
 
 use RoundingWell\HL7\Message;
 use RoundingWell\HL7\Segment\DG1;

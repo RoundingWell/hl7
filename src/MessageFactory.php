@@ -37,7 +37,7 @@ final readonly class MessageFactory
         $segments = array_map($segmentFactory->parse(...), $this->splitSegments($encoding, $data));
 
         // @mago-expect analysis:less-specific-argument,possibly-null-argument,possibly-undefined-int-array-index
-        return $this->create($this->getEventType($segments[0]), $segments);
+        return $this->create($segments[0], $segments);
     }
 
     private function detectEncoding(string $data): Encoding
@@ -98,22 +98,24 @@ final readonly class MessageFactory
         return explode($encoding->lineEnding, rtrim($data, $encoding->lineEnding));
     }
 
-    private function getEventType(MSH $msh): string
-    {
-        return $msh->getMessageType()->triggerEvent->getValue();
-    }
-
     /**
      * @param list<Segment> $segments
      */
-    private function create(string $event, array $segments): Message
+    private function create(MSH $msh, array $segments): Message
     {
-        return match ($event) {
-            'A01' => new Message\A01($segments),
-            'A03' => new Message\A03($segments),
-            'A06' => new Message\A06($segments),
-            'A08' => new Message\A08($segments),
-            default => new Message($segments),
-        };
+        $type = $msh->getMessageType()->messageType->getValue();
+        $event = $msh->getMessageType()->triggerEvent->getValue();
+
+        if ($type === 'ADT') {
+            return match ($event) {
+                'A01' => new Message\ADT\A01($segments),
+                'A03' => new Message\ADT\A03($segments),
+                'A06' => new Message\ADT\A06($segments),
+                'A08' => new Message\ADT\A08($segments),
+                default => new Message($segments),
+            };
+        }
+
+        return new Message($segments);
     }
 }

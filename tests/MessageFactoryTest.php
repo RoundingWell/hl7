@@ -9,10 +9,10 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
-use RoundingWell\HL7\Message\A01;
-use RoundingWell\HL7\Message\A03;
-use RoundingWell\HL7\Message\A06;
-use RoundingWell\HL7\Message\A08;
+use RoundingWell\HL7\Message\ADT\A01;
+use RoundingWell\HL7\Message\ADT\A03;
+use RoundingWell\HL7\Message\ADT\A06;
+use RoundingWell\HL7\Message\ADT\A08;
 use RoundingWell\HL7\MessageFactory;
 
 #[CoversClass(MessageFactory::class)]

@@ -74,7 +74,7 @@ foreach ($pid->getIdentifierList() as $cx) {
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `MessageFactory`| Parses raw HL7 into a `Message`, resolving encoding and message type.                                                   |
 | `Message`       | A collection of `Segment` objects with lookup helpers (`getSegment`, `getAllSegments`, `getRequiredSegment`, `getMSH`). |
-| `Message\Axx`   | Message type-specific subclasses (e.g. `A01`) add named accessors for message-specific segments.                          |
+| `ADT\Axx`       | Specific ADT Message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
 | `Segment`       | A collection of numbered `Field`s. Typed subclasses (e.g. `PID`) add named accessors.                                   |
 | `Field`         | Holds one or more data-type instances and knows whether it is required or repeating.                                    |
 | `Type`          | A parsed HL7 data type — either a scalar (`ST`, `NM`, `DTM`, …) or a `Composite` of other types.                        |

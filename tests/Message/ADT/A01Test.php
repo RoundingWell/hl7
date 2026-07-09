@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RoundingWell\HL7\Tests\Message;
+namespace RoundingWell\HL7\Tests\Message\ADT;
 
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RoundingWell\HL7\Message\A01;
+use RoundingWell\HL7\Message\ADT\A01;
 use RoundingWell\HL7\Segment\DG1;
 use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
