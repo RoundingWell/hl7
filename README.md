@@ -77,10 +77,30 @@ foreach ($pid->getIdentifierList() as $cx) {
 | `ADT\Axx`       | Specific ADT Message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
 | `Segment`       | A collection of numbered `Field`s. Typed subclasses (e.g. `PID`) add named accessors.                                   |
 | `Field`         | Holds one or more data-type instances and knows whether it is required or repeating.                                    |
-| `Type`          | A parsed HL7 data type — either a scalar (`ST`, `NM`, `DTM`, …) or a `Composite` of other types.                        |
+| `Type`          | A parsed HL7 data type — either a scalar (`ST`, `NM`, `DTM`, …), a `Composite` of other types, or a `Generic`.          |
 | `Encoding`      | The delimiter, component/repetition/sub-component separators, escape character, and line ending.                        |
 
-Unknown segments are still parsed: their fields are exposed as `ST` values so no data is lost.
+### Untyped fields
+
+Fields that are not defined for a segment are still parsed so no data is lost. They are
+exposed as `Generic` instances, whose value is always an array. Each level nests the next:
+values hold components, and components hold subcomponents.
+
+```php
+// Given the raw field value "A^B&C^D"
+$generic = $segment->getField(3)->getInstance();
+
+$generic->getValue(); // [['A', ['B', 'C'], 'D']]
+```
+
+`Generic` also offers dot-path access, using 1-based indexes that read like HL7 positions:
+
+```php
+$generic->getPath('1');     // ['A', ['B', 'C'], 'D'] — the first (whole) value
+$generic->getPath('1.2');   // ['B', 'C']             — the second component
+$generic->getPath('1.2.2'); // 'C'                    — its second subcomponent
+$generic->getPath('9.9');   // null                   — missing paths return null
+```
 
 ## Supported types
 
