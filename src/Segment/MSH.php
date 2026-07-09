@@ -67,7 +67,7 @@ final class MSH extends Segment
         return $this->getField(1)->getInstance();
     }
 
-    public function getComponentSeparator(): ST
+    public function getEncodingCharacters(): ST
     {
         return $this->getField(2)->getInstance();
     }

@@ -52,7 +52,7 @@ final class MSHTest extends TestCase
     {
         // MSH.1/MSH.2 carry the delimiters the rest of the message was encoded with.
         $this->assertSame('|', $this->msh->getFieldSeparator()->getValue());
-        $this->assertSame('^~\\&', $this->msh->getComponentSeparator()->getValue());
+        $this->assertSame('^~\\&', $this->msh->getEncodingCharacters()->getValue());
     }
 
     public function testAddressingFieldsMapToTheirHierarchicDesignators(): void
