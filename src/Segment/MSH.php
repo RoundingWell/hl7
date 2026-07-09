@@ -35,7 +35,7 @@ final class MSH extends Segment
         ]));
         $this->addField(2, new Field('Encoding Characters', ST::class, required: true, args: [
             'minLength' => 4,
-            'maxLength' => 4,
+            'maxLength' => 5,
         ]));
         $this->addField(3, new Field('Sending Application', HD::class));
         $this->addField(4, new Field('Sending Facility', HD::class));

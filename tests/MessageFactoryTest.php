@@ -56,6 +56,13 @@ final class MessageFactoryTest extends TestCase
         $this->assertInstanceOf(A08::class, $message);
     }
 
+    public function testShouldParseAdditionalEncodingCharacters(): void
+    {
+        $message = $this->messageFactory->parse('MSH|^~\&#|AccMrg\rPID|1');
+
+        $this->assertSame('^~\&#', $message->getMSH()->getEncodingCharacters()->getValue());
+    }
+
     public function testParseFileThrowsWhenTheFileDoesNotExist(): void
     {
         // A missing input file is a distinct, actionable failure from a malformed message.
@@ -106,7 +113,7 @@ final class MessageFactoryTest extends TestCase
     {
         // Without the delimiter after "MSH" there is nothing to split fields on.
         $this->expectException(InvalidMessage::class);
-        $this->expectExceptionMessageIsOrContains('must have a delimiter');
+        $this->expectExceptionMessageIsOrContains('must have a field separator');
 
         $this->messageFactory->parse('MSH');
     }
@@ -115,7 +122,7 @@ final class MessageFactoryTest extends TestCase
     {
         // The four encoding characters are required to interpret every downstream field.
         $this->expectException(InvalidMessage::class);
-        $this->expectExceptionMessageIsOrContains('must have 4 encoding characters');
+        $this->expectExceptionMessageIsOrContains('must have 4+ encoding characters');
 
         $this->messageFactory->parse('MSH|^~');
     }

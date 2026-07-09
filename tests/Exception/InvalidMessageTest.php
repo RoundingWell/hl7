@@ -31,15 +31,15 @@ final class InvalidMessageTest extends TestCase
     public function testMissingDelimiterExplainsTheRequiredDelimiter(): void
     {
         $this->assertSame(
-            "HL7 message must have a delimiter in the 'MSH' segment",
-            InvalidMessage::missingDelimiter()->getMessage(),
+            "HL7 message must have a field separator in the 'MSH' segment",
+            InvalidMessage::missingFieldSeparator()->getMessage(),
         );
     }
 
     public function testInvalidEncodingExplainsTheRequiredEncodingCharacters(): void
     {
         $this->assertSame(
-            "HL7 message must have 4 encoding characters in the 'MSH' segment",
+            "HL7 message must have 4+ encoding characters in the 'MSH' segment",
             InvalidMessage::invalidEncoding()->getMessage(),
         );
     }

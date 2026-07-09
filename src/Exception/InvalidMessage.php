@@ -11,13 +11,13 @@ final class InvalidMessage extends \InvalidArgumentException implements HL7Excep
         return new self("HL7 message must start with 'MSH' segment");
     }
 
-    public static function missingDelimiter(): self
+    public static function missingFieldSeparator(): self
     {
-        return new self("HL7 message must have a delimiter in the 'MSH' segment");
+        return new self("HL7 message must have a field separator in the 'MSH' segment");
     }
 
     public static function invalidEncoding(): self
     {
-        return new self("HL7 message must have 4 encoding characters in the 'MSH' segment");
+        return new self("HL7 message must have 4+ encoding characters in the 'MSH' segment");
     }
 }

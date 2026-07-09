@@ -14,6 +14,8 @@ final readonly class Encoding
         public string $repetitionSeparator = '~',
         public string $escapeCharacter = '\\',
         public string $subcomponentSeparator = '&',
+        // HL7 v2.7 added support for truncation characters, with '#' as the default.
+        public string $truncationCharacter = '',
     ) {}
 
     public function encodingCharacters(): string
@@ -23,6 +25,7 @@ final readonly class Encoding
             . $this->repetitionSeparator
             . $this->escapeCharacter
             . $this->subcomponentSeparator
+            . $this->truncationCharacter
         );
     }
 
