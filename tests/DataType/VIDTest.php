@@ -16,8 +16,20 @@ final class VIDTest extends TestCase
     {
         // The version id selects which HL7 grammar applies to the message.
         $vid = new VID();
-        $vid->setRaw(new Encoding(), '2.8');
+        $vid->parse(new Encoding(), '2.8');
 
-        $this->assertSame('2.8', $vid->id->getValue());
+        $this->assertSame('2.8', $vid->getId()->getValue());
+    }
+
+    public function testEveryComponentMapsToItsGetterInOrder(): void
+    {
+        // The trailing components are CE composites, so subcomponents use the "&" separator.
+        $vid = new VID();
+        $vid->parse(new Encoding(), '2.8^ENG&English&ISO639^FRA&French&ISO639');
+
+        $this->assertSame('2.8', $vid->getId()->getValue());
+        // Composite getters are exercised through a leaf getter on the returned CWE.
+        $this->assertSame('ENG', $vid->getInternationalizationCode()->getIdentifier()->getValue());
+        $this->assertSame('FRA', $vid->getInternationalVersion()->getIdentifier()->getValue());
     }
 }

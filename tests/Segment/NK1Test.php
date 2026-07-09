@@ -19,7 +19,8 @@ final class NK1Test extends TestCase
     protected function setUp(): void
     {
         $this->nk1 = new NK1();
-        $this->nk1->setRaw(new Encoding(), [
+        $this->nk1->parse(new Encoding(), implode('|', [
+            'NK1', // Segment name
             '1', // NK1.1 Set ID
             'DUCK^DONALD~DUCK^DAISY', // NK1.2 Name (repeating)
             'SPO^Spouse', // NK1.3 Relationship
@@ -61,7 +62,7 @@ final class NK1Test extends TestCase
             'VIP^Important', // NK1.39 VIP Indicator
             '8885554444', // NK1.40 Next of Kin Telecommunication Information
             '8885555555', // NK1.41 Contact Person's Telecommunication Information
-        ]);
+        ]));
     }
 
     public function testIdentityMapsToItsValue(): void
@@ -73,54 +74,54 @@ final class NK1Test extends TestCase
     public function testNamesCollectEachRepetition(): void
     {
         // NK1.2 is repeating; each associated party's name must be retained in order.
-        $names = $this->nk1->getName();
+        $names = $this->nk1->getNextOfKinName();
         $this->assertCount(2, $names);
-        $this->assertSame('DUCK', $names[0]->familyName->surname->getValue());
-        $this->assertSame('DONALD', $names[0]->givenName->getValue());
-        $this->assertSame('DAISY', $names[1]->givenName->getValue());
+        $this->assertSame('DUCK', $names[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('DONALD', $names[0]->getGivenName()->getValue());
+        $this->assertSame('DAISY', $names[1]->getGivenName()->getValue());
 
         $maiden = $this->nk1->getMotherMaidenName();
-        $this->assertSame('MOUSE', $maiden[0]->familyName->surname->getValue());
+        $this->assertSame('MOUSE', $maiden[0]->getFamilyName()->getSurname()->getValue());
 
         $contacts = $this->nk1->getContactPersonName();
         $this->assertCount(2, $contacts);
-        $this->assertSame('GOOF', $contacts[0]->familyName->surname->getValue());
-        $this->assertSame('PLUTO', $contacts[1]->familyName->surname->getValue());
+        $this->assertSame('GOOF', $contacts[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('PLUTO', $contacts[1]->getFamilyName()->getSurname()->getValue());
     }
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('SPO', $this->nk1->getRelationship()->identifier->getValue());
-        $this->assertSame('CP', $this->nk1->getContactRole()->identifier->getValue());
-        $this->assertSame('M', $this->nk1->getMaritalStatus()->identifier->getValue());
-        $this->assertSame('F', $this->nk1->getAdministrativeSex()->identifier->getValue());
-        $this->assertSame('EN', $this->nk1->getPrimaryLanguage()->identifier->getValue());
-        $this->assertSame('A', $this->nk1->getLivingArrangement()->identifier->getValue());
-        $this->assertSame('PUB', $this->nk1->getPublicityCode()->identifier->getValue());
-        $this->assertSame('Y', $this->nk1->getStudentIndicator()->identifier->getValue());
-        $this->assertSame('CHR', $this->nk1->getReligion()->identifier->getValue());
-        $this->assertSame('US', $this->nk1->getNationality()->identifier->getValue());
-        $this->assertSame('AC', $this->nk1->getJobStatus()->identifier->getValue());
-        $this->assertSame('HC', $this->nk1->getHandicap()->identifier->getValue());
-        $this->assertSame('VIP', $this->nk1->getVipIndicator()->identifier->getValue());
+        $this->assertSame('SPO', $this->nk1->getRelationship()->getIdentifier()->getValue());
+        $this->assertSame('CP', $this->nk1->getContactRole()->getIdentifier()->getValue());
+        $this->assertSame('M', $this->nk1->getMaritalStatus()->getIdentifier()->getValue());
+        $this->assertSame('F', $this->nk1->getAdministrativeSex()->getIdentifier()->getValue());
+        $this->assertSame('EN', $this->nk1->getPrimaryLanguage()->getIdentifier()->getValue());
+        $this->assertSame('A', $this->nk1->getLivingArrangement()->getIdentifier()->getValue());
+        $this->assertSame('PUB', $this->nk1->getPublicityCode()->getIdentifier()->getValue());
+        $this->assertSame('Y', $this->nk1->getStudentIndicator()->getIdentifier()->getValue());
+        $this->assertSame('CHR', $this->nk1->getReligion()->getIdentifier()->getValue());
+        $this->assertSame('US', $this->nk1->getNationality()->getIdentifier()->getValue());
+        $this->assertSame('AC', $this->nk1->getJobStatus()->getIdentifier()->getValue());
+        $this->assertSame('HC', $this->nk1->getHandicap()->getIdentifier()->getValue());
+        $this->assertSame('VIP', $this->nk1->getVipIndicator()->getIdentifier()->getValue());
     }
 
     public function testRepeatingCodedFieldsCollectEachEntry(): void
     {
         $dependency = $this->nk1->getLivingDependency();
         $this->assertCount(2, $dependency);
-        $this->assertSame('D1', $dependency[0]->identifier->getValue());
-        $this->assertSame('D2', $dependency[1]->identifier->getValue());
+        $this->assertSame('D1', $dependency[0]->getIdentifier()->getValue());
+        $this->assertSame('D2', $dependency[1]->getIdentifier()->getValue());
 
-        $this->assertSame('A1', $this->nk1->getAmbulatoryStatus()[0]->identifier->getValue());
-        $this->assertSame('USA', $this->nk1->getCitizenship()[0]->identifier->getValue());
-        $this->assertSame('H', $this->nk1->getEthnicGroup()[0]->identifier->getValue());
-        $this->assertSame('R1', $this->nk1->getContactReason()[0]->identifier->getValue());
+        $this->assertSame('A1', $this->nk1->getAmbulatoryStatus()[0]->getIdentifier()->getValue());
+        $this->assertSame('USA', $this->nk1->getCitizenship()[0]->getIdentifier()->getValue());
+        $this->assertSame('H', $this->nk1->getEthnicGroup()[0]->getIdentifier()->getValue());
+        $this->assertSame('R1', $this->nk1->getContactReason()[0]->getIdentifier()->getValue());
 
         $race = $this->nk1->getRace();
         $this->assertCount(2, $race);
-        $this->assertSame('2106-3', $race[0]->identifier->getValue());
-        $this->assertSame('1002-5', $race[1]->identifier->getValue());
+        $this->assertSame('2106-3', $race[0]->getIdentifier()->getValue());
+        $this->assertSame('1002-5', $race[1]->getIdentifier()->getValue());
     }
 
     public function testAddressesCollectEachRepetition(): void
@@ -128,27 +129,30 @@ final class NK1Test extends TestCase
         // NK1.4 and NK1.32 are repeating addresses with a nested street address component.
         $addresses = $this->nk1->getAddress();
         $this->assertCount(2, $addresses);
-        $this->assertSame('111 DUCK ST', $addresses[0]->streetAddress->streetAddress->getValue());
-        $this->assertSame('FOWL', $addresses[0]->city->getValue());
-        $this->assertSame('222 GOOSE LN', $addresses[1]->streetAddress->streetAddress->getValue());
+        $this->assertSame('111 DUCK ST', $addresses[0]->getStreetAddress()->getStreetAddress()->getValue());
+        $this->assertSame('FOWL', $addresses[0]->getCity()->getValue());
+        $this->assertSame('222 GOOSE LN', $addresses[1]->getStreetAddress()->getStreetAddress()->getValue());
 
         $contactAddresses = $this->nk1->getContactPersonAddress();
-        $this->assertSame('333 DOG LN', $contactAddresses[0]->streetAddress->streetAddress->getValue());
+        $this->assertSame('333 DOG LN', $contactAddresses[0]->getStreetAddress()->getStreetAddress()->getValue());
     }
 
     public function testPhoneNumbersCollectEachRepetition(): void
     {
         $phones = $this->nk1->getPhoneNumber();
         $this->assertCount(2, $phones);
-        $this->assertSame('8885551212', $phones[0]->telephoneNumber->getValue());
-        $this->assertSame('8885551213', $phones[1]->telephoneNumber->getValue());
+        $this->assertSame('8885551212', $phones[0]->getTelephoneNumber()->getValue());
+        $this->assertSame('8885551213', $phones[1]->getTelephoneNumber()->getValue());
 
-        $this->assertSame('8885552222', $this->nk1->getBusinessPhoneNumber()[0]->telephoneNumber->getValue());
-        $this->assertSame('8885553333', $this->nk1->getContactPersonPhoneNumber()[0]->telephoneNumber->getValue());
-        $this->assertSame('8885554444', $this->nk1->getTelecommunicationInformation()->telephoneNumber->getValue());
+        $this->assertSame('8885552222', $this->nk1->getBusinessPhoneNumber()[0]->getTelephoneNumber()->getValue());
+        $this->assertSame('8885553333', $this->nk1->getContactPersonPhoneNumber()[0]->getTelephoneNumber()->getValue());
+        $this->assertSame(
+            '8885554444',
+            $this->nk1->getTelecommunicationInformation()->getTelephoneNumber()->getValue(),
+        );
         $this->assertSame(
             '8885555555',
-            $this->nk1->getContactPersonTelecommunicationInformation()->telephoneNumber->getValue(),
+            $this->nk1->getContactPersonTelecommunicationInformation()->getTelephoneNumber()->getValue(),
         );
     }
 
@@ -170,20 +174,20 @@ final class NK1Test extends TestCase
     public function testJobCodeMapsToItsNestedComponent(): void
     {
         // NK1.11 nests a coded job code inside the JCC composite.
-        $this->assertSame('ENG', $this->nk1->getJobCode()->jobCode->identifier->getValue());
+        $this->assertSame('ENG', $this->nk1->getJobCode()->getJobCode()->getIdentifier()->getValue());
     }
 
     public function testIdentifierFieldsMapToTheirComponents(): void
     {
         $employee = $this->nk1->getEmployeeNumber();
-        $this->assertSame('EMP123', $employee->id->getValue());
-        $this->assertSame('EN', $employee->identifierTypeCode->getValue());
+        $this->assertSame('EMP123', $employee->getId()->getValue());
+        $this->assertSame('EN', $employee->getIdentifierTypeCode()->getValue());
 
         // NK1.33 is repeating; each associated-party identifier must be retained in order.
         $identifiers = $this->nk1->getAssociatedPartyIdentifiers();
         $this->assertCount(2, $identifiers);
-        $this->assertSame('AP123', $identifiers[0]->id->getValue());
-        $this->assertSame('AP456', $identifiers[1]->id->getValue());
+        $this->assertSame('AP123', $identifiers[0]->getId()->getValue());
+        $this->assertSame('AP456', $identifiers[1]->getId()->getValue());
     }
 
     public function testOrganizationNamesCollectEachRepetition(): void
@@ -191,7 +195,7 @@ final class NK1Test extends TestCase
         // NK1.13 is repeating; each employing organization name must be retained.
         $organizations = $this->nk1->getOrganizationName();
         $this->assertCount(2, $organizations);
-        $this->assertSame('Acme Inc', $organizations[0]->name->getValue());
-        $this->assertSame('Globex', $organizations[1]->name->getValue());
+        $this->assertSame('Acme Inc', $organizations[0]->getOrganizationName()->getValue());
+        $this->assertSame('Globex', $organizations[1]->getOrganizationName()->getValue());
     }
 }

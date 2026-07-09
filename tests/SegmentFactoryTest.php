@@ -97,6 +97,6 @@ final class SegmentFactoryTest extends TestCase
     {
         $segment = $this->factory->parse('ZZ1|1|DUCK^DAISY');
 
-        $this->assertSame('ZZ1', $segment->getId());
+        $this->assertSame('ZZ1', $segment->getName());
     }
 }

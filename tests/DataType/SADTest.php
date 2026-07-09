@@ -16,10 +16,10 @@ final class SADTest extends TestCase
     {
         // Component position determines meaning within a street address.
         $sad = new SAD();
-        $sad->setRaw(new Encoding(), '111 DUCK ST^Duck Street^7');
+        $sad->parse(new Encoding(), '111 DUCK ST^Duck Street^7');
 
-        $this->assertSame('111 DUCK ST', $sad->streetAddress->getValue());
-        $this->assertSame('Duck Street', $sad->streetName->getValue());
-        $this->assertSame('7', $sad->dwellingNumber->getValue());
+        $this->assertSame('111 DUCK ST', $sad->getStreetAddress()->getValue());
+        $this->assertSame('Duck Street', $sad->getStreetName()->getValue());
+        $this->assertSame('7', $sad->getDwellingNumber()->getValue());
     }
 }

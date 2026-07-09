@@ -13,34 +13,21 @@ use RoundingWell\HL7\Exception\InvalidValue;
 #[CoversClass(ST::class)]
 final class STTest extends TestCase
 {
-    public function testUnsetValueReportsNoValue(): void
+    public function testUnsetValueReportsEmptyString(): void
     {
-        // An unpopulated field must be distinguishable from one holding an empty string.
+        // An unpopulated field must read as empty rather than error.
         $st = new ST();
 
-        $this->assertFalse($st->hasValue());
         $this->assertSame('', $st->getValue());
-        $this->assertSame('', (string) $st);
     }
 
-    public function testSetRawDecodesAndStoresTheValue(): void
+    public function testParseDecodesAndStoresTheValue(): void
     {
         // Raw field data arrives escaped; the stored value must be the decoded text.
         $st = new ST();
-        $st->setRaw(new Encoding(), 'A\\F\\B');
+        $st->parse(new Encoding(), 'A\\F\\B');
 
-        $this->assertTrue($st->hasValue());
         $this->assertSame('A|B', $st->getValue());
-        $this->assertSame('A|B', (string) $st);
-    }
-
-    public function testSetRawIgnoresEmptyInputSoTheFieldStaysUnset(): void
-    {
-        // An empty component is "absent", not a value that must satisfy minLength.
-        $st = new ST(minLength: 3);
-        $st->setRaw(new Encoding(), '');
-
-        $this->assertFalse($st->hasValue());
     }
 
     public function testSetValueRejectsValuesShorterThanMinLength(): void

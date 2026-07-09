@@ -4,53 +4,26 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\DataType;
 
-use ReflectionProperty;
-use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\AbstractPrimitive;
+use RoundingWell\HL7\CanAssertNumbers;
 
 /**
  * Identifier
  */
-final class ID implements Type, \Stringable
+final class ID extends AbstractPrimitive
 {
-    public string $value;
+    use CanAssertNumbers;
 
     public function __construct(
-        public readonly int $table,
-    ) {}
+        private readonly int $table,
+    ) {
+        $this->assertNaturalNumber($this->table);
 
-    public function hasValue(): bool
-    {
-        // @mago-expect analysis:unhandled-thrown-type
-        return new ReflectionProperty($this, 'value')->isInitialized($this);
+        parent::__construct();
     }
 
-    public function setValue(string $value): void
+    public function getTable(): int
     {
-        $this->value = $value;
-    }
-
-    #[\Override]
-    public function setRaw(Encoding $encoding, string $value, int $depth = 0): void
-    {
-        if ($value === '') {
-            return;
-        }
-
-        $this->setValue($encoding->decode($value));
-    }
-
-    public function getValue(): string
-    {
-        if ($this->hasValue()) {
-            return $this->value;
-        }
-
-        return '';
-    }
-
-    #[\Override]
-    public function __toString(): string
-    {
-        return $this->getValue();
+        return $this->table;
     }
 }

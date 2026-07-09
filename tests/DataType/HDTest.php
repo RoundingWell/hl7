@@ -16,10 +16,10 @@ final class HDTest extends TestCase
     {
         // A hierarchic designator names an authority via namespace and universal id.
         $hd = new HD();
-        $hd->setRaw(new Encoding(), 'AccMgr^1.2.840^ISO');
+        $hd->parse(new Encoding(), 'AccMgr^1.2.840^ISO');
 
-        $this->assertSame('AccMgr', $hd->namespaceId->getValue());
-        $this->assertSame('1.2.840', $hd->universalId->getValue());
-        $this->assertSame('ISO', $hd->universalIdType->getValue());
+        $this->assertSame('AccMgr', $hd->getNamespaceId()->getValue());
+        $this->assertSame('1.2.840', $hd->getUniversalId()->getValue());
+        $this->assertSame('ISO', $hd->getUniversalIdType()->getValue());
     }
 }

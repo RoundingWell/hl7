@@ -19,7 +19,8 @@ final class PV2Test extends TestCase
     protected function setUp(): void
     {
         $this->pv2 = new PV2();
-        $this->pv2->setRaw(new Encoding(), [
+        $this->pv2->parse(new Encoding(), implode('|', [
+            'PV2', // Segment name
             'WEST^101^A', // PV2.1 Prior Pending Location
             'PVT^Private', // PV2.2 Accommodation Code
             'FEVER^Fever', // PV2.3 Admit Reason
@@ -70,35 +71,38 @@ final class PV2Test extends TestCase
             '20050108', // PV2.48 Expected Pre-admission Testing Date/Time
             'CATH^Catholic~PROT^Protestant', // PV2.49 Notify Clergy Code (repeating)
             '20050107', // PV2.50 Advance Directive Last Verified Date
-        ]);
+        ]));
     }
 
     public function testLocationFieldsMapToTheirLeadingComponents(): void
     {
         // PV2.1 is a person location; its point of care leads the location hierarchy.
-        $this->assertSame('WEST', $this->pv2->getPriorPendingLocation()->pointOfCare->namespaceId->getValue());
+        $this->assertSame(
+            'WEST',
+            $this->pv2->getPriorPendingLocation()->getPointOfCare()->getNamespaceId()->getValue(),
+        );
         $this->assertSame('Safe', $this->pv2->getPatientValuablesLocation()->getValue());
         $this->assertSame('Routine visit', $this->pv2->getVisitDescription()->getValue());
     }
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('PVT', $this->pv2->getAccommodationCode()->identifier->getValue());
-        $this->assertSame('FEVER', $this->pv2->getAdmitReason()->identifier->getValue());
-        $this->assertSame('BED', $this->pv2->getTransferReason()->identifier->getValue());
-        $this->assertSame('A', $this->pv2->getPurgeStatusCode()->identifier->getValue());
-        $this->assertSame('SP', $this->pv2->getSpecialProgramCode()->identifier->getValue());
-        $this->assertSame('F', $this->pv2->getVisitPublicityCode()->identifier->getValue());
-        $this->assertSame('AC', $this->pv2->getPatientStatusCode()->identifier->getValue());
-        $this->assertSame('P1', $this->pv2->getVisitPriorityCode()->identifier->getValue());
-        $this->assertSame('HOME', $this->pv2->getExpectedDischargeDisposition()->identifier->getValue());
-        $this->assertSame('ADJ', $this->pv2->getPatientChargeAdjustmentCode()->identifier->getValue());
-        $this->assertSame('RS', $this->pv2->getRecurringServiceCode()->identifier->getValue());
-        $this->assertSame('AMB', $this->pv2->getModeOfArrivalCode()->identifier->getValue());
-        $this->assertSame('LOC', $this->pv2->getAdmissionLevelOfCareCode()->identifier->getValue());
-        $this->assertSame('STA', $this->pv2->getPatientConditionCode()->identifier->getValue());
-        $this->assertSame('Y', $this->pv2->getLivingWillCode()->identifier->getValue());
-        $this->assertSame('D', $this->pv2->getOrganDonorCode()->identifier->getValue());
+        $this->assertSame('PVT', $this->pv2->getAccommodationCode()->getIdentifier()->getValue());
+        $this->assertSame('FEVER', $this->pv2->getAdmitReason()->getIdentifier()->getValue());
+        $this->assertSame('BED', $this->pv2->getTransferReason()->getIdentifier()->getValue());
+        $this->assertSame('A', $this->pv2->getPurgeStatusCode()->getIdentifier()->getValue());
+        $this->assertSame('SP', $this->pv2->getSpecialProgramCode()->getIdentifier()->getValue());
+        $this->assertSame('F', $this->pv2->getVisitPublicityCode()->getIdentifier()->getValue());
+        $this->assertSame('AC', $this->pv2->getPatientStatusCode()->getIdentifier()->getValue());
+        $this->assertSame('P1', $this->pv2->getVisitPriorityCode()->getIdentifier()->getValue());
+        $this->assertSame('HOME', $this->pv2->getExpectedDischargeDisposition()->getIdentifier()->getValue());
+        $this->assertSame('ADJ', $this->pv2->getPatientChargeAdjustmentCode()->getIdentifier()->getValue());
+        $this->assertSame('RS', $this->pv2->getRecurringServiceCode()->getIdentifier()->getValue());
+        $this->assertSame('AMB', $this->pv2->getModeOfArrivalCode()->getIdentifier()->getValue());
+        $this->assertSame('LOC', $this->pv2->getAdmissionLevelOfCareCode()->getIdentifier()->getValue());
+        $this->assertSame('STA', $this->pv2->getPatientConditionCode()->getIdentifier()->getValue());
+        $this->assertSame('Y', $this->pv2->getLivingWillCode()->getIdentifier()->getValue());
+        $this->assertSame('D', $this->pv2->getOrganDonorCode()->getIdentifier()->getValue());
     }
 
     public function testDateAndDateTimeFieldsMapToTheirValues(): void
@@ -150,13 +154,13 @@ final class PV2Test extends TestCase
     {
         $userCodes = $this->pv2->getVisitUserCode();
         $this->assertCount(2, $userCodes);
-        $this->assertSame('U1', $userCodes[0]->identifier->getValue());
-        $this->assertSame('U2', $userCodes[1]->identifier->getValue());
+        $this->assertSame('U1', $userCodes[0]->getIdentifier()->getValue());
+        $this->assertSame('U2', $userCodes[1]->getIdentifier()->getValue());
 
-        $this->assertSame('NONE', $this->pv2->getRecreationalDrugUseCode()[0]->identifier->getValue());
-        $this->assertSame('ISO', $this->pv2->getPrecautionCode()[0]->identifier->getValue());
-        $this->assertSame('DNR', $this->pv2->getAdvanceDirectiveCode()[0]->identifier->getValue());
-        $this->assertSame('CATH', $this->pv2->getNotifyClergyCode()[0]->identifier->getValue());
+        $this->assertSame('NONE', $this->pv2->getRecreationalDrugUseCode()[0]->getIdentifier()->getValue());
+        $this->assertSame('ISO', $this->pv2->getPrecautionCode()[0]->getIdentifier()->getValue());
+        $this->assertSame('DNR', $this->pv2->getAdvanceDirectiveCode()[0]->getIdentifier()->getValue());
+        $this->assertSame('CATH', $this->pv2->getNotifyClergyCode()[0]->getIdentifier()->getValue());
     }
 
     public function testRepeatingReferralAndClinicFieldsCollectEachEntry(): void
@@ -164,13 +168,13 @@ final class PV2Test extends TestCase
         // PV2.13 references people; PV2.23 references organizations, both repeating.
         $referrals = $this->pv2->getReferralSourceCode();
         $this->assertCount(2, $referrals);
-        $this->assertSame('37', $referrals[0]->id->getValue());
-        $this->assertSame('DISNEY', $referrals[0]->familyName->surname->getValue());
-        $this->assertSame('38', $referrals[1]->id->getValue());
+        $this->assertSame('37', $referrals[0]->getId()->getValue());
+        $this->assertSame('DISNEY', $referrals[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('38', $referrals[1]->getId()->getValue());
 
         $clinics = $this->pv2->getClinicOrganizationName();
         $this->assertCount(2, $clinics);
-        $this->assertSame('Clinic A', $clinics[0]->name->getValue());
-        $this->assertSame('Clinic B', $clinics[1]->name->getValue());
+        $this->assertSame('Clinic A', $clinics[0]->getOrganizationName()->getValue());
+        $this->assertSame('Clinic B', $clinics[1]->getOrganizationName()->getValue());
     }
 }

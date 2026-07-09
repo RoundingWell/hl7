@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
-use RoundingWell\HL7\BaseField;
-use RoundingWell\HL7\BaseSegment;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\CX;
 use RoundingWell\HL7\DataType\DTM;
@@ -17,68 +16,67 @@ use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XAD;
 use RoundingWell\HL7\DataType\XPN;
 use RoundingWell\HL7\DataType\XTN;
+use RoundingWell\HL7\TypeDefinition;
 
 /**
  * Patient Identification Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class PID extends BaseSegment
+final class PID extends AbstractSegment
 {
     public function __construct()
     {
-        parent::__construct('PID');
-
-        $this->addField(1, new BaseField('Set ID', SI::class));
-        $this->addField(2, new BaseField('Patient ID', SI::class));
-        $this->addField(3, new BaseField('Patient Identifier List', CX::class, repeating: true));
-        $this->addField(4, new BaseField('Alternate Patient ID', SI::class));
-        $this->addField(5, new BaseField('Patient Name', XPN::class, repeating: true));
-        $this->addField(6, new BaseField("Mother's Maiden Name", XPN::class, repeating: true));
-        $this->addField(7, new BaseField('Date/Time of Birth', DTM::class));
-        $this->addField(8, new BaseField('Administrative Sex', CWE::class));
-        $this->addField(9, new BaseField('Patient Alias', ST::class));
-        $this->addField(10, new BaseField('Race', CWE::class, repeating: true));
-        $this->addField(11, new BaseField('Patient Address', XAD::class, repeating: true));
-        $this->addField(12, new BaseField('County Code', ST::class));
-        $this->addField(13, new BaseField('Phone Number - Home', XTN::class, repeating: true));
-        $this->addField(14, new BaseField('Phone Number - Business', XTN::class, repeating: true));
-        $this->addField(15, new BaseField('Primary Language', CWE::class));
-        $this->addField(16, new BaseField('Marital Status', CWE::class));
-        $this->addField(17, new BaseField('Religion', CWE::class));
-        $this->addField(18, new BaseField('Patient Account Number', CX::class));
-        $this->addField(19, new BaseField('SSN Number - Patient', ST::class));
-        $this->addField(20, new BaseField("Driver's License Number - Patient", ST::class));
-        $this->addField(21, new BaseField("Mother's Identifier", CX::class, repeating: true));
-        $this->addField(22, new BaseField('Ethnic Group', CWE::class, repeating: true));
-        $this->addField(23, new BaseField('Birth Place', ST::class));
-        $this->addField(24, new BaseField('Multiple Birth Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(25, new BaseField('Birth Order', NM::class));
-        $this->addField(26, new BaseField('Citizenship', CWE::class, repeating: true));
-        $this->addField(27, new BaseField('Veterans Military Status', CWE::class));
-        $this->addField(28, new BaseField('Nationality', CWE::class));
-        $this->addField(29, new BaseField('Patient Death Date and Time', DTM::class));
-        $this->addField(30, new BaseField('Patient Death Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(31, new BaseField('Identity Unknown Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(32, new BaseField('Identity Reliability Code', CWE::class, repeating: true));
-        $this->addField(33, new BaseField('Last Update Date/Time', DTM::class));
-        $this->addField(34, new BaseField('Last Update Facility', HD::class));
-        $this->addField(35, new BaseField('Taxonomic Classification Code', CWE::class));
-        $this->addField(36, new BaseField('Breed Code', CWE::class));
-        $this->addField(37, new BaseField('Strain', ST::class));
-        $this->addField(38, new BaseField('Production Class Code', CWE::class));
-        $this->addField(39, new BaseField('Tribal Citizenship', CWE::class, repeating: true));
-        $this->addField(40, new BaseField('Patient Telecommunication Information', XTN::class, repeating: true));
+        $this->add(new TypeDefinition('Set ID', SI::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient ID', SI::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Identifier List', CX::class));
+        $this->add(new TypeDefinition('Alternate Patient ID', SI::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Name', XPN::class));
+        $this->add(new TypeDefinition("Mother's Maiden Name", XPN::class));
+        $this->add(new TypeDefinition('Date/Time of Birth', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Administrative Sex', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Alias', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Race', CWE::class));
+        $this->add(new TypeDefinition('Patient Address', XAD::class));
+        $this->add(new TypeDefinition('County Code', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Phone Number - Home', XTN::class));
+        $this->add(new TypeDefinition('Phone Number - Business', XTN::class));
+        $this->add(new TypeDefinition('Primary Language', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Marital Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Religion', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Account Number', CX::class, maxReps: 1));
+        $this->add(new TypeDefinition('SSN Number - Patient', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition("Driver's License Number - Patient", ST::class, maxReps: 1));
+        $this->add(new TypeDefinition("Mother's Identifier", CX::class));
+        $this->add(new TypeDefinition('Ethnic Group', CWE::class));
+        $this->add(new TypeDefinition('Birth Place', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Multiple Birth Indicator', ID::class, args: ['table' => 136], maxReps: 1));
+        $this->add(new TypeDefinition('Birth Order', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Citizenship', CWE::class));
+        $this->add(new TypeDefinition('Veterans Military Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Nationality', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Death Date and Time', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Death Indicator', ID::class, args: ['table' => 136], maxReps: 1));
+        $this->add(new TypeDefinition('Identity Unknown Indicator', ID::class, args: ['table' => 136], maxReps: 1));
+        $this->add(new TypeDefinition('Identity Reliability Code', CWE::class));
+        $this->add(new TypeDefinition('Last Update Date/Time', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Last Update Facility', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Taxonomic Classification Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Breed Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Strain', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Production Class Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Tribal Citizenship', CWE::class));
+        $this->add(new TypeDefinition('Patient Telecommunication Information', XTN::class));
     }
 
     public function getIdentity(): SI
     {
-        return $this->getField(1)->getInstance();
+        return $this->getFieldRepetition(1, 0);
     }
 
     public function getPatientIdentity(): SI
     {
-        return $this->getField(2)->getInstance();
+        return $this->getFieldRepetition(2, 0);
     }
 
     /**
@@ -86,12 +84,12 @@ final class PID extends BaseSegment
      */
     public function getIdentifierList(): array
     {
-        return $this->getField(3)->getInstance();
+        return $this->getField(3);
     }
 
     public function getAlternateIdentity(): SI
     {
-        return $this->getField(4)->getInstance();
+        return $this->getFieldRepetition(4, 0);
     }
 
     /**
@@ -99,7 +97,7 @@ final class PID extends BaseSegment
      */
     public function getPatientName(): array
     {
-        return $this->getField(5)->getInstance();
+        return $this->getField(5);
     }
 
     /**
@@ -107,22 +105,22 @@ final class PID extends BaseSegment
      */
     public function getMotherMaidenName(): array
     {
-        return $this->getField(6)->getInstance();
+        return $this->getField(6);
     }
 
     public function getDateOfBirth(): DTM
     {
-        return $this->getField(7)->getInstance();
+        return $this->getFieldRepetition(7, 0);
     }
 
     public function getAdministrativeSex(): CWE
     {
-        return $this->getField(8)->getInstance();
+        return $this->getFieldRepetition(8, 0);
     }
 
     public function getPatientAlias(): ST
     {
-        return $this->getField(9)->getInstance();
+        return $this->getFieldRepetition(9, 0);
     }
 
     /**
@@ -130,7 +128,7 @@ final class PID extends BaseSegment
      */
     public function getRace(): array
     {
-        return $this->getField(10)->getInstance();
+        return $this->getField(10);
     }
 
     /**
@@ -138,12 +136,12 @@ final class PID extends BaseSegment
      */
     public function getPatientAddress(): array
     {
-        return $this->getField(11)->getInstance();
+        return $this->getField(11);
     }
 
     public function getCountyCode(): ST
     {
-        return $this->getField(12)->getInstance();
+        return $this->getFieldRepetition(12, 0);
     }
 
     /**
@@ -151,7 +149,7 @@ final class PID extends BaseSegment
      */
     public function getPhoneNumberHome(): array
     {
-        return $this->getField(13)->getInstance();
+        return $this->getField(13);
     }
 
     /**
@@ -159,37 +157,37 @@ final class PID extends BaseSegment
      */
     public function getPhoneNumberBusiness(): array
     {
-        return $this->getField(14)->getInstance();
+        return $this->getField(14);
     }
 
     public function getPrimaryLanguage(): CWE
     {
-        return $this->getField(15)->getInstance();
+        return $this->getFieldRepetition(15, 0);
     }
 
     public function getMaritalStatus(): CWE
     {
-        return $this->getField(16)->getInstance();
+        return $this->getFieldRepetition(16, 0);
     }
 
     public function getReligion(): CWE
     {
-        return $this->getField(17)->getInstance();
+        return $this->getFieldRepetition(17, 0);
     }
 
     public function getAccountNumber(): CX
     {
-        return $this->getField(18)->getInstance();
+        return $this->getFieldRepetition(18, 0);
     }
 
     public function getSsnNumber(): ST
     {
-        return $this->getField(19)->getInstance();
+        return $this->getFieldRepetition(19, 0);
     }
 
     public function getDriverLicenseNumber(): ST
     {
-        return $this->getField(20)->getInstance();
+        return $this->getFieldRepetition(20, 0);
     }
 
     /**
@@ -197,7 +195,7 @@ final class PID extends BaseSegment
      */
     public function getMotherIdentifier(): array
     {
-        return $this->getField(21)->getInstance();
+        return $this->getField(21);
     }
 
     /**
@@ -205,22 +203,22 @@ final class PID extends BaseSegment
      */
     public function getEthnicGroup(): array
     {
-        return $this->getField(22)->getInstance();
+        return $this->getField(22);
     }
 
     public function getBirthPlace(): ST
     {
-        return $this->getField(23)->getInstance();
+        return $this->getFieldRepetition(23, 0);
     }
 
     public function getMultipleBirthIndicator(): ID
     {
-        return $this->getField(24)->getInstance();
+        return $this->getFieldRepetition(24, 0);
     }
 
     public function getBirthOrder(): NM
     {
-        return $this->getField(25)->getInstance();
+        return $this->getFieldRepetition(25, 0);
     }
 
     /**
@@ -228,32 +226,32 @@ final class PID extends BaseSegment
      */
     public function getCitizenship(): array
     {
-        return $this->getField(26)->getInstance();
+        return $this->getField(26);
     }
 
     public function getVeteransMilitaryStatus(): CWE
     {
-        return $this->getField(27)->getInstance();
+        return $this->getFieldRepetition(27, 0);
     }
 
     public function getNationality(): CWE
     {
-        return $this->getField(28)->getInstance();
+        return $this->getFieldRepetition(28, 0);
     }
 
     public function getPatientDeathDateAndTime(): DTM
     {
-        return $this->getField(29)->getInstance();
+        return $this->getFieldRepetition(29, 0);
     }
 
     public function getPatientDeathIndicator(): ID
     {
-        return $this->getField(30)->getInstance();
+        return $this->getFieldRepetition(30, 0);
     }
 
     public function getIdentityUnknownIndicator(): ID
     {
-        return $this->getField(31)->getInstance();
+        return $this->getFieldRepetition(31, 0);
     }
 
     /**
@@ -261,37 +259,37 @@ final class PID extends BaseSegment
      */
     public function getIdentityReliabilityCode(): array
     {
-        return $this->getField(32)->getInstance();
+        return $this->getField(32);
     }
 
     public function getLastUpdateDateTime(): DTM
     {
-        return $this->getField(33)->getInstance();
+        return $this->getFieldRepetition(33, 0);
     }
 
     public function getLastUpdateFacility(): HD
     {
-        return $this->getField(34)->getInstance();
+        return $this->getFieldRepetition(34, 0);
     }
 
     public function getTaxonomicClassificationCode(): CWE
     {
-        return $this->getField(35)->getInstance();
+        return $this->getFieldRepetition(35, 0);
     }
 
     public function getBreedCode(): CWE
     {
-        return $this->getField(36)->getInstance();
+        return $this->getFieldRepetition(36, 0);
     }
 
     public function getStrain(): ST
     {
-        return $this->getField(37)->getInstance();
+        return $this->getFieldRepetition(37, 0);
     }
 
     public function getProductionClassCode(): CWE
     {
-        return $this->getField(38)->getInstance();
+        return $this->getFieldRepetition(38, 0);
     }
 
     /**
@@ -299,7 +297,7 @@ final class PID extends BaseSegment
      */
     public function getTribalCitizenship(): array
     {
-        return $this->getField(39)->getInstance();
+        return $this->getField(39);
     }
 
     /**
@@ -307,6 +305,6 @@ final class PID extends BaseSegment
      */
     public function getPatientTelecommunicationInformation(): array
     {
-        return $this->getField(40)->getInstance();
+        return $this->getField(40);
     }
 }

@@ -13,33 +13,20 @@ use RoundingWell\HL7\Exception\InvalidValue;
 #[CoversClass(SNM::class)]
 final class SNMTest extends TestCase
 {
-    public function testUnsetValueReportsNoValue(): void
+    public function testUnsetValueReportsEmptyString(): void
     {
         // An unpopulated sequential numeric must read as empty rather than error.
         $snm = new SNM();
 
-        $this->assertFalse($snm->hasValue());
         $this->assertSame('', $snm->getValue());
-        $this->assertSame('', (string) $snm);
     }
 
-    public function testSetRawStoresTheValue(): void
+    public function testParseStoresTheValue(): void
     {
         $snm = new SNM();
-        $snm->setRaw(new Encoding(), '8005551212');
+        $snm->parse(new Encoding(), '8005551212');
 
-        $this->assertTrue($snm->hasValue());
         $this->assertSame('8005551212', $snm->getValue());
-        $this->assertSame('8005551212', (string) $snm);
-    }
-
-    public function testSetRawIgnoresEmptyInput(): void
-    {
-        // An empty component is "absent", not a value that must satisfy the numeric rule.
-        $snm = new SNM();
-        $snm->setRaw(new Encoding(), '');
-
-        $this->assertFalse($snm->hasValue());
     }
 
     public function testSetValueRejectsNonNumericValues(): void

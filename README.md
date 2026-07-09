@@ -39,7 +39,7 @@ known trigger event (for example `A01`), a message subclass is returned; otherwi
 ```php
 $msh = $message->getMSH();
 echo $msh->getMessageControlId()->getValue(); // "599102"
-echo $msh->getMessageType()->triggerEvent->getValue(); // "A01"
+echo $msh->getMessageType()->getTriggerEvent()->getValue(); // "A01"
 
 // Assuming the message is an A01
 $pid = $message->getPID();
@@ -48,59 +48,69 @@ echo $pid->getDateOfBirth()->getValue();
 
 // Repeating fields return a list of data-type instances.
 foreach ($pid->getPatientName() as $name) {
-    echo $name->givenName->getValue();          // "DONALD"
-    echo $name->familyName->surname->getValue(); // "DUCK"
+    echo $name->getGivenName()->getValue();               // "DONALD"
+    echo $name->getFamilyName()->getSurname()->getValue(); // "DUCK"
 }
 
 // Multiple occurrences of the same segment (e.g. DG1) are available too.
 $diagnoses = $message->listDG1();
 ```
 
-Composite data types expose their components as public, readonly properties, and those
-components may themselves be composites (sub-components), so you can drill down as far as the
-data type defines:
+Some messages nest repeating groups of segments (e.g. the `PROCEDURE` group in an `A01`, which
+bundles a `PR1` with its `ROL` segments). Groups expose the same lookup helpers as a message:
+
+```php
+foreach ($message->getAll('PROCEDURE') as $procedure) {
+    $pr1 = $procedure->get('PR1');
+    $roles = $procedure->getAll('ROL');
+}
+```
+
+Composite data types expose their components through named accessors, and those components
+may themselves be composites (sub-components), so you can drill down as far as the data type
+defines:
 
 ```php
 foreach ($pid->getIdentifierList() as $cx) {
-    echo $cx->id->getValue();                          // "10006579"
-    echo $cx->assigningAuthority->namespaceId->getValue();
-    echo $cx->identifierTypeCode->getValue();          // "MRN"
+    echo $cx->getId()->getValue();                              // "10006579"
+    echo $cx->getAssigningAuthority()->getNamespaceId()->getValue(); // "1"
+    echo $cx->getIdentifierTypeCode()->getValue();              // "MRN"
 }
 ```
+
+Every composite also exposes its components positionally via `getComponent(int $index)`
+(0-based) and `getComponents()`, which the named accessors are built on.
 
 ## Concepts
 
 | Type            | Responsibility                                                                                                          |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `MessageFactory`| Parses raw HL7 into a `Message`, resolving encoding and message type.                                                   |
-| `Message`       | A collection of `Segment` objects with lookup helpers (`getSegment`, `getAllSegments`, `getRequiredSegment`, `getMSH`). |
-| `ADT\Axx`       | Specific ADT Message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
-| `Segment`       | A collection of numbered `Field`s. Typed subclasses (e.g. `PID`) add named accessors.                                   |
-| `Field`         | Holds one or more data-type instances and knows whether it is required or repeating.                                    |
-| `Type`          | A parsed HL7 data type — either a scalar (`ST`, `NM`, `DTM`, …), a `Composite` of other types, or a `Generic`.          |
-| `Encoding`      | The delimiter, component/repetition/sub-component separators, escape character, and line ending.                        |
+| `MessageFactory`  | Parses raw HL7 into a `Message`, resolving encoding and message type.                                                   |
+| `Message`         | Interface for a whole message: a `Group` plus `getMSH()`, `getVersion()`, and `parse()`.                                |
+| `Group`           | Interface for a named collection of `Structure`s (segments and nested groups) with lookup helpers (`get`, `getAll`, `getRepetition`, `getNames`, `isRequired`, `isRepeating`, `isGroup`). |
+| `Message\ADT\Axx` | Specific ADT message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
+| `Segment`         | Interface for a collection of numbered fields (each a `Type`), read with `getField()` / `getFieldRepetition()`. Typed subclasses (e.g. `PID`, `MSH`) add named accessors. |
+| `Type`            | An HL7 data type — a `Primitive` scalar (`ST`, `NM`, `DTM`, …), a `Composite` of other types, or a `Varies` placeholder for undefined fields. |
+| `Encoding`        | The field, component, repetition, and sub-component separators, plus the escape and truncation characters and line ending. |
 
 ### Untyped fields
 
-Fields that are not defined for a segment are still parsed so no data is lost. They are
-exposed as `Generic` instances, whose value is always an array. Each level nests the next:
-values hold components, and components hold subcomponents.
+Fields that are not defined for a segment are still parsed so no data is lost. Whole segments
+that have no typed subclass (for example `GT1` in an ADT message) are exposed as
+`GenericSegment`s, and their fields are `Varies` instances — a wrapper that defers to a
+`GenericPrimitive` until a concrete type is assigned.
+
+Read an undefined field the same way as any other, then unwrap it with `getData()`:
 
 ```php
-// Given the raw field value "A^B&C^D"
-$generic = $segment->getField(3)->getInstance();
+$gt1 = $message->get('GT1');
 
-$generic->getValue(); // [['A', ['B', 'C'], 'D']]
+$field = $gt1->getFieldRepetition(2, 0); // a Varies instance
+echo $field->getData()->getValue();      // "8291" — the field value as a string
 ```
 
-`Generic` also offers dot-path access, using 1-based indexes that read like HL7 positions:
-
-```php
-$generic->getPath('1');     // ['A', ['B', 'C'], 'D'] — the first (whole) value
-$generic->getPath('1.2');   // ['B', 'C']             — the second component
-$generic->getPath('1.2.2'); // 'C'                    — its second subcomponent
-$generic->getPath('9.9');   // null                   — missing paths return null
-```
+Any components beyond the first are preserved on the primitive's extra components
+(`getExtraComponents()`) rather than being discarded.
 
 ## Supported types
 
@@ -108,7 +118,7 @@ $generic->getPath('9.9');   // null                   — missing paths return n
 
 **Segments:** `DG1`, `DRG`, `EVN`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
 
-**Data types:** `CE`, `CNE`, `CP`, `CWE`, `CX`, `DLD`, `DR`, `DT`, `DTM`, `EI`, `FC`, `FNx`,
+**Data types:** `CNE`, `CP`, `CWE`, `CX`, `DLD`, `DR`, `DT`, `DTM`, `EI`, `FC`, `FNx`, `Generic`,
 `HD`, `ID`, `IS`, `JCC`, `MO`, `MSG`, `NM`, `PL`, `PT`, `SAD`, `SI`, `SNM`, `ST`, `TS`, `TX`,
 `VID`, `Varies`, `XAD`, `XCN`, `XON`, `XPN`, `XTN`
 
@@ -118,9 +128,12 @@ Parsing failures throw exceptions extending `RoundingWell\HL7\Exception\HL7Excep
 
 - `InvalidFile` — the file does not exist or cannot be read.
 - `InvalidMessage` — the message is missing its `MSH` segment, delimiter, or encoding characters.
-- `InvalidSegment` — a required segment is not present.
-- `InvalidField` — a field is not defined for the segment.
-- `InvalidValue`, `InvalidComponent`, `InvalidDateTime` — a field value fails validation.
+- `InvalidValue`, `InvalidDateTime` — a field value fails validation.
+
+Looking up structures on a parsed message throws standard SPL exceptions:
+
+- `InvalidArgumentException` — requesting a segment, field, or group structure that was never registered.
+- `OutOfBoundsException` — requesting a repetition of a non-repeating structure, or a negative repetition.
 
 ## Development
 

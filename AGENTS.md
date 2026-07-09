@@ -89,6 +89,17 @@ Always use these tools with these flags:
 - `composer phpunit -- --no-progress` to run tests
 - `composer coverage-check` to check code coverage remains at 100%
 
+To lint, format, or analyze a single file, use:
+- `composer lint -- <path>`
+- `composer format -- <path>`
+- `composer analyze -- <path>`
+
+To run a specific test file, use:
+- `composer phpunit -- --no-progress --filter <TestClassName>`
+
+To run a specific test by name, use:
+- `composer phpunit -- --no-progress --filter <TestMethodName>`
+
 ### Releasing
 Always use [semantic versioning](https://semver.org/) when tagging a release.
 Always update `version` in `package.json` to align with the release version, commit it, then tag.

@@ -13,32 +13,40 @@ use RoundingWell\HL7\Exception\InvalidValue;
 #[CoversClass(NM::class)]
 final class NMTest extends TestCase
 {
-    public function testUnsetValueReportsNoValue(): void
+    public function testUnsetValueReportsEmptyString(): void
     {
         // An unpopulated numeric field must read as empty rather than error.
         $nm = new NM();
 
-        $this->assertFalse($nm->hasValue());
         $this->assertSame('', $nm->getValue());
-        $this->assertSame('', (string) $nm);
     }
 
-    public function testSetRawStoresTheValue(): void
+    public function testParseStoresTheValue(): void
     {
         $nm = new NM();
-        $nm->setRaw(new Encoding(), '42');
+        $nm->parse(new Encoding(), '42');
 
-        $this->assertTrue($nm->hasValue());
         $this->assertSame('42', $nm->getValue());
-        $this->assertSame('42', (string) $nm);
     }
 
-    public function testSetRawIgnoresEmptyInput(): void
+    public function testBoundsAreRetained(): void
     {
-        $nm = new NM();
-        $nm->setRaw(new Encoding(), '');
+        // The bounds back value validation, so they must survive construction.
+        $nm = new NM(min: 1, max: 100);
 
-        $this->assertFalse($nm->hasValue());
+        $this->assertSame(1, $nm->getMin());
+        $this->assertSame(100, $nm->getMax());
+    }
+
+    public function testSetValueRejectsNonNumericValues(): void
+    {
+        // A numeric field may only hold numbers; anything else is a malformed field.
+        $nm = new NM();
+
+        $this->expectException(InvalidValue::class);
+        $this->expectExceptionMessageIsOrContains('Value of NM must be numeric, got abc');
+
+        $nm->setValue('abc');
     }
 
     public function testSetValueRejectsValuesBelowTheMinimum(): void

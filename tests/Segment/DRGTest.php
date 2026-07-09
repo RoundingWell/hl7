@@ -19,7 +19,8 @@ final class DRGTest extends TestCase
     protected function setUp(): void
     {
         $this->drg = new DRG();
-        $this->drg->setRaw(new Encoding(), [
+        $this->drg->parse(new Encoding(), implode('|', [
+            'DRG', // Segment name
             '470^Major Joint^HL70055', // DRG.1 Diagnostic Related Group
             '20050110045502', // DRG.2 DRG Assigned Date/Time
             'Y', // DRG.3 DRG Approval Indicator
@@ -53,15 +54,15 @@ final class DRGTest extends TestCase
             'NORM^Normal', // DRG.31 Status Weight at Birth
             'RESP^Respiration', // DRG.32 Status Respiration Minutes
             'EMR^Emergency', // DRG.33 Status Admission
-        ]);
+        ]));
     }
 
     public function testDiagnosticRelatedGroupMapsToItsComponents(): void
     {
         // DRG.1 is the coded group that drives reimbursement, so its identifier and text must resolve.
         $group = $this->drg->getDiagnosticRelatedGroup();
-        $this->assertSame('470', $group->identifier->getValue());
-        $this->assertSame('Major Joint', $group->text->getValue());
+        $this->assertSame('470', $group->getIdentifier()->getValue());
+        $this->assertSame('Major Joint', $group->getText()->getValue());
     }
 
     public function testDateAndIndicatorFieldsMapToTheirValues(): void
@@ -73,26 +74,26 @@ final class DRGTest extends TestCase
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('0', $this->drg->getGrouperReviewCode()->identifier->getValue());
-        $this->assertSame('D', $this->drg->getOutlierType()->identifier->getValue());
-        $this->assertSame('MED', $this->drg->getPayor()->identifier->getValue());
-        $this->assertSame('T', $this->drg->getTransferType()->identifier->getValue());
-        $this->assertSame('F', $this->drg->getGrouperStatus()->identifier->getValue());
-        $this->assertSame('PCCL2', $this->drg->getPcclValueCode()->identifier->getValue());
-        $this->assertSame('A', $this->drg->getStatusPatient()->identifier->getValue());
-        $this->assertSame('OK', $this->drg->getStatusFinancialCalculation()->identifier->getValue());
+        $this->assertSame('0', $this->drg->getGrouperReviewCode()->getIdentifier()->getValue());
+        $this->assertSame('D', $this->drg->getOutlierType()->getIdentifier()->getValue());
+        $this->assertSame('MED', $this->drg->getPayor()->getIdentifier()->getValue());
+        $this->assertSame('T', $this->drg->getTransferType()->getIdentifier()->getValue());
+        $this->assertSame('F', $this->drg->getGrouperStatus()->getIdentifier()->getValue());
+        $this->assertSame('PCCL2', $this->drg->getPcclValueCode()->getIdentifier()->getValue());
+        $this->assertSame('A', $this->drg->getStatusPatient()->getIdentifier()->getValue());
+        $this->assertSame('OK', $this->drg->getStatusFinancialCalculation()->getIdentifier()->getValue());
     }
 
     public function testGroupingStatusFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('M', $this->drg->getStatusGender()->identifier->getValue());
-        $this->assertSame('AD', $this->drg->getStatusAge()->identifier->getValue());
-        $this->assertSame('IN', $this->drg->getStatusLengthOfStay()->identifier->getValue());
-        $this->assertSame('NO', $this->drg->getStatusSameDayFlag()->identifier->getValue());
-        $this->assertSame('HOME', $this->drg->getStatusSeparationMode()->identifier->getValue());
-        $this->assertSame('NORM', $this->drg->getStatusWeightAtBirth()->identifier->getValue());
-        $this->assertSame('RESP', $this->drg->getStatusRespirationMinutes()->identifier->getValue());
-        $this->assertSame('EMR', $this->drg->getStatusAdmission()->identifier->getValue());
+        $this->assertSame('M', $this->drg->getStatusGender()->getIdentifier()->getValue());
+        $this->assertSame('AD', $this->drg->getStatusAge()->getIdentifier()->getValue());
+        $this->assertSame('IN', $this->drg->getStatusLengthOfStay()->getIdentifier()->getValue());
+        $this->assertSame('NO', $this->drg->getStatusSameDayFlag()->getIdentifier()->getValue());
+        $this->assertSame('HOME', $this->drg->getStatusSeparationMode()->getIdentifier()->getValue());
+        $this->assertSame('NORM', $this->drg->getStatusWeightAtBirth()->getIdentifier()->getValue());
+        $this->assertSame('RESP', $this->drg->getStatusRespirationMinutes()->getIdentifier()->getValue());
+        $this->assertSame('EMR', $this->drg->getStatusAdmission()->getIdentifier()->getValue());
     }
 
     public function testNumericFieldsMapToTheirValues(): void
@@ -105,23 +106,23 @@ final class DRGTest extends TestCase
     public function testCompositePriceFieldsMapToTheirNestedAmount(): void
     {
         // Outlier cost and reimbursement are composite prices; the leading price component carries the amount.
-        $this->assertSame('1500.00', $this->drg->getOutlierCost()->price->quantity->getValue());
-        $this->assertSame('750.00', $this->drg->getOutlierReimbursement()->price->quantity->getValue());
+        $this->assertSame('1500.00', $this->drg->getOutlierCost()->getPrice()->getQuantity()->getValue());
+        $this->assertSame('750.00', $this->drg->getOutlierReimbursement()->getPrice()->getQuantity()->getValue());
     }
 
     public function testMonetaryFieldsMapToTheirNestedAmount(): void
     {
-        $this->assertSame('2500.00', $this->drg->getMonetaryAmount()->quantity->getValue());
-        $this->assertSame('100.00', $this->drg->getRelativeDiscountSurcharge()->quantity->getValue());
-        $this->assertSame('2000.00', $this->drg->getBasicCharge()->quantity->getValue());
-        $this->assertSame('3000.00', $this->drg->getTotalCharge()->quantity->getValue());
-        $this->assertSame('50.00', $this->drg->getDiscountSurcharge()->quantity->getValue());
+        $this->assertSame('2500.00', $this->drg->getMonetaryAmount()->getQuantity()->getValue());
+        $this->assertSame('100.00', $this->drg->getRelativeDiscountSurcharge()->getQuantity()->getValue());
+        $this->assertSame('2000.00', $this->drg->getBasicCharge()->getQuantity()->getValue());
+        $this->assertSame('3000.00', $this->drg->getTotalCharge()->getQuantity()->getValue());
+        $this->assertSame('50.00', $this->drg->getDiscountSurcharge()->getQuantity()->getValue());
     }
 
     public function testCoderAndSoftwareFieldsMapToTheirValues(): void
     {
-        $this->assertSame('DUCK', $this->drg->getNameOfCoder()->familyName->surname->getValue());
-        $this->assertSame('DONALD', $this->drg->getNameOfCoder()->givenName->getValue());
+        $this->assertSame('DUCK', $this->drg->getNameOfCoder()->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('DONALD', $this->drg->getNameOfCoder()->getGivenName()->getValue());
         $this->assertSame('GrouperX', $this->drg->getGrouperSoftwareName()->getValue());
         $this->assertSame('3.5', $this->drg->getGrouperSoftwareVersion()->getValue());
     }

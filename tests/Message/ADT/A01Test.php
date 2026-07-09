@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests\Message\ADT;
 
-use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Message\ADT\A01;
 use RoundingWell\HL7\Segment\DG1;
 use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
-use RoundingWell\HL7\Segment\MSH;
 use RoundingWell\HL7\Segment\NK1;
 use RoundingWell\HL7\Segment\OBX;
 use RoundingWell\HL7\Segment\PID;
@@ -21,55 +20,65 @@ use RoundingWell\HL7\Segment\PV2;
 #[CoversClass(A01::class)]
 final class A01Test extends TestCase
 {
-    private A01 $message;
+    private Encoding $encoding;
 
-    #[Override]
     protected function setUp(): void
     {
-        $this->message = new A01([
-            new MSH(),
-            new EVN(),
-            new PID(),
-            new PV1(),
-        ]);
+        $this->encoding = new Encoding("\r");
+    }
+
+    /**
+     * @param list<string> $beforePv1 segment lines inserted before PV1, in HAPI structure order
+     * @param list<string> $afterPv1  segment lines inserted after PV1, in HAPI structure order
+     */
+    private function parse(array $beforePv1 = [], array $afterPv1 = []): A01
+    {
+        $lines = ['MSH|^~\\&', 'EVN|A01', 'PID|1', ...$beforePv1, 'PV1|1', ...$afterPv1];
+
+        $message = new A01();
+        $message->parse($this->encoding, implode("\r", $lines));
+
+        return $message;
     }
 
     public function testGetEvnReturnsTheEventTypeSegment(): void
     {
         // A01 is an Admit event; the EVN describing it is required and must be directly accessible.
-        $this->assertInstanceOf(EVN::class, $this->message->getEVN());
+        $this->assertInstanceOf(EVN::class, $this->parse()->getEVN());
     }
 
     public function testGetPidReturnsThePatientIdentificationSegment(): void
     {
         // An admit always concerns a patient; PID access must resolve without an optional check.
-        $this->assertInstanceOf(PID::class, $this->message->getPID());
+        $this->assertInstanceOf(PID::class, $this->parse()->getPID());
     }
 
     public function testGetPv1ReturnsThePatientVisitSegment(): void
     {
         // The visit being admitted is required; PV1 must be reachable as a typed segment.
-        $this->assertInstanceOf(PV1::class, $this->message->getPV1());
+        $this->assertInstanceOf(PV1::class, $this->parse()->getPV1());
     }
 
     public function testGetPv2ReturnsThePatientVisitAdditionalInformationSegment(): void
     {
         // PV2 carries additional visit detail; when present it must be reachable as a typed segment.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new PV2()]);
+        $message = new A01();
+        $message->parse($this->encoding, "MSH|^~\\&\rEVN|A01\rPID|1\rPV1|1\rPV2|1");
 
         $this->assertInstanceOf(PV2::class, $message->getPV2());
     }
 
     public function testGetPv2ReturnsNullWhenTheSegmentIsAbsent(): void
     {
-        // PV2 is optional; its absence is a normal state that must yield null, not an error.
-        $this->assertNull($this->message->getPV2());
+        // PV2 is optional; its absence is a normal state that must yield null, not an empty phantom.
+        $this->assertNull($this->parse()->getPV2());
     }
 
     public function testGetDrgReturnsTheDiagnosisRelatedGroupSegment(): void
     {
         // DRG classifies the visit for billing; when present it must be reachable as a typed segment.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new DRG()]);
+        $message = new A01();
+        $message->parse($this->encoding, "MSH|^~\\&\rEVN|A01\rPID|1\rPV1|1\rDRG|1");
 
         $this->assertInstanceOf(DRG::class, $message->getDRG());
     }
@@ -77,15 +86,13 @@ final class A01Test extends TestCase
     public function testGetDrgReturnsNullWhenTheSegmentIsAbsent(): void
     {
         // DRG is optional; its absence must yield null, not an error.
-        $this->assertNull($this->message->getDRG());
+        $this->assertNull($this->parse()->getDRG());
     }
 
     public function testListNk1ReturnsEveryNextOfKinSegment(): void
     {
         // NK1 repeats; every occurrence must be returned so no associated party is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new NK1(), new NK1()]);
-
-        $nk1 = $message->listNK1();
+        $nk1 = $this->parse(beforePv1: ['NK1|1', 'NK1|2'])->listNK1();
 
         $this->assertCount(2, $nk1);
         $this->assertContainsOnlyInstancesOf(NK1::class, $nk1);
@@ -94,15 +101,13 @@ final class A01Test extends TestCase
     public function testListNk1ReturnsAnEmptyListWhenNoneArePresent(): void
     {
         // With no NK1 segments the list must be empty, never null, so callers can iterate safely.
-        $this->assertSame([], $this->message->listNK1());
+        $this->assertSame([], $this->parse()->listNK1());
     }
 
     public function testListObxReturnsEveryObservationSegment(): void
     {
         // OBX repeats; every observation must be returned so no result is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new OBX(), new OBX()]);
-
-        $obx = $message->listOBX();
+        $obx = $this->parse(afterPv1: ['OBX|1', 'OBX|2'])->listOBX();
 
         $this->assertCount(2, $obx);
         $this->assertContainsOnlyInstancesOf(OBX::class, $obx);
@@ -111,15 +116,13 @@ final class A01Test extends TestCase
     public function testListObxReturnsAnEmptyListWhenNoneArePresent(): void
     {
         // With no OBX segments the list must be empty, never null.
-        $this->assertSame([], $this->message->listOBX());
+        $this->assertSame([], $this->parse()->listOBX());
     }
 
     public function testListDg1ReturnsEveryDiagnosisSegment(): void
     {
         // DG1 repeats; every diagnosis must be returned so no diagnosis is lost.
-        $message = new A01([new MSH(), new EVN(), new PID(), new PV1(), new DG1(), new DG1()]);
-
-        $dg1 = $message->listDG1();
+        $dg1 = $this->parse(afterPv1: ['DG1|1', 'DG1|2'])->listDG1();
 
         $this->assertCount(2, $dg1);
         $this->assertContainsOnlyInstancesOf(DG1::class, $dg1);
@@ -128,6 +131,35 @@ final class A01Test extends TestCase
     public function testListDg1ReturnsAnEmptyListWhenNoneArePresent(): void
     {
         // With no DG1 segments the list must be empty, never null.
-        $this->assertSame([], $this->message->listDG1());
+        $this->assertSame([], $this->parse()->listDG1());
+    }
+
+    public function testRolIsRetainedAtBothStructuralPositions(): void
+    {
+        // HAPI lists ROL both before PV1 (pos 8) and after PV2 (pos 13). Each occurrence must be
+        // retained at its own position — the pre-PV1 ROL under key 'ROL', the post-PV2 ROL under
+        // 'ROL2' — so no role is lost and the two are never merged into one slot.
+        $message = $this->parse(beforePv1: ['ROL|1'], afterPv1: ['ROL|2']);
+
+        $before = $message->getAll('ROL');
+        $after = $message->getAll('ROL2');
+
+        $this->assertCount(1, $before);
+        $this->assertCount(1, $after);
+        $this->assertNotSame($before[0], $after[0]);
+    }
+
+    public function testArvIsRetainedAtBothStructuralPositions(): void
+    {
+        // ARV mirrors ROL: it appears before PV1 (pos 7) and after PV2 (pos 12). Both occurrences
+        // must survive at their respective positions ('ARV' and 'ARV2').
+        $message = $this->parse(beforePv1: ['ARV|1'], afterPv1: ['ARV|2']);
+
+        $before = $message->getAll('ARV');
+        $after = $message->getAll('ARV2');
+
+        $this->assertCount(1, $before);
+        $this->assertCount(1, $after);
+        $this->assertNotSame($before[0], $after[0]);
     }
 }

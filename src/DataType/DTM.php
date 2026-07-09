@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace RoundingWell\HL7\DataType;
 
 use DateTimeImmutable;
-use ReflectionProperty;
-use RoundingWell\HL7\Encoding;
+use Override;
+use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\Exception\InvalidDateTime;
 
 /**
@@ -14,27 +14,31 @@ use RoundingWell\HL7\Exception\InvalidDateTime;
  *
  * Represents a YYYY[MM[DD[HH[MM[SS[.S{1,4}]]]]]][+/-ZZZZ] timestamp.
  */
-final class DTM implements Type, \Stringable
+final class DTM extends AbstractPrimitive
 {
     private const string PATTERN = '/^(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?(?:\.(\d{1,4}))?([+-]\d{4})?$/';
 
     private ?DateTimeImmutable $dateTime = null;
     private ?string $format = null;
-    private string $value;
 
-    public function hasValue(): bool
+    public function getDateTime(): ?DateTimeImmutable
     {
-        // @mago-expect analysis:unhandled-thrown-type
-        return new ReflectionProperty($this, 'value')->isInitialized($this);
+        return $this->dateTime;
     }
 
+    public function getFormat(): ?string
+    {
+        return $this->format;
+    }
+
+    #[Override]
     public function setValue(string $value): void
     {
+        parent::setValue($value);
+
         if ($value === '') {
             $this->dateTime = null;
-
-            unset($this->format);
-            unset($this->value);
+            $this->format = null;
 
             return;
         }
@@ -69,48 +73,13 @@ final class DTM implements Type, \Stringable
             $format .= 'O';
         }
 
-        // @mago-expect analysis:invalid-property-assignment-value
-        $this->dateTime = DateTimeImmutable::createFromFormat($format, $value);
+        $dt = DateTimeImmutable::createFromFormat($format, $value);
+
+        if (!$dt) {
+            throw InvalidDateTime::invalidValue($value);
+        }
+
+        $this->dateTime = $dt;
         $this->format = $format;
-        $this->value = $value;
-    }
-
-    #[\Override]
-    public function setRaw(Encoding $encoding, string $value, int $depth = 0): void
-    {
-        $this->setValue($encoding->decode($value));
-    }
-
-    public function getValue(): string
-    {
-        if ($this->hasValue()) {
-            return $this->value;
-        }
-
-        return '';
-    }
-
-    public function getDateTime(): ?DateTimeImmutable
-    {
-        if ($this->hasValue()) {
-            return $this->dateTime;
-        }
-
-        return null;
-    }
-
-    public function getFormat(): ?string
-    {
-        if ($this->hasValue()) {
-            return $this->format;
-        }
-
-        return null;
-    }
-
-    #[\Override]
-    public function __toString(): string
-    {
-        return $this->getValue();
     }
 }

@@ -16,11 +16,11 @@ final class EITest extends TestCase
     {
         // Entity identifiers pair a local id with a namespace, so both must land correctly.
         $ei = new EI();
-        $ei->setRaw(new Encoding(), 'ENTITY^AccMgr^1.2.3^ISO');
+        $ei->parse(new Encoding(), 'ENTITY^AccMgr^1.2.3^ISO');
 
-        $this->assertSame('ENTITY', $ei->id->getValue());
-        $this->assertSame('AccMgr', $ei->namespaceId->getValue());
-        $this->assertSame('1.2.3', $ei->universalId->getValue());
-        $this->assertSame('ISO', $ei->universalIdType->getValue());
+        $this->assertSame('ENTITY', $ei->getId()->getValue());
+        $this->assertSame('AccMgr', $ei->getNamespaceId()->getValue());
+        $this->assertSame('1.2.3', $ei->getUniversalId()->getValue());
+        $this->assertSame('ISO', $ei->getUniversalIdType()->getValue());
     }
 }

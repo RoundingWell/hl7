@@ -7,7 +7,6 @@ namespace RoundingWell\HL7\Tests\DataType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\DataType\DTM;
-use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidDateTime;
 
 #[CoversClass(DTM::class)]
@@ -17,12 +16,10 @@ final class DTMTest extends TestCase
     {
         // An absent timestamp must report no value and no parsed date.
         $dtm = new DTM();
-        $dtm->setRaw(new Encoding(), '');
+        $dtm->setValue('');
 
-        $this->assertFalse($dtm->hasValue());
         $this->assertSame('', $dtm->getValue());
         $this->assertNull($dtm->getDateTime());
-        $this->assertSame('', (string) $dtm);
 
         // Clearing the value must also discard the derived format.
         $this->assertNull($dtm->getFormat());
@@ -35,9 +32,7 @@ final class DTMTest extends TestCase
         $dtm = new DTM();
         $dtm->setValue('2024');
 
-        $this->assertTrue($dtm->hasValue());
         $this->assertSame('2024', $dtm->getValue());
-        $this->assertSame('2024', (string) $dtm);
         $this->assertSame('2024-01-01 00:00:00', $dtm->getDateTime()?->format('Y-m-d H:i:s'));
 
         // Year-only precision must derive a year-only format, with ! forcing zeroed components.
@@ -65,5 +60,20 @@ final class DTMTest extends TestCase
         $this->expectExceptionMessageIsOrContains('HL7 expected date/time');
 
         $dtm->setValue('not-a-date');
+    }
+
+    public function testPatternMatchButUnbuildableTimestampIsRejected(): void
+    {
+        // The character pattern is deliberately permissive: it allows a trailing UTC offset
+        // even when the intervening time components are absent (e.g. a year with an offset but
+        // no month/day/time). Such a value is not a real instant and cannot be built into a
+        // date, so it must be rejected rather than silently mis-parsed. This exercises the
+        // second validation stage (createFromFormat failure), distinct from a pattern mismatch.
+        $dtm = new DTM();
+
+        $this->expectException(InvalidDateTime::class);
+        $this->expectExceptionMessageIsOrContains('HL7 expected date/time');
+
+        $dtm->setValue('2024+0500');
     }
 }

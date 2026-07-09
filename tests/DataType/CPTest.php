@@ -15,16 +15,15 @@ final class CPTest extends TestCase
     public function testComponentsMapPriceRangeAndUnits(): void
     {
         // A composite price pairs a money amount with a range and its units.
-        // The nested money (MO) component is itself delimited by subcomponents.
         $cp = new CP();
-        $cp->setRaw(new Encoding(), '100.00&USD^AP^0^1000^USD^F');
+        $cp->parse(new Encoding(), '100.00&USD^AP^0^1000^USD^F');
 
-        $this->assertSame('100.00', $cp->price->quantity->getValue());
-        $this->assertSame('USD', $cp->price->denomination->getValue());
-        $this->assertSame('AP', $cp->priceType->getValue());
-        $this->assertSame('0', $cp->fromValue->getValue());
-        $this->assertSame('1000', $cp->toValue->getValue());
-        $this->assertSame('USD', $cp->rangeUnits->identifier->getValue());
-        $this->assertSame('F', $cp->rangeType->getValue());
+        $this->assertSame('100.00', $cp->getPrice()->getQuantity()->getValue());
+        $this->assertSame('USD', $cp->getPrice()->getDenomination()->getValue());
+        $this->assertSame('AP', $cp->getPriceType()->getValue());
+        $this->assertSame('0', $cp->getFromValue()->getValue());
+        $this->assertSame('1000', $cp->getToValue()->getValue());
+        $this->assertSame('USD', $cp->getRangeUnits()->getIdentifier()->getValue());
+        $this->assertSame('F', $cp->getRangeType()->getValue());
     }
 }

@@ -16,18 +16,18 @@ final class PLTest extends TestCase
     {
         // A person location composes care setting, room, bed, and facility identifiers.
         $pl = new PL();
-        $pl->setRaw(new Encoding(), 'POC^ROOM^BED^FAC^A^E^BLDG^FLR^Main Ward^EI1^AUTH');
+        $pl->parse(new Encoding(), 'POC^ROOM^BED^FAC^A^E^BLDG^FLR^Main Ward^EI1^AUTH');
 
-        $this->assertSame('POC', $pl->pointOfCare->namespaceId->getValue());
-        $this->assertSame('ROOM', $pl->room->namespaceId->getValue());
-        $this->assertSame('BED', $pl->bed->namespaceId->getValue());
-        $this->assertSame('FAC', $pl->facility->namespaceId->getValue());
-        $this->assertSame('A', $pl->locationStatus->getValue());
-        $this->assertSame('E', $pl->personLocationType->getValue());
-        $this->assertSame('BLDG', $pl->building->namespaceId->getValue());
-        $this->assertSame('FLR', $pl->floor->namespaceId->getValue());
-        $this->assertSame('Main Ward', $pl->locationDescription->getValue());
-        $this->assertSame('EI1', $pl->comprehensiveLocationIdentifier->id->getValue());
-        $this->assertSame('AUTH', $pl->assigningAuthorityForLocation->namespaceId->getValue());
+        $this->assertSame('POC', $pl->getPointOfCare()->getNamespaceId()->getValue());
+        $this->assertSame('ROOM', $pl->getRoom()->getNamespaceId()->getValue());
+        $this->assertSame('BED', $pl->getBed()->getNamespaceId()->getValue());
+        $this->assertSame('FAC', $pl->getFacility()->getNamespaceId()->getValue());
+        $this->assertSame('A', $pl->getLocationStatus()->getValue());
+        $this->assertSame('E', $pl->getPersonLocationType()->getValue());
+        $this->assertSame('BLDG', $pl->getBuilding()->getNamespaceId()->getValue());
+        $this->assertSame('FLR', $pl->getFloor()->getNamespaceId()->getValue());
+        $this->assertSame('Main Ward', $pl->getLocationDescription()->getValue());
+        $this->assertSame('EI1', $pl->getComprehensiveLocationIdentifier()->getId()->getValue());
+        $this->assertSame('AUTH', $pl->getAssigningAuthorityForLocation()->getNamespaceId()->getValue());
     }
 }

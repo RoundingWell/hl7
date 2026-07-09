@@ -19,7 +19,8 @@ final class PV1Test extends TestCase
     protected function setUp(): void
     {
         $this->pv1 = new PV1();
-        $this->pv1->setRaw(new Encoding(), [
+        $this->pv1->parse(new Encoding(), implode('|', [
+            'PV1', // Segment name
             '1', // PV1.1 Set ID
             'I^Inpatient', // PV1.2 Patient Class
             'PtCare^Room1^Bed1^Facility', // PV1.3 Assigned Patient Location
@@ -74,48 +75,60 @@ final class PV1Test extends TestCase
             'ProviderX', // PV1.52 Other Healthcare Provider
             'Episode description', // PV1.53 Service Episode Description
             'EPI123^^^AccMgr^SE', // PV1.54 Service Episode Identifier
-        ]);
+        ]));
     }
 
     public function testSequenceAndClassMapToTheirValues(): void
     {
         $this->assertSame('1', $this->pv1->getIdentity()->getValue());
         // PV1.2 is required; the patient class drives downstream visit handling.
-        $this->assertSame('I', $this->pv1->getPatientClass()->identifier->getValue());
-        $this->assertSame('IP', $this->pv1->getPatientType()->identifier->getValue());
-        $this->assertSame('VI', $this->pv1->getVisitIndicator()->identifier->getValue());
+        $this->assertSame('I', $this->pv1->getPatientClass()->getIdentifier()->getValue());
+        $this->assertSame('IP', $this->pv1->getPatientType()->getIdentifier()->getValue());
+        $this->assertSame('VI', $this->pv1->getVisitIndicator()->getIdentifier()->getValue());
     }
 
     public function testLocationsMapToTheirLeadingPointOfCare(): void
     {
         // Each PL field exposes the point of care as its leading component.
-        $this->assertSame('PtCare', $this->pv1->getAssignedPatientLocation()->pointOfCare->namespaceId->getValue());
-        $this->assertSame('PriorCare', $this->pv1->getPriorPatientLocation()->pointOfCare->namespaceId->getValue());
-        $this->assertSame('TempCare', $this->pv1->getTemporaryLocation()->pointOfCare->namespaceId->getValue());
-        $this->assertSame('PendCare', $this->pv1->getPendingLocation()->pointOfCare->namespaceId->getValue());
-        $this->assertSame('PriorTemp', $this->pv1->getPriorTemporaryLocation()->pointOfCare->namespaceId->getValue());
+        $this->assertSame(
+            'PtCare',
+            $this->pv1->getAssignedPatientLocation()->getPointOfCare()->getNamespaceId()->getValue(),
+        );
+        $this->assertSame(
+            'PriorCare',
+            $this->pv1->getPriorPatientLocation()->getPointOfCare()->getNamespaceId()->getValue(),
+        );
+        $this->assertSame(
+            'TempCare',
+            $this->pv1->getTemporaryLocation()->getPointOfCare()->getNamespaceId()->getValue(),
+        );
+        $this->assertSame('PendCare', $this->pv1->getPendingLocation()->getPointOfCare()->getNamespaceId()->getValue());
+        $this->assertSame(
+            'PriorTemp',
+            $this->pv1->getPriorTemporaryLocation()->getPointOfCare()->getNamespaceId()->getValue(),
+        );
     }
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('A', $this->pv1->getAdmissionType()->identifier->getValue());
-        $this->assertSame('MED', $this->pv1->getHospitalService()->identifier->getValue());
-        $this->assertSame('Y', $this->pv1->getPreadmitTestIndicator()->identifier->getValue());
-        $this->assertSame('R', $this->pv1->getReadmissionIndicator()->identifier->getValue());
-        $this->assertSame('ER', $this->pv1->getAdmitSource()->identifier->getValue());
-        $this->assertSame('VIP', $this->pv1->getVipIndicator()->identifier->getValue());
-        $this->assertSame('CPI', $this->pv1->getChargePriceIndicator()->identifier->getValue());
-        $this->assertSame('CC', $this->pv1->getCourtesyCode()->identifier->getValue());
-        $this->assertSame('CR', $this->pv1->getCreditRating()->identifier->getValue());
-        $this->assertSame('INT', $this->pv1->getInterestCode()->identifier->getValue());
-        $this->assertSame('TBD', $this->pv1->getTransferToBadDebtCode()->identifier->getValue());
-        $this->assertSame('AGY', $this->pv1->getBadDebtAgencyCode()->identifier->getValue());
-        $this->assertSame('DEL', $this->pv1->getDeleteAccountIndicator()->identifier->getValue());
-        $this->assertSame('HOME', $this->pv1->getDischargeDisposition()->identifier->getValue());
-        $this->assertSame('REG', $this->pv1->getDietType()->identifier->getValue());
-        $this->assertSame('SF', $this->pv1->getServicingFacility()->identifier->getValue());
-        $this->assertSame('BS', $this->pv1->getBedStatus()->identifier->getValue());
-        $this->assertSame('ACT', $this->pv1->getAccountStatus()->identifier->getValue());
+        $this->assertSame('A', $this->pv1->getAdmissionType()->getIdentifier()->getValue());
+        $this->assertSame('MED', $this->pv1->getHospitalService()->getIdentifier()->getValue());
+        $this->assertSame('Y', $this->pv1->getPreadmitTestIndicator()->getIdentifier()->getValue());
+        $this->assertSame('R', $this->pv1->getReadmissionIndicator()->getIdentifier()->getValue());
+        $this->assertSame('ER', $this->pv1->getAdmitSource()->getIdentifier()->getValue());
+        $this->assertSame('VIP', $this->pv1->getVipIndicator()->getIdentifier()->getValue());
+        $this->assertSame('CPI', $this->pv1->getChargePriceIndicator()->getIdentifier()->getValue());
+        $this->assertSame('CC', $this->pv1->getCourtesyCode()->getIdentifier()->getValue());
+        $this->assertSame('CR', $this->pv1->getCreditRating()->getIdentifier()->getValue());
+        $this->assertSame('INT', $this->pv1->getInterestCode()->getIdentifier()->getValue());
+        $this->assertSame('TBD', $this->pv1->getTransferToBadDebtCode()->getIdentifier()->getValue());
+        $this->assertSame('AGY', $this->pv1->getBadDebtAgencyCode()->getIdentifier()->getValue());
+        $this->assertSame('DEL', $this->pv1->getDeleteAccountIndicator()->getIdentifier()->getValue());
+        $this->assertSame('HOME', $this->pv1->getDischargeDisposition()->getIdentifier()->getValue());
+        $this->assertSame('REG', $this->pv1->getDietType()->getIdentifier()->getValue());
+        $this->assertSame('SF', $this->pv1->getServicingFacility()->getIdentifier()->getValue());
+        $this->assertSame('BS', $this->pv1->getBedStatus()->getIdentifier()->getValue());
+        $this->assertSame('ACT', $this->pv1->getAccountStatus()->getIdentifier()->getValue());
     }
 
     public function testDoctorFieldsCollectEachRepetition(): void
@@ -123,39 +136,39 @@ final class PV1Test extends TestCase
         // Each doctor role is repeating; every referenced clinician must be retained in order.
         $attending = $this->pv1->getAttendingDoctor();
         $this->assertCount(2, $attending);
-        $this->assertSame('1000', $attending[0]->id->getValue());
-        $this->assertSame('ATTEND', $attending[0]->familyName->surname->getValue());
-        $this->assertSame('1001', $attending[1]->id->getValue());
+        $this->assertSame('1000', $attending[0]->getId()->getValue());
+        $this->assertSame('ATTEND', $attending[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('1001', $attending[1]->getId()->getValue());
 
-        $this->assertSame('2000', $this->pv1->getReferringDoctor()[0]->id->getValue());
-        $this->assertSame('3000', $this->pv1->getConsultingDoctor()[0]->id->getValue());
+        $this->assertSame('2000', $this->pv1->getReferringDoctor()[0]->getId()->getValue());
+        $this->assertSame('3000', $this->pv1->getConsultingDoctor()[0]->getId()->getValue());
 
         $admitting = $this->pv1->getAdmittingDoctor();
         $this->assertCount(2, $admitting);
-        $this->assertSame('4000', $admitting[0]->id->getValue());
-        $this->assertSame('4001', $admitting[1]->id->getValue());
+        $this->assertSame('4000', $admitting[0]->getId()->getValue());
+        $this->assertSame('4001', $admitting[1]->getId()->getValue());
     }
 
     public function testIdentifierFieldsMapToTheirComponents(): void
     {
-        $this->assertSame('PRE123', $this->pv1->getPreadmitNumber()->id->getValue());
-        $this->assertSame('VN123', $this->pv1->getVisitNumber()->id->getValue());
-        $this->assertSame('VN', $this->pv1->getVisitNumber()->identifierTypeCode->getValue());
-        $this->assertSame('EPI123', $this->pv1->getServiceEpisodeIdentifier()->id->getValue());
+        $this->assertSame('PRE123', $this->pv1->getPreadmitNumber()->getId()->getValue());
+        $this->assertSame('VN123', $this->pv1->getVisitNumber()->getId()->getValue());
+        $this->assertSame('VN', $this->pv1->getVisitNumber()->getIdentifierTypeCode()->getValue());
+        $this->assertSame('EPI123', $this->pv1->getServiceEpisodeIdentifier()->getId()->getValue());
 
         // PV1.50 is repeating; every alternate visit identifier must be retained.
         $alternates = $this->pv1->getAlternateVisitId();
         $this->assertCount(2, $alternates);
-        $this->assertSame('ALT1', $alternates[0]->id->getValue());
-        $this->assertSame('ALT2', $alternates[1]->id->getValue());
+        $this->assertSame('ALT1', $alternates[0]->getId()->getValue());
+        $this->assertSame('ALT2', $alternates[1]->getId()->getValue());
     }
 
     public function testAmbulatoryStatusCollectsEachRepetition(): void
     {
         $statuses = $this->pv1->getAmbulatoryStatus();
         $this->assertCount(2, $statuses);
-        $this->assertSame('A0', $statuses[0]->identifier->getValue());
-        $this->assertSame('A1', $statuses[1]->identifier->getValue());
+        $this->assertSame('A0', $statuses[0]->getIdentifier()->getValue());
+        $this->assertSame('A1', $statuses[1]->getIdentifier()->getValue());
     }
 
     public function testFinancialFieldsCollectEachRepetition(): void
@@ -163,14 +176,14 @@ final class PV1Test extends TestCase
         // PV1.20 is repeating; the financial class code is a nested coded component.
         $financial = $this->pv1->getFinancialClass();
         $this->assertCount(2, $financial);
-        $this->assertSame('FC1', $financial[0]->financialClassCode->identifier->getValue());
-        $this->assertSame('20200101', $financial[0]->effectiveDate->getValue());
-        $this->assertSame('FC2', $financial[1]->financialClassCode->identifier->getValue());
+        $this->assertSame('FC1', $financial[0]->getFinancialClassCode()->getIdentifier()->getValue());
+        $this->assertSame('20200101', $financial[0]->getEffectiveDate()->getValue());
+        $this->assertSame('FC2', $financial[1]->getFinancialClassCode()->getIdentifier()->getValue());
 
         $contracts = $this->pv1->getContractCode();
         $this->assertCount(2, $contracts);
-        $this->assertSame('CON1', $contracts[0]->identifier->getValue());
-        $this->assertSame('CON2', $contracts[1]->identifier->getValue());
+        $this->assertSame('CON1', $contracts[0]->getIdentifier()->getValue());
+        $this->assertSame('CON2', $contracts[1]->getIdentifier()->getValue());
 
         $dates = $this->pv1->getContractEffectiveDate();
         $this->assertCount(2, $dates);
@@ -203,8 +216,11 @@ final class PV1Test extends TestCase
     public function testDischargeFieldsMapToTheirComponents(): void
     {
         // PV1.37 exposes the discharge location as its leading coded component.
-        $this->assertSame('DISLOC', $this->pv1->getDischargedToLocation()->dischargeToLocation->identifier->getValue());
-        $this->assertSame('20200115', $this->pv1->getDischargedToLocation()->effectiveDate->getValue());
+        $this->assertSame(
+            'DISLOC',
+            $this->pv1->getDischargedToLocation()->getDischargeLocation()->getIdentifier()->getValue(),
+        );
+        $this->assertSame('20200115', $this->pv1->getDischargedToLocation()->getEffectiveDate()->getValue());
         $this->assertSame('20200110120000', $this->pv1->getAdmitDateTime()->getValue());
         $this->assertSame('20200115130000', $this->pv1->getDischargeDateTime()->getValue());
     }

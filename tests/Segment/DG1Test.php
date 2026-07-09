@@ -19,7 +19,8 @@ final class DG1Test extends TestCase
     protected function setUp(): void
     {
         $this->dg1 = new DG1();
-        $this->dg1->setRaw(new Encoding(), [
+        $this->dg1->parse(new Encoding(), implode('|', [
+            'DG1', // Segment name
             '1', // DG1.1 Set ID
             'I10', // DG1.2 Diagnosis Coding Method
             'E11.9^Type 2 diabetes mellitus without complications^I10', // DG1.3 Diagnosis Code
@@ -46,7 +47,7 @@ final class DG1Test extends TestCase
             'N', // DG1.24 DRG Grouping Usage
             'F^Final', // DG1.25 DRG Diagnosis Determination Status
             'Y^Yes', // DG1.26 Present On Admission (POA) Indicator
-        ]);
+        ]));
     }
 
     public function testSequenceAndPriorityFieldsMapToTheirValues(): void
@@ -60,21 +61,21 @@ final class DG1Test extends TestCase
     public function testCodedDiagnosisFieldsMapToTheirLeadingIdentifier(): void
     {
         // The diagnosis code and its type drive downstream billing and clinical logic.
-        $this->assertSame('E11.9', $this->dg1->getCode()->identifier->getValue());
-        $this->assertSame('A', $this->dg1->getType()->identifier->getValue());
-        $this->assertSame('0', $this->dg1->getDrgGrouperReviewCode()->identifier->getValue());
-        $this->assertSame('DAY', $this->dg1->getOutlierType()->identifier->getValue());
-        $this->assertSame('C', $this->dg1->getClassification()->identifier->getValue());
-        $this->assertSame('CCL2', $this->dg1->getDrgCclValueCode()->identifier->getValue());
-        $this->assertSame('F', $this->dg1->getDrgDiagnosisDeterminationStatus()->identifier->getValue());
-        $this->assertSame('Y', $this->dg1->getPresentOnAdmissionIndicator()->identifier->getValue());
+        $this->assertSame('E11.9', $this->dg1->getCode()->getIdentifier()->getValue());
+        $this->assertSame('A', $this->dg1->getType()->getIdentifier()->getValue());
+        $this->assertSame('0', $this->dg1->getDrgGrouperReviewCode()->getIdentifier()->getValue());
+        $this->assertSame('DAY', $this->dg1->getOutlierType()->getIdentifier()->getValue());
+        $this->assertSame('C', $this->dg1->getClassification()->getIdentifier()->getValue());
+        $this->assertSame('CCL2', $this->dg1->getDrgCclValueCode()->getIdentifier()->getValue());
+        $this->assertSame('F', $this->dg1->getDrgDiagnosisDeterminationStatus()->getIdentifier()->getValue());
+        $this->assertSame('Y', $this->dg1->getPresentOnAdmissionIndicator()->getIdentifier()->getValue());
     }
 
     public function testDiagnosticGroupingFieldsMapToTheirIdentifiers(): void
     {
         // MDC and DRG classify the diagnosis for reimbursement grouping.
-        $this->assertSame('MDC10', $this->dg1->getMajorDiagnosticCategory()->identifier->getValue());
-        $this->assertSame('638', $this->dg1->getDiagnosticRelatedGroup()->identifier->getValue());
+        $this->assertSame('MDC10', $this->dg1->getMajorDiagnosticCategory()->getIdentifier()->getValue());
+        $this->assertSame('638', $this->dg1->getDiagnosticRelatedGroup()->getIdentifier()->getValue());
     }
 
     public function testFreeTextAndMethodFieldsMapToTheirValues(): void
@@ -101,8 +102,8 @@ final class DG1Test extends TestCase
     public function testOutlierCostMapsToItsNestedPrice(): void
     {
         // The outlier cost is a composite price whose money amount is itself a nested component.
-        $this->assertSame('150.00', $this->dg1->getOutlierCost()->price->quantity->getValue());
-        $this->assertSame('DAILY', $this->dg1->getOutlierCost()->priceType->getValue());
+        $this->assertSame('150.00', $this->dg1->getOutlierCost()->getPrice()->getQuantity()->getValue());
+        $this->assertSame('DAILY', $this->dg1->getOutlierCost()->getPriceType()->getValue());
     }
 
     public function testDiagnosingClinicianCollectsEveryRepetition(): void
@@ -111,16 +112,16 @@ final class DG1Test extends TestCase
         $clinicians = $this->dg1->getDiagnosingClinician();
 
         $this->assertCount(2, $clinicians);
-        $this->assertSame('1234', $clinicians[0]->id->getValue());
-        $this->assertSame('HOUSE', $clinicians[0]->familyName->surname->getValue());
-        $this->assertSame('5678', $clinicians[1]->id->getValue());
+        $this->assertSame('1234', $clinicians[0]->getId()->getValue());
+        $this->assertSame('HOUSE', $clinicians[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('5678', $clinicians[1]->getId()->getValue());
     }
 
     public function testEntityIdentifierFieldsMapToTheirComponents(): void
     {
         // The diagnosis identifier and its parent link revisions of the same diagnosis together.
-        $this->assertSame('DIAG123', $this->dg1->getDiagnosisIdentifier()->id->getValue());
-        $this->assertSame('ISO', $this->dg1->getDiagnosisIdentifier()->universalIdType->getValue());
-        $this->assertSame('DIAG100', $this->dg1->getParentDiagnosis()->id->getValue());
+        $this->assertSame('DIAG123', $this->dg1->getDiagnosisIdentifier()->getId()->getValue());
+        $this->assertSame('ISO', $this->dg1->getDiagnosisIdentifier()->getUniversalIdType()->getValue());
+        $this->assertSame('DIAG100', $this->dg1->getParentDiagnosis()->getId()->getValue());
     }
 }

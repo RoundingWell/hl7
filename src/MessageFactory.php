@@ -10,7 +10,7 @@ use RoundingWell\HL7\Segment\MSH;
 
 final readonly class MessageFactory
 {
-    public function parseFile(string $path): BaseMessage
+    public function parseFile(string $path): Message
     {
         if (!is_file($path)) {
             throw InvalidFile::doesNotExist($path);
@@ -25,19 +25,20 @@ final readonly class MessageFactory
         return $this->parse($content);
     }
 
-    public function parse(string $data): BaseMessage
+    public function parse(string $data): Message
     {
         // Encoding MUST be detected before parsing segments.
         $encoding = $this->detectEncoding($data);
 
-        // And then the segment factory can be created.
-        $segmentFactory = new SegmentFactory($encoding);
+        [$mshLine] = explode($encoding->lineEnding, $data, 2);
 
-        // And then the segments can be parsed.
-        $segments = array_map($segmentFactory->parse(...), $this->splitSegments($encoding, $data));
+        $msh = new MSH();
+        $msh->parse($encoding, $mshLine);
 
-        // @mago-expect analysis:less-specific-argument,possibly-null-argument,possibly-undefined-int-array-index
-        return $this->create($segments[0], $segments);
+        $message = $this->create($msh);
+        $message->parse($encoding, $data);
+
+        return $message;
     }
 
     private function detectEncoding(string $data): Encoding
@@ -90,32 +91,22 @@ final readonly class MessageFactory
         return $enc;
     }
 
-    /**
-     * @return list<string>
-     */
-    private function splitSegments(Encoding $encoding, string $data): array
+    private function create(MSH $msh): Message
     {
-        return explode($encoding->lineEnding, rtrim($data, $encoding->lineEnding));
-    }
-
-    /**
-     * @param list<BaseSegment> $segments
-     */
-    private function create(MSH $msh, array $segments): BaseMessage
-    {
-        $type = $msh->getMessageType()->messageType->getValue();
-        $event = $msh->getMessageType()->triggerEvent->getValue();
+        $type = $msh->getMessageType()->getMessageType()->getValue();
+        $event = $msh->getMessageType()->getTriggerEvent()->getValue();
+        $version = $msh->getVersionId()->getId()->getValue();
 
         if ($type === 'ADT') {
             return match ($event) {
-                'A01' => new Message\ADT\A01($segments),
-                'A03' => new Message\ADT\A03($segments),
-                'A06' => new Message\ADT\A06($segments),
-                'A08' => new Message\ADT\A08($segments),
-                default => new BaseMessage($segments),
+                'A01' => new Message\ADT\A01(),
+                'A03' => new Message\ADT\A03(),
+                'A06' => new Message\ADT\A06(),
+                'A08' => new Message\ADT\A08(),
+                default => new GenericMessage("{$type}_{$event}", $version),
             };
         }
 
-        return new BaseMessage($segments);
+        return new GenericMessage("{$type}_{$event}", $version);
     }
 }

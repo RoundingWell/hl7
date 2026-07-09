@@ -16,9 +16,9 @@ final class DRTest extends TestCase
     {
         // A date range must keep start and end distinct and in order.
         $dr = new DR();
-        $dr->setRaw(new Encoding(), '20240101^20241231');
+        $dr->parse(new Encoding(), '20240101^20241231');
 
-        $this->assertSame('20240101', $dr->start->time->getValue());
-        $this->assertSame('20241231', $dr->end->time->getValue());
+        $this->assertSame('20240101', $dr->getStart()->getTime()->getValue());
+        $this->assertSame('20241231', $dr->getEnd()->getTime()->getValue());
     }
 }

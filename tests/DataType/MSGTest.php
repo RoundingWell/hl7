@@ -16,10 +16,10 @@ final class MSGTest extends TestCase
     {
         // The trigger event drives message routing, so component order must be exact.
         $msg = new MSG();
-        $msg->setRaw(new Encoding(), 'ADT^A01^ADT_A01');
+        $msg->parse(new Encoding(), 'ADT^A01^ADT_A01');
 
-        $this->assertSame('ADT', $msg->messageType->getValue());
-        $this->assertSame('A01', $msg->triggerEvent->getValue());
-        $this->assertSame('ADT_A01', $msg->messageStructure->getValue());
+        $this->assertSame('ADT', $msg->getMessageType()->getValue());
+        $this->assertSame('A01', $msg->getTriggerEvent()->getValue());
+        $this->assertSame('ADT_A01', $msg->getMessageStructure()->getValue());
     }
 }

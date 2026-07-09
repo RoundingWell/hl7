@@ -19,7 +19,8 @@ final class OBXTest extends TestCase
     protected function setUp(): void
     {
         $this->obx = new OBX();
-        $this->obx->setRaw(new Encoding(), [
+        $this->obx->parse(new Encoding(), implode('|', [
+            'OBX', // Segment name
             '1', // OBX.1 Set ID
             'NM', // OBX.2 Value Type
             '8480-6^Systolic BP^LN', // OBX.3 Observation Identifier
@@ -48,7 +49,7 @@ final class OBXTest extends TestCase
             'SD', // OBX.26 Patient Results Release Category
             'ROOT^Root Cause', // OBX.27 Root Cause
             'LPC1^Control One~LPC2^Control Two', // OBX.28 Local Process Control (repeating)
-        ]);
+        ]));
     }
 
     public function testSequenceAndStatusFieldsMapToTheirValues(): void
@@ -66,28 +67,28 @@ final class OBXTest extends TestCase
         // OBX.5 is repeating; each measured value must be retained in order.
         $values = $this->obx->getObservationValue();
         $this->assertCount(2, $values);
-        $this->assertSame('120', $values[0]->getValue());
-        $this->assertSame('80', $values[1]->getValue());
+        $this->assertSame('120', $values[0]->getData()->getValue());
+        $this->assertSame('80', $values[1]->getData()->getValue());
     }
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('8480-6', $this->obx->getObservationIdentifier()->identifier->getValue());
-        $this->assertSame('mm[Hg]', $this->obx->getUnits()->identifier->getValue());
-        $this->assertSame('PROD', $this->obx->getProducerId()->identifier->getValue());
-        $this->assertSame('ROOT', $this->obx->getRootCause()->identifier->getValue());
+        $this->assertSame('8480-6', $this->obx->getObservationIdentifier()->getIdentifier()->getValue());
+        $this->assertSame('mm[Hg]', $this->obx->getUnits()->getIdentifier()->getValue());
+        $this->assertSame('PROD', $this->obx->getProducerId()->getIdentifier()->getValue());
+        $this->assertSame('ROOT', $this->obx->getRootCause()->getIdentifier()->getValue());
     }
 
     public function testRepeatingCodedFieldsCollectEachEntry(): void
     {
         $interpretations = $this->obx->getInterpretationCodes();
         $this->assertCount(2, $interpretations);
-        $this->assertSame('N', $interpretations[0]->identifier->getValue());
-        $this->assertSame('A', $interpretations[1]->identifier->getValue());
+        $this->assertSame('N', $interpretations[0]->getIdentifier()->getValue());
+        $this->assertSame('A', $interpretations[1]->getIdentifier()->getValue());
 
-        $this->assertSame('MANUAL', $this->obx->getObservationMethod()[0]->identifier->getValue());
-        $this->assertSame('LARM', $this->obx->getObservationSite()[0]->identifier->getValue());
-        $this->assertSame('LPC1', $this->obx->getLocalProcessControl()[0]->identifier->getValue());
+        $this->assertSame('MANUAL', $this->obx->getObservationMethod()[0]->getIdentifier()->getValue());
+        $this->assertSame('LARM', $this->obx->getObservationSite()[0]->getIdentifier()->getValue());
+        $this->assertSame('LPC1', $this->obx->getLocalProcessControl()[0]->getIdentifier()->getValue());
     }
 
     public function testAbnormalFlagsCollectEachRepetition(): void
@@ -118,9 +119,9 @@ final class OBXTest extends TestCase
         // OBX.16 is repeating; each observer reference must be retained in order.
         $observers = $this->obx->getResponsibleObserver();
         $this->assertCount(2, $observers);
-        $this->assertSame('1234', $observers[0]->id->getValue());
-        $this->assertSame('WELBY', $observers[0]->familyName->surname->getValue());
-        $this->assertSame('5678', $observers[1]->id->getValue());
+        $this->assertSame('1234', $observers[0]->getId()->getValue());
+        $this->assertSame('WELBY', $observers[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('5678', $observers[1]->getId()->getValue());
     }
 
     public function testEquipmentIdentifiersCollectEachRepetition(): void
@@ -128,23 +129,26 @@ final class OBXTest extends TestCase
         // OBX.18 is repeating; each producing device must be identifiable in order.
         $equipment = $this->obx->getEquipmentInstanceIdentifier();
         $this->assertCount(2, $equipment);
-        $this->assertSame('EQ1', $equipment[0]->id->getValue());
-        $this->assertSame('EQ2', $equipment[1]->id->getValue());
+        $this->assertSame('EQ1', $equipment[0]->getId()->getValue());
+        $this->assertSame('EQ2', $equipment[1]->getId()->getValue());
 
-        $this->assertSame('OBS1', $this->obx->getObservationInstanceIdentifier()->id->getValue());
+        $this->assertSame('OBS1', $this->obx->getObservationInstanceIdentifier()->getId()->getValue());
     }
 
     public function testPerformingOrganizationFieldsMapToTheirComponents(): void
     {
-        $this->assertSame('EVN', $this->obx->getMoodCode()->identifier->getValue());
-        $this->assertSame('General Hospital', $this->obx->getPerformingOrganizationName()->name->getValue());
+        $this->assertSame('EVN', $this->obx->getMoodCode()->getIdentifier()->getValue());
+        $this->assertSame(
+            'General Hospital',
+            $this->obx->getPerformingOrganizationName()->getOrganizationName()->getValue(),
+        );
         $this->assertSame(
             '100 MAIN ST',
-            $this->obx->getPerformingOrganizationAddress()->streetAddress->streetAddress->getValue(),
+            $this->obx->getPerformingOrganizationAddress()->getStreetAddress()->getStreetAddress()->getValue(),
         );
         $this->assertSame(
             'STRANGE',
-            $this->obx->getPerformingOrganizationMedicalDirector()->familyName->surname->getValue(),
+            $this->obx->getPerformingOrganizationMedicalDirector()->getFamilyName()->getSurname()->getValue(),
         );
     }
 }

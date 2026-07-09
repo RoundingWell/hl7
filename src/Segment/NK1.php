@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
-use RoundingWell\HL7\BaseField;
-use RoundingWell\HL7\BaseSegment;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\CX;
 use RoundingWell\HL7\DataType\DT;
@@ -18,77 +17,76 @@ use RoundingWell\HL7\DataType\XAD;
 use RoundingWell\HL7\DataType\XON;
 use RoundingWell\HL7\DataType\XPN;
 use RoundingWell\HL7\DataType\XTN;
+use RoundingWell\HL7\TypeDefinition;
 
 /**
  * Next of Kin / Associated Parties Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class NK1 extends BaseSegment
+final class NK1 extends AbstractSegment
 {
     public function __construct()
     {
-        parent::__construct('NK1');
-
-        $this->addField(1, new BaseField('Set ID', SI::class, required: true));
-        $this->addField(2, new BaseField('Name', XPN::class, repeating: true));
-        $this->addField(3, new BaseField('Relationship', CWE::class));
-        $this->addField(4, new BaseField('Address', XAD::class, repeating: true));
-        $this->addField(5, new BaseField('Phone Number', XTN::class, repeating: true));
-        $this->addField(6, new BaseField('Business Phone Number', XTN::class, repeating: true));
-        $this->addField(7, new BaseField('Contact Role', CWE::class));
-        $this->addField(8, new BaseField('Start Date', DT::class));
-        $this->addField(9, new BaseField('End Date', DT::class));
-        $this->addField(10, new BaseField('Job Title', ST::class));
-        $this->addField(11, new BaseField('Job Code/Class', JCC::class));
-        $this->addField(12, new BaseField('Employee Number', CX::class));
-        $this->addField(13, new BaseField('Organization Name', XON::class, repeating: true));
-        $this->addField(14, new BaseField('Marital Status', CWE::class));
-        $this->addField(15, new BaseField('Administrative Sex', CWE::class));
-        $this->addField(16, new BaseField('Date/Time of Birth', DTM::class));
-        $this->addField(17, new BaseField('Living Dependency', CWE::class, repeating: true));
-        $this->addField(18, new BaseField('Ambulatory Status', CWE::class, repeating: true));
-        $this->addField(19, new BaseField('Citizenship', CWE::class, repeating: true));
-        $this->addField(20, new BaseField('Primary Language', CWE::class));
-        $this->addField(21, new BaseField('Living Arrangement', CWE::class));
-        $this->addField(22, new BaseField('Publicity Code', CWE::class));
-        $this->addField(23, new BaseField('Protection Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(24, new BaseField('Student Indicator', CWE::class));
-        $this->addField(25, new BaseField('Religion', CWE::class));
-        $this->addField(26, new BaseField("Mother's Maiden Name", XPN::class, repeating: true));
-        $this->addField(27, new BaseField('Nationality', CWE::class));
-        $this->addField(28, new BaseField('Ethnic Group', CWE::class, repeating: true));
-        $this->addField(29, new BaseField('Contact Reason', CWE::class, repeating: true));
-        $this->addField(30, new BaseField("Contact Person's Name", XPN::class, repeating: true));
-        $this->addField(31, new BaseField("Contact Person's Telephone Number", XTN::class, repeating: true));
-        $this->addField(32, new BaseField("Contact Person's Address", XAD::class, repeating: true));
-        $this->addField(33, new BaseField("Associated Party's Identifiers", CX::class, repeating: true));
-        $this->addField(34, new BaseField('Job Status', CWE::class));
-        $this->addField(35, new BaseField('Race', CWE::class, repeating: true));
-        $this->addField(36, new BaseField('Handicap', CWE::class));
-        $this->addField(37, new BaseField('Contact Person Social Security Number', ST::class));
-        $this->addField(38, new BaseField('Next of Kin Birth Place', ST::class));
-        $this->addField(39, new BaseField('VIP Indicator', CWE::class));
-        $this->addField(40, new BaseField('Next of Kin Telecommunication Information', XTN::class));
-        $this->addField(41, new BaseField("Contact Person's Telecommunication Information", XTN::class));
+        $this->add(new TypeDefinition('Set ID', SI::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Name', XPN::class));
+        $this->add(new TypeDefinition('Relationship', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Address', XAD::class));
+        $this->add(new TypeDefinition('Phone Number', XTN::class));
+        $this->add(new TypeDefinition('Business Phone Number', XTN::class));
+        $this->add(new TypeDefinition('Contact Role', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Start Date', DT::class, maxReps: 1));
+        $this->add(new TypeDefinition('End Date', DT::class, maxReps: 1));
+        $this->add(new TypeDefinition('Job Title', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Job Code/Class', JCC::class, maxReps: 1));
+        $this->add(new TypeDefinition('Employee Number', CX::class, maxReps: 1));
+        $this->add(new TypeDefinition('Organization Name', XON::class));
+        $this->add(new TypeDefinition('Marital Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Administrative Sex', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Date/Time of Birth', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Living Dependency', CWE::class));
+        $this->add(new TypeDefinition('Ambulatory Status', CWE::class));
+        $this->add(new TypeDefinition('Citizenship', CWE::class));
+        $this->add(new TypeDefinition('Primary Language', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Living Arrangement', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Publicity Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Protection Indicator', ID::class, args: ['table' => 136], maxReps: 1));
+        $this->add(new TypeDefinition('Student Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Religion', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition("Mother's Maiden Name", XPN::class));
+        $this->add(new TypeDefinition('Nationality', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Ethnic Group', CWE::class));
+        $this->add(new TypeDefinition('Contact Reason', CWE::class));
+        $this->add(new TypeDefinition("Contact Person's Name", XPN::class));
+        $this->add(new TypeDefinition("Contact Person's Telephone Number", XTN::class));
+        $this->add(new TypeDefinition("Contact Person's Address", XAD::class));
+        $this->add(new TypeDefinition("Associated Party's Identifiers", CX::class));
+        $this->add(new TypeDefinition('Job Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Race', CWE::class));
+        $this->add(new TypeDefinition('Handicap', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Contact Person Social Security Number', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Next of Kin Birth Place', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('VIP Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Next of Kin Telecommunication Information', XTN::class, maxReps: 1));
+        $this->add(new TypeDefinition("Contact Person's Telecommunication Information", XTN::class, maxReps: 1));
     }
 
     public function getIdentity(): SI
     {
-        return $this->getField(1)->getInstance();
+        return $this->getFieldRepetition(1, 0);
     }
 
     /**
      * @return list<XPN>
      */
-    public function getName(): array
+    public function getNextOfKinName(): array
     {
-        return $this->getField(2)->getInstance();
+        return $this->getField(2);
     }
 
     public function getRelationship(): CWE
     {
-        return $this->getField(3)->getInstance();
+        return $this->getFieldRepetition(3, 0);
     }
 
     /**
@@ -96,7 +94,7 @@ final class NK1 extends BaseSegment
      */
     public function getAddress(): array
     {
-        return $this->getField(4)->getInstance();
+        return $this->getField(4);
     }
 
     /**
@@ -104,7 +102,7 @@ final class NK1 extends BaseSegment
      */
     public function getPhoneNumber(): array
     {
-        return $this->getField(5)->getInstance();
+        return $this->getField(5);
     }
 
     /**
@@ -112,37 +110,37 @@ final class NK1 extends BaseSegment
      */
     public function getBusinessPhoneNumber(): array
     {
-        return $this->getField(6)->getInstance();
+        return $this->getField(6);
     }
 
     public function getContactRole(): CWE
     {
-        return $this->getField(7)->getInstance();
+        return $this->getFieldRepetition(7, 0);
     }
 
     public function getStartDate(): DT
     {
-        return $this->getField(8)->getInstance();
+        return $this->getFieldRepetition(8, 0);
     }
 
     public function getEndDate(): DT
     {
-        return $this->getField(9)->getInstance();
+        return $this->getFieldRepetition(9, 0);
     }
 
     public function getJobTitle(): ST
     {
-        return $this->getField(10)->getInstance();
+        return $this->getFieldRepetition(10, 0);
     }
 
     public function getJobCode(): JCC
     {
-        return $this->getField(11)->getInstance();
+        return $this->getFieldRepetition(11, 0);
     }
 
     public function getEmployeeNumber(): CX
     {
-        return $this->getField(12)->getInstance();
+        return $this->getFieldRepetition(12, 0);
     }
 
     /**
@@ -150,22 +148,22 @@ final class NK1 extends BaseSegment
      */
     public function getOrganizationName(): array
     {
-        return $this->getField(13)->getInstance();
+        return $this->getField(13);
     }
 
     public function getMaritalStatus(): CWE
     {
-        return $this->getField(14)->getInstance();
+        return $this->getFieldRepetition(14, 0);
     }
 
     public function getAdministrativeSex(): CWE
     {
-        return $this->getField(15)->getInstance();
+        return $this->getFieldRepetition(15, 0);
     }
 
     public function getDateOfBirth(): DTM
     {
-        return $this->getField(16)->getInstance();
+        return $this->getFieldRepetition(16, 0);
     }
 
     /**
@@ -173,7 +171,7 @@ final class NK1 extends BaseSegment
      */
     public function getLivingDependency(): array
     {
-        return $this->getField(17)->getInstance();
+        return $this->getField(17);
     }
 
     /**
@@ -181,7 +179,7 @@ final class NK1 extends BaseSegment
      */
     public function getAmbulatoryStatus(): array
     {
-        return $this->getField(18)->getInstance();
+        return $this->getField(18);
     }
 
     /**
@@ -189,37 +187,37 @@ final class NK1 extends BaseSegment
      */
     public function getCitizenship(): array
     {
-        return $this->getField(19)->getInstance();
+        return $this->getField(19);
     }
 
     public function getPrimaryLanguage(): CWE
     {
-        return $this->getField(20)->getInstance();
+        return $this->getFieldRepetition(20, 0);
     }
 
     public function getLivingArrangement(): CWE
     {
-        return $this->getField(21)->getInstance();
+        return $this->getFieldRepetition(21, 0);
     }
 
     public function getPublicityCode(): CWE
     {
-        return $this->getField(22)->getInstance();
+        return $this->getFieldRepetition(22, 0);
     }
 
     public function getProtectionIndicator(): ID
     {
-        return $this->getField(23)->getInstance();
+        return $this->getFieldRepetition(23, 0);
     }
 
     public function getStudentIndicator(): CWE
     {
-        return $this->getField(24)->getInstance();
+        return $this->getFieldRepetition(24, 0);
     }
 
     public function getReligion(): CWE
     {
-        return $this->getField(25)->getInstance();
+        return $this->getFieldRepetition(25, 0);
     }
 
     /**
@@ -227,12 +225,12 @@ final class NK1 extends BaseSegment
      */
     public function getMotherMaidenName(): array
     {
-        return $this->getField(26)->getInstance();
+        return $this->getField(26);
     }
 
     public function getNationality(): CWE
     {
-        return $this->getField(27)->getInstance();
+        return $this->getFieldRepetition(27, 0);
     }
 
     /**
@@ -240,7 +238,7 @@ final class NK1 extends BaseSegment
      */
     public function getEthnicGroup(): array
     {
-        return $this->getField(28)->getInstance();
+        return $this->getField(28);
     }
 
     /**
@@ -248,7 +246,7 @@ final class NK1 extends BaseSegment
      */
     public function getContactReason(): array
     {
-        return $this->getField(29)->getInstance();
+        return $this->getField(29);
     }
 
     /**
@@ -256,7 +254,7 @@ final class NK1 extends BaseSegment
      */
     public function getContactPersonName(): array
     {
-        return $this->getField(30)->getInstance();
+        return $this->getField(30);
     }
 
     /**
@@ -264,7 +262,7 @@ final class NK1 extends BaseSegment
      */
     public function getContactPersonPhoneNumber(): array
     {
-        return $this->getField(31)->getInstance();
+        return $this->getField(31);
     }
 
     /**
@@ -272,7 +270,7 @@ final class NK1 extends BaseSegment
      */
     public function getContactPersonAddress(): array
     {
-        return $this->getField(32)->getInstance();
+        return $this->getField(32);
     }
 
     /**
@@ -280,12 +278,12 @@ final class NK1 extends BaseSegment
      */
     public function getAssociatedPartyIdentifiers(): array
     {
-        return $this->getField(33)->getInstance();
+        return $this->getField(33);
     }
 
     public function getJobStatus(): CWE
     {
-        return $this->getField(34)->getInstance();
+        return $this->getFieldRepetition(34, 0);
     }
 
     /**
@@ -293,36 +291,36 @@ final class NK1 extends BaseSegment
      */
     public function getRace(): array
     {
-        return $this->getField(35)->getInstance();
+        return $this->getField(35);
     }
 
     public function getHandicap(): CWE
     {
-        return $this->getField(36)->getInstance();
+        return $this->getFieldRepetition(36, 0);
     }
 
     public function getContactPersonSsnNumber(): ST
     {
-        return $this->getField(37)->getInstance();
+        return $this->getFieldRepetition(37, 0);
     }
 
     public function getBirthPlace(): ST
     {
-        return $this->getField(38)->getInstance();
+        return $this->getFieldRepetition(38, 0);
     }
 
     public function getVipIndicator(): CWE
     {
-        return $this->getField(39)->getInstance();
+        return $this->getFieldRepetition(39, 0);
     }
 
     public function getTelecommunicationInformation(): XTN
     {
-        return $this->getField(40)->getInstance();
+        return $this->getFieldRepetition(40, 0);
     }
 
     public function getContactPersonTelecommunicationInformation(): XTN
     {
-        return $this->getField(41)->getInstance();
+        return $this->getFieldRepetition(41, 0);
     }
 }

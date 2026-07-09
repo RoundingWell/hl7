@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
+use RoundingWell\HL7\GenericMessage;
 use RoundingWell\HL7\Message\ADT\A01;
 use RoundingWell\HL7\Message\ADT\A03;
 use RoundingWell\HL7\Message\ADT\A06;
@@ -61,6 +62,14 @@ final class MessageFactoryTest extends TestCase
         $message = $this->messageFactory->parse('MSH|^~\&#|AccMrg\rPID|1');
 
         $this->assertSame('^~\&#', $message->getMSH()->getEncodingCharacters()->getValue());
+    }
+
+    public function testUnknownEventFallsBackToGenericMessage(): void
+    {
+        // Non-ADT / unknown events must still parse into a usable Message, not fail.
+        $message = $this->messageFactory->parse("MSH|^~\\&|App|Fac|||202601011200||ORU^R01|1|P|2.8.1\rOBX|1");
+
+        $this->assertInstanceOf(GenericMessage::class, $message);
     }
 
     public function testParseFileThrowsWhenTheFileDoesNotExist(): void

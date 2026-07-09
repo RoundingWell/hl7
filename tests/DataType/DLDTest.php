@@ -16,9 +16,9 @@ final class DLDTest extends TestCase
     {
         // A discharge disposition pairs the location a patient is sent to with the effective date.
         $dld = new DLD();
-        $dld->setRaw(new Encoding(), 'SNF^20260708');
+        $dld->parse(new Encoding(), 'SNF^20260708');
 
-        $this->assertSame('SNF', $dld->dischargeToLocation->identifier->getValue());
-        $this->assertSame('20260708', $dld->effectiveDate->getValue());
+        $this->assertSame('SNF', $dld->getDischargeLocation()->getIdentifier()->getValue());
+        $this->assertSame('20260708', $dld->getEffectiveDate()->getValue());
     }
 }

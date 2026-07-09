@@ -19,7 +19,8 @@ final class PIDTest extends TestCase
     protected function setUp(): void
     {
         $this->pid = new PID();
-        $this->pid->setRaw(new Encoding(), [
+        $this->pid->parse(new Encoding(), implode('|', [
+            'PID', // Segment name
             '1', // PID.1 Set ID
             '2', // PID.2 Patient ID
             '10006579^^^AccMgr^MRN~99999^^^AccMgr^MR', // PID.3 Patient Identifier List (repeating)
@@ -60,7 +61,7 @@ final class PIDTest extends TestCase
             'PROD^Production', // PID.38 Production Class Code
             'TRIBE^Tribal', // PID.39 Tribal Citizenship (repeating)
             '8885551215', // PID.40 Patient Telecommunication Information (repeating)
-        ]);
+        ]));
     }
 
     public function testSequenceIdentifierFieldsMapToTheirValues(): void
@@ -75,13 +76,13 @@ final class PIDTest extends TestCase
         // PID.3 and PID.21 are repeating identifiers; every entry must be retained in order.
         $identifiers = $this->pid->getIdentifierList();
         $this->assertCount(2, $identifiers);
-        $this->assertSame('10006579', $identifiers[0]->id->getValue());
-        $this->assertSame('MRN', $identifiers[0]->identifierTypeCode->getValue());
-        $this->assertSame('99999', $identifiers[1]->id->getValue());
+        $this->assertSame('10006579', $identifiers[0]->getId()->getValue());
+        $this->assertSame('MRN', $identifiers[0]->getIdentifierTypeCode()->getValue());
+        $this->assertSame('99999', $identifiers[1]->getId()->getValue());
 
         $mother = $this->pid->getMotherIdentifier();
         $this->assertCount(1, $mother);
-        $this->assertSame('55555', $mother[0]->id->getValue());
+        $this->assertSame('55555', $mother[0]->getId()->getValue());
     }
 
     public function testNamesCollectEachRepetition(): void
@@ -89,13 +90,13 @@ final class PIDTest extends TestCase
         // PID.5 and PID.6 are repeating names; the family name is a nested component.
         $names = $this->pid->getPatientName();
         $this->assertCount(2, $names);
-        $this->assertSame('DUCK', $names[0]->familyName->surname->getValue());
-        $this->assertSame('DONALD', $names[0]->givenName->getValue());
-        $this->assertSame('MOUSE', $names[1]->familyName->surname->getValue());
+        $this->assertSame('DUCK', $names[0]->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('DONALD', $names[0]->getGivenName()->getValue());
+        $this->assertSame('MOUSE', $names[1]->getFamilyName()->getSurname()->getValue());
 
         $maiden = $this->pid->getMotherMaidenName();
         $this->assertCount(1, $maiden);
-        $this->assertSame('DUCK', $maiden[0]->familyName->surname->getValue());
+        $this->assertSame('DUCK', $maiden[0]->getFamilyName()->getSurname()->getValue());
     }
 
     public function testDateFieldsMapToTheirValues(): void
@@ -107,28 +108,28 @@ final class PIDTest extends TestCase
 
     public function testCodedFieldsMapToTheirLeadingIdentifier(): void
     {
-        $this->assertSame('M', $this->pid->getAdministrativeSex()->identifier->getValue());
-        $this->assertSame('EN', $this->pid->getPrimaryLanguage()->identifier->getValue());
-        $this->assertSame('M', $this->pid->getMaritalStatus()->identifier->getValue());
-        $this->assertSame('CHR', $this->pid->getReligion()->identifier->getValue());
-        $this->assertSame('V', $this->pid->getVeteransMilitaryStatus()->identifier->getValue());
-        $this->assertSame('US', $this->pid->getNationality()->identifier->getValue());
-        $this->assertSame('TAX', $this->pid->getTaxonomicClassificationCode()->identifier->getValue());
-        $this->assertSame('BREED', $this->pid->getBreedCode()->identifier->getValue());
-        $this->assertSame('PROD', $this->pid->getProductionClassCode()->identifier->getValue());
+        $this->assertSame('M', $this->pid->getAdministrativeSex()->getIdentifier()->getValue());
+        $this->assertSame('EN', $this->pid->getPrimaryLanguage()->getIdentifier()->getValue());
+        $this->assertSame('M', $this->pid->getMaritalStatus()->getIdentifier()->getValue());
+        $this->assertSame('CHR', $this->pid->getReligion()->getIdentifier()->getValue());
+        $this->assertSame('V', $this->pid->getVeteransMilitaryStatus()->getIdentifier()->getValue());
+        $this->assertSame('US', $this->pid->getNationality()->getIdentifier()->getValue());
+        $this->assertSame('TAX', $this->pid->getTaxonomicClassificationCode()->getIdentifier()->getValue());
+        $this->assertSame('BREED', $this->pid->getBreedCode()->getIdentifier()->getValue());
+        $this->assertSame('PROD', $this->pid->getProductionClassCode()->getIdentifier()->getValue());
     }
 
     public function testRepeatingCodedFieldsCollectEachEntry(): void
     {
         $race = $this->pid->getRace();
         $this->assertCount(2, $race);
-        $this->assertSame('2106-3', $race[0]->identifier->getValue());
-        $this->assertSame('1002-5', $race[1]->identifier->getValue());
+        $this->assertSame('2106-3', $race[0]->getIdentifier()->getValue());
+        $this->assertSame('1002-5', $race[1]->getIdentifier()->getValue());
 
-        $this->assertSame('H', $this->pid->getEthnicGroup()[0]->identifier->getValue());
-        $this->assertSame('USA', $this->pid->getCitizenship()[0]->identifier->getValue());
-        $this->assertSame('OK', $this->pid->getIdentityReliabilityCode()[0]->identifier->getValue());
-        $this->assertSame('TRIBE', $this->pid->getTribalCitizenship()[0]->identifier->getValue());
+        $this->assertSame('H', $this->pid->getEthnicGroup()[0]->getIdentifier()->getValue());
+        $this->assertSame('USA', $this->pid->getCitizenship()[0]->getIdentifier()->getValue());
+        $this->assertSame('OK', $this->pid->getIdentityReliabilityCode()[0]->getIdentifier()->getValue());
+        $this->assertSame('TRIBE', $this->pid->getTribalCitizenship()[0]->getIdentifier()->getValue());
     }
 
     public function testFreeTextFieldsMapToTheirValues(): void
@@ -146,30 +147,30 @@ final class PIDTest extends TestCase
         // PID.11 is repeating; each address's leading component is a nested street address.
         $addresses = $this->pid->getPatientAddress();
         $this->assertCount(2, $addresses);
-        $this->assertSame('111 DUCK ST', $addresses[0]->streetAddress->streetAddress->getValue());
-        $this->assertSame('FOWL', $addresses[0]->city->getValue());
-        $this->assertSame('222 GOOSE LN', $addresses[1]->streetAddress->streetAddress->getValue());
+        $this->assertSame('111 DUCK ST', $addresses[0]->getStreetAddress()->getStreetAddress()->getValue());
+        $this->assertSame('FOWL', $addresses[0]->getCity()->getValue());
+        $this->assertSame('222 GOOSE LN', $addresses[1]->getStreetAddress()->getStreetAddress()->getValue());
     }
 
     public function testPhoneNumbersCollectEachRepetition(): void
     {
         $home = $this->pid->getPhoneNumberHome();
         $this->assertCount(2, $home);
-        $this->assertSame('8885551212', $home[0]->telephoneNumber->getValue());
-        $this->assertSame('8885551213', $home[1]->telephoneNumber->getValue());
+        $this->assertSame('8885551212', $home[0]->getTelephoneNumber()->getValue());
+        $this->assertSame('8885551213', $home[1]->getTelephoneNumber()->getValue());
 
-        $this->assertSame('8885551214', $this->pid->getPhoneNumberBusiness()[0]->telephoneNumber->getValue());
+        $this->assertSame('8885551214', $this->pid->getPhoneNumberBusiness()[0]->getTelephoneNumber()->getValue());
         $this->assertSame(
             '8885551215',
-            $this->pid->getPatientTelecommunicationInformation()[0]->telephoneNumber->getValue(),
+            $this->pid->getPatientTelecommunicationInformation()[0]->getTelephoneNumber()->getValue(),
         );
     }
 
     public function testAccountNumberMapsToItsComponents(): void
     {
         $account = $this->pid->getAccountNumber();
-        $this->assertSame('40007716', $account->id->getValue());
-        $this->assertSame('VN', $account->identifierTypeCode->getValue());
+        $this->assertSame('40007716', $account->getId()->getValue());
+        $this->assertSame('VN', $account->getIdentifierTypeCode()->getValue());
     }
 
     public function testIndicatorAndOrderFieldsMapToTheirValues(): void
@@ -182,7 +183,7 @@ final class PIDTest extends TestCase
 
     public function testLastUpdateFacilityMapsToItsComponents(): void
     {
-        $this->assertSame('FACILITY', $this->pid->getLastUpdateFacility()->namespaceId->getValue());
-        $this->assertSame('ISO', $this->pid->getLastUpdateFacility()->universalIdType->getValue());
+        $this->assertSame('FACILITY', $this->pid->getLastUpdateFacility()->getNamespaceId()->getValue());
+        $this->assertSame('ISO', $this->pid->getLastUpdateFacility()->getUniversalIdType()->getValue());
     }
 }

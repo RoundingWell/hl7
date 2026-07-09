@@ -10,28 +10,22 @@ final readonly class SegmentFactory
         private Encoding $encoding = new Encoding(),
     ) {}
 
-    public function parse(string $data): BaseSegment
+    public function parse(string $data): Segment
     {
-        $values = explode($this->encoding->fieldSeparator, $data);
-
         // The first value MUST be the segment identifier.
-        $id = array_shift($values);
+        [$id] = explode($this->encoding->fieldSeparator, $data, 2);
 
-        if ($id === 'MSH') {
-            // The field separator is consumed by explode(), but is required for MSH.1.
-            // Add it back to the top of the values so it is correctly assigned.
-            array_unshift($values, $this->encoding->fieldSeparator);
-        }
+        $segment = $this->create($id);
 
-        return $this->create($id, $values);
+        // The segment parses its own name back off the data, so pass the full line.
+        $segment->parse($this->encoding, $data);
+
+        return $segment;
     }
 
-    /**
-     * @param list<string> $values
-     */
-    private function create(string $id, array $values): BaseSegment
+    private function create(string $id): Segment
     {
-        $segment = match ($id) {
+        return match ($id) {
             'MSH' => new Segment\MSH(),
             'EVN' => new Segment\EVN(),
             'PID' => new Segment\PID(),
@@ -41,11 +35,7 @@ final readonly class SegmentFactory
             'DG1' => new Segment\DG1(),
             'DRG' => new Segment\DRG(),
             'OBX' => new Segment\OBX(),
-            default => new BaseSegment($id),
+            default => new GenericSegment($id),
         };
-
-        $segment->setRaw($this->encoding, $values);
-
-        return $segment;
     }
 }

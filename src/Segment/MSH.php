@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
-use RoundingWell\HL7\BaseField;
-use RoundingWell\HL7\BaseSegment;
+use Override;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DTM;
 use RoundingWell\HL7\DataType\EI;
@@ -17,136 +17,197 @@ use RoundingWell\HL7\DataType\PT;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\VID;
 use RoundingWell\HL7\DataType\XON;
+use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\Primitive;
+use RoundingWell\HL7\TypeDefinition;
 
 /**
  * Message Header Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class MSH extends BaseSegment
+final class MSH extends AbstractSegment
 {
     public function __construct()
     {
-        parent::__construct('MSH');
+        $this->add(
+            new TypeDefinition(
+                'Field Separator',
+                ST::class,
+                args: [
+                    'minLength' => 1,
+                    'maxLength' => 1,
+                ],
+                isRequired: true,
+                maxReps: 1,
+            ),
+        );
+        $this->add(
+            new TypeDefinition(
+                'Encoding Characters',
+                ST::class,
+                args: [
+                    'minLength' => 4,
+                    'maxLength' => 5,
+                ],
+                isRequired: true,
+                maxReps: 1,
+            ),
+        );
+        $this->add(new TypeDefinition('Sending Application', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Sending Facility', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Receiving Application', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Receiving Facility', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Date/Time of Message', DTM::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Security', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Message Type', MSG::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Message Control ID', ST::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Processing ID', PT::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Version ID', VID::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Sequence Number', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Continuation Pointer', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Accept Acknowledgement Type', ID::class, args: ['table' => 155], maxReps: 1));
+        $this->add(
+            new TypeDefinition('Application Acknowledgement Type', ID::class, args: ['table' => 155], maxReps: 1),
+        );
+        $this->add(new TypeDefinition('Country Code', ID::class, args: ['table' => 399], maxReps: 1));
+        $this->add(new TypeDefinition('Character Set', ID::class, args: ['table' => 211]));
+        $this->add(new TypeDefinition('Principal Language of Message', CWE::class, maxReps: 1));
+        $this->add(
+            new TypeDefinition(
+                'Alternate Character Set Handling Scheme',
+                ID::class,
+                args: [
+                    'table' => 356,
+                ],
+                maxReps: 1,
+            ),
+        );
+        $this->add(new TypeDefinition('Message Profile Identifier', EI::class));
+        $this->add(new TypeDefinition('Sending Responsible Organization', XON::class, maxReps: 1));
+        $this->add(new TypeDefinition('Receiving Responsible Organization', XON::class, maxReps: 1));
+        $this->add(new TypeDefinition('Sending Network Address', HD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Receiving Network Address', HD::class, maxReps: 1));
+    }
 
-        $this->addField(1, new BaseField('Field Separator', ST::class, required: true, args: [
-            'minLength' => 1,
-            'maxLength' => 1,
-        ]));
-        $this->addField(2, new BaseField('Encoding Characters', ST::class, required: true, args: [
-            'minLength' => 4,
-            'maxLength' => 5,
-        ]));
-        $this->addField(3, new BaseField('Sending Application', HD::class));
-        $this->addField(4, new BaseField('Sending Facility', HD::class));
-        $this->addField(5, new BaseField('Receiving Application', HD::class));
-        $this->addField(6, new BaseField('Receiving Facility', HD::class));
-        $this->addField(7, new BaseField('Date/Time of Message', DTM::class, required: true));
-        $this->addField(8, new BaseField('Security', ST::class));
-        $this->addField(9, new BaseField('Message Type', MSG::class, required: true));
-        $this->addField(10, new BaseField('Message Control ID', ST::class, required: true));
-        $this->addField(11, new BaseField('Processing ID', PT::class, required: true));
-        $this->addField(12, new BaseField('Version ID', VID::class, required: true));
-        $this->addField(13, new BaseField('Sequence Number', NM::class));
-        $this->addField(14, new BaseField('Continuation Pointer', ST::class));
-        $this->addField(15, new BaseField('Accept Acknowledgement Type', ID::class, args: ['table' => 155]));
-        $this->addField(16, new BaseField('Application Acknowledgement Type', ID::class, args: ['table' => 155]));
-        $this->addField(17, new BaseField('Country Code', ID::class, args: ['table' => 399]));
-        $this->addField(18, new BaseField('Character Set', ID::class, repeating: true, args: ['table' => 211]));
-        $this->addField(19, new BaseField('Principal Language of Message', CWE::class));
-        $this->addField(20, new BaseField('Alternate Character Set Handling Scheme', ID::class, args: [
-            'table' => 356,
-        ]));
-        $this->addField(21, new BaseField('Message Profile Identifier', EI::class, repeating: true));
-        $this->addField(22, new BaseField('Sending Responsible Organization', XON::class));
-        $this->addField(23, new BaseField('Receiving Responsible Organization', XON::class));
-        $this->addField(24, new BaseField('Sending Network Address', HD::class));
-        $this->addField(25, new BaseField('Receiving Network Address', HD::class));
+    #[Override]
+    public function parse(Encoding $encoding, string $data): void
+    {
+        $fields = explode($encoding->fieldSeparator, $data);
+
+        // Drop the "MSH" segment identifier.
+        array_shift($fields);
+
+        // MSH.1 is the field separator and MSH.2 is the encoding characters. Together they
+        // define the delimiters the message was encoded with, so both are stored verbatim:
+        // MSH.1 was consumed as a delimiter while splitting, and parsing MSH.2 would
+        // misinterpret its own component and repetition separators.
+        $this->setEncodingField(1, $encoding->fieldSeparator);
+        $this->setEncodingField(2, array_shift($fields) ?? '');
+
+        // The remaining values map to MSH.3 onward.
+        foreach ($fields as $idx => $field) {
+            foreach (explode($encoding->repetitionSeparator, $field) as $rep => $value) {
+                // $idx starts at 0 for MSH.3, so the field number is always 3 or greater.
+                // @mago-expect analysis:possibly-invalid-argument
+                $this->getFieldRepetition($idx + 3, $rep)->parse($encoding, $value);
+            }
+        }
+    }
+
+    private function setEncodingField(int $number, string $value): void
+    {
+        $field = $this->getFieldRepetition($number, 0);
+
+        // MSH.1 and MSH.2 are always ST primitives.
+        assert($field instanceof Primitive, "MSH.{$number} must be a primitive");
+
+        $field->setValue($value);
     }
 
     public function getFieldSeparator(): ST
     {
-        return $this->getField(1)->getInstance();
+        return $this->getFieldRepetition(1, 0);
     }
 
     public function getEncodingCharacters(): ST
     {
-        return $this->getField(2)->getInstance();
+        return $this->getFieldRepetition(2, 0);
     }
 
     public function getSendingApplication(): HD
     {
-        return $this->getField(3)->getInstance();
+        return $this->getFieldRepetition(3, 0);
     }
 
     public function getSendingFacility(): HD
     {
-        return $this->getField(4)->getInstance();
+        return $this->getFieldRepetition(4, 0);
     }
 
     public function getReceivingApplication(): HD
     {
-        return $this->getField(5)->getInstance();
+        return $this->getFieldRepetition(5, 0);
     }
 
     public function getReceivingFacility(): HD
     {
-        return $this->getField(6)->getInstance();
+        return $this->getFieldRepetition(6, 0);
     }
 
     public function getDateTimeOfMessage(): DTM
     {
-        return $this->getField(7)->getInstance();
+        return $this->getFieldRepetition(7, 0);
     }
 
     public function getSecurity(): ST
     {
-        return $this->getField(8)->getInstance();
+        return $this->getFieldRepetition(8, 0);
     }
 
     public function getMessageType(): MSG
     {
-        return $this->getField(9)->getInstance();
+        return $this->getFieldRepetition(9, 0);
     }
 
     public function getMessageControlId(): ST
     {
-        return $this->getField(10)->getInstance();
+        return $this->getFieldRepetition(10, 0);
     }
 
     public function getProcessingId(): PT
     {
-        return $this->getField(11)->getInstance();
+        return $this->getFieldRepetition(11, 0);
     }
 
     public function getVersionId(): VID
     {
-        return $this->getField(12)->getInstance();
+        return $this->getFieldRepetition(12, 0);
     }
 
     public function getSequenceNumber(): NM
     {
-        return $this->getField(13)->getInstance();
+        return $this->getFieldRepetition(13, 0);
     }
 
     public function getContinuationPointer(): ST
     {
-        return $this->getField(14)->getInstance();
+        return $this->getFieldRepetition(14, 0);
     }
 
     public function getAcceptAcknowledgementType(): ID
     {
-        return $this->getField(15)->getInstance();
+        return $this->getFieldRepetition(15, 0);
     }
 
     public function getApplicationAcknowledgementType(): ID
     {
-        return $this->getField(16)->getInstance();
+        return $this->getFieldRepetition(16, 0);
     }
 
     public function getCountryCode(): ID
     {
-        return $this->getField(17)->getInstance();
+        return $this->getFieldRepetition(17, 0);
     }
 
     /**
@@ -154,17 +215,17 @@ final class MSH extends BaseSegment
      */
     public function getCharacterSet(): array
     {
-        return $this->getField(18)->getInstance();
+        return $this->getField(18);
     }
 
     public function getPrincipalLanguageOfMessage(): CWE
     {
-        return $this->getField(19)->getInstance();
+        return $this->getFieldRepetition(19, 0);
     }
 
     public function getAlternateCharacterSetHandlingScheme(): ID
     {
-        return $this->getField(20)->getInstance();
+        return $this->getFieldRepetition(20, 0);
     }
 
     /**
@@ -172,26 +233,26 @@ final class MSH extends BaseSegment
      */
     public function getMessageProfileIdentifier(): array
     {
-        return $this->getField(21)->getInstance();
+        return $this->getField(21);
     }
 
     public function getSendingResponsibleOrganization(): XON
     {
-        return $this->getField(22)->getInstance();
+        return $this->getFieldRepetition(22, 0);
     }
 
     public function getReceivingResponsibleOrganization(): XON
     {
-        return $this->getField(23)->getInstance();
+        return $this->getFieldRepetition(23, 0);
     }
 
     public function getSendingNetworkAddress(): HD
     {
-        return $this->getField(24)->getInstance();
+        return $this->getFieldRepetition(24, 0);
     }
 
     public function getReceivingNetworkAddress(): HD
     {
-        return $this->getField(25)->getInstance();
+        return $this->getFieldRepetition(25, 0);
     }
 }

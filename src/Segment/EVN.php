@@ -4,50 +4,48 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
-use RoundingWell\HL7\BaseField;
-use RoundingWell\HL7\BaseSegment;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DTM;
 use RoundingWell\HL7\DataType\HD;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XCN;
+use RoundingWell\HL7\TypeDefinition;
 
 /**
  * Event Type Segment
  */
-final class EVN extends BaseSegment
+final class EVN extends AbstractSegment
 {
     public function __construct()
     {
-        parent::__construct('EVN');
-
-        $this->addField(1, new BaseField('Event Type Code', ST::class));
-        $this->addField(2, new BaseField('Recorded Date/Time', DTM::class, required: true));
-        $this->addField(3, new BaseField('Date/Time Planned Event', DTM::class));
-        $this->addField(4, new BaseField('Event Reason Code', CWE::class));
-        $this->addField(5, new BaseField('Operator ID', XCN::class, repeating: true));
-        $this->addField(6, new BaseField('Event Occurred', DTM::class));
-        $this->addField(7, new BaseField('Event Facility', HD::class));
+        $this->add(new TypeDefinition('Event Type Code', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Recorded Date/Time', DTM::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Date/Time Planned Event', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Event Reason Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Operator ID', XCN::class));
+        $this->add(new TypeDefinition('Event Occurred', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Event Facility', HD::class, maxReps: 1));
     }
 
     public function getTypeCode(): ST
     {
-        return $this->getField(1)->getInstance();
+        return $this->getFieldRepetition(1, 0);
     }
 
     public function getRecordedDateTime(): DTM
     {
-        return $this->getField(2)->getInstance();
+        return $this->getFieldRepetition(2, 0);
     }
 
     public function getPlannedDateTime(): DTM
     {
-        return $this->getField(3)->getInstance();
+        return $this->getFieldRepetition(3, 0);
     }
 
     public function getEventReasonCode(): CWE
     {
-        return $this->getField(4)->getInstance();
+        return $this->getFieldRepetition(4, 0);
     }
 
     /**
@@ -55,16 +53,16 @@ final class EVN extends BaseSegment
      */
     public function getOperatorId(): array
     {
-        return $this->getField(5)->getInstance();
+        return $this->getField(5);
     }
 
     public function getOccurredDateTime(): DTM
     {
-        return $this->getField(6)->getInstance();
+        return $this->getFieldRepetition(6, 0);
     }
 
     public function getEventFacility(): HD
     {
-        return $this->getField(7)->getInstance();
+        return $this->getFieldRepetition(7, 0);
     }
 }

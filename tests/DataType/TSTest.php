@@ -16,9 +16,9 @@ final class TSTest extends TestCase
     {
         // A timestamp pairs the instant with the precision to which it was recorded.
         $ts = new TS();
-        $ts->setRaw(new Encoding(), '20240101^L');
+        $ts->parse(new Encoding(), '20240101^L');
 
-        $this->assertSame('20240101', $ts->time->getValue());
-        $this->assertSame('L', $ts->precision->getValue());
+        $this->assertSame('20240101', $ts->getTime()->getValue());
+        $this->assertSame('L', $ts->getPrecision()->getValue());
     }
 }

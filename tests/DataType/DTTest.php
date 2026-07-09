@@ -7,7 +7,6 @@ namespace RoundingWell\HL7\Tests\DataType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\DataType\DT;
-use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidDateTime;
 
 #[CoversClass(DT::class)]
@@ -17,12 +16,10 @@ final class DTTest extends TestCase
     {
         // An absent date must report no value and no parsed date.
         $dt = new DT();
-        $dt->setRaw(new Encoding(), '');
+        $dt->setValue('');
 
-        $this->assertFalse($dt->hasValue());
         $this->assertSame('', $dt->getValue());
         $this->assertNull($dt->getDateTime());
-        $this->assertSame('', (string) $dt);
 
         // Clearing the value must also discard the derived format.
         $this->assertNull($dt->getFormat());
@@ -35,9 +32,7 @@ final class DTTest extends TestCase
         $dt = new DT();
         $dt->setValue('2024');
 
-        $this->assertTrue($dt->hasValue());
         $this->assertSame('2024', $dt->getValue());
-        $this->assertSame('2024', (string) $dt);
         $this->assertSame('2024-01-01', $dt->getDateTime()?->format('Y-m-d'));
 
         // Year-only precision must derive a year-only format, with ! forcing zeroed components.
@@ -51,8 +46,6 @@ final class DTTest extends TestCase
         $dt->setValue('20240315');
 
         $this->assertSame('20240315', $dt->getValue());
-        $this->assertSame('20240315', (string) $dt);
-        $this->assertNotNull($dt->getDateTime());
         $this->assertSame('2024-03-15', $dt->getDateTime()?->format('Y-m-d'));
 
         // Full precision must derive a format covering year, month, and day.

@@ -16,9 +16,9 @@ final class PTTest extends TestCase
     {
         // Processing id (e.g. P = production) and mode drive how a receiver treats the message.
         $pt = new PT();
-        $pt->setRaw(new Encoding(), 'P^A');
+        $pt->parse(new Encoding(), 'P^A');
 
-        $this->assertSame('P', $pt->id->getValue());
-        $this->assertSame('A', $pt->mode->getValue());
+        $this->assertSame('P', $pt->getId()->getValue());
+        $this->assertSame('A', $pt->getMode()->getValue());
     }
 }

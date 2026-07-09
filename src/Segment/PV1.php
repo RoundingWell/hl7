@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
-use RoundingWell\HL7\BaseField;
-use RoundingWell\HL7\BaseSegment;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\CX;
 use RoundingWell\HL7\DataType\DLD;
@@ -17,105 +16,101 @@ use RoundingWell\HL7\DataType\PL;
 use RoundingWell\HL7\DataType\SI;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XCN;
+use RoundingWell\HL7\TypeDefinition;
 
 /**
  * Patient Visit Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class PV1 extends BaseSegment
+final class PV1 extends AbstractSegment
 {
-    /**
-     * @mago-expect lint:halstead
-     */
     public function __construct()
     {
-        parent::__construct('PV1');
-
-        $this->addField(1, new BaseField('Set ID', SI::class));
-        $this->addField(2, new BaseField('Patient Class', CWE::class, required: true));
-        $this->addField(3, new BaseField('Assigned Patient Location', PL::class));
-        $this->addField(4, new BaseField('Admission Type', CWE::class));
-        $this->addField(5, new BaseField('Preadmit Number', CX::class));
-        $this->addField(6, new BaseField('Prior Patient Location', PL::class));
-        $this->addField(7, new BaseField('Attending Doctor', XCN::class, repeating: true));
-        $this->addField(8, new BaseField('Referring Doctor', XCN::class, repeating: true));
-        $this->addField(9, new BaseField('Consulting Doctor', XCN::class, repeating: true));
-        $this->addField(10, new BaseField('Hospital Service', CWE::class));
-        $this->addField(11, new BaseField('Temporary Location', PL::class));
-        $this->addField(12, new BaseField('Preadmit Test Indicator', CWE::class));
-        $this->addField(13, new BaseField('Re-admission Indicator', CWE::class));
-        $this->addField(14, new BaseField('Admit Source', CWE::class));
-        $this->addField(15, new BaseField('Ambulatory Status', CWE::class, repeating: true));
-        $this->addField(16, new BaseField('VIP Indicator', CWE::class));
-        $this->addField(17, new BaseField('Admitting Doctor', XCN::class, repeating: true));
-        $this->addField(18, new BaseField('Patient Type', CWE::class));
-        $this->addField(19, new BaseField('Visit Number', CX::class));
-        $this->addField(20, new BaseField('Financial Class', FC::class, repeating: true));
-        $this->addField(21, new BaseField('Charge Price Indicator', CWE::class));
-        $this->addField(22, new BaseField('Courtesy Code', CWE::class));
-        $this->addField(23, new BaseField('Credit Rating', CWE::class));
-        $this->addField(24, new BaseField('Contract Code', CWE::class, repeating: true));
-        $this->addField(25, new BaseField('Contract Effective Date', DT::class, repeating: true));
-        $this->addField(26, new BaseField('Contract Amount', NM::class, repeating: true));
-        $this->addField(27, new BaseField('Contract Period', NM::class, repeating: true));
-        $this->addField(28, new BaseField('Interest Code', CWE::class));
-        $this->addField(29, new BaseField('Transfer to Bad Debt Code', CWE::class));
-        $this->addField(30, new BaseField('Transfer to Bad Debt Date', DT::class));
-        $this->addField(31, new BaseField('Bad Debt Agency Code', CWE::class));
-        $this->addField(32, new BaseField('Bad Debt Transfer Amount', NM::class));
-        $this->addField(33, new BaseField('Bad Debt Recovery Amount', NM::class));
-        $this->addField(34, new BaseField('Delete Account Indicator', CWE::class));
-        $this->addField(35, new BaseField('Delete Account Date', DT::class));
-        $this->addField(36, new BaseField('Discharge Disposition', CWE::class));
-        $this->addField(37, new BaseField('Discharged to Location', DLD::class));
-        $this->addField(38, new BaseField('Diet Type', CWE::class));
-        $this->addField(39, new BaseField('Servicing Facility', CWE::class));
-        $this->addField(40, new BaseField('Bed Status', CWE::class));
-        $this->addField(41, new BaseField('Account Status', CWE::class));
-        $this->addField(42, new BaseField('Pending Location', PL::class));
-        $this->addField(43, new BaseField('Prior Temporary Location', PL::class));
-        $this->addField(44, new BaseField('Admit Date/Time', DTM::class));
-        $this->addField(45, new BaseField('Discharge Date/Time', DTM::class));
-        $this->addField(46, new BaseField('Current Patient Balance', NM::class));
-        $this->addField(47, new BaseField('Total Charges', NM::class));
-        $this->addField(48, new BaseField('Total Adjustments', NM::class));
-        $this->addField(49, new BaseField('Total Payments', NM::class));
-        $this->addField(50, new BaseField('Alternate Visit ID', CX::class, repeating: true));
-        $this->addField(51, new BaseField('Visit Indicator', CWE::class));
-        $this->addField(52, new BaseField('Other Healthcare Provider', ST::class));
-        $this->addField(53, new BaseField('Service Episode Description', ST::class));
-        $this->addField(54, new BaseField('Service Episode Identifier', CX::class));
+        $this->add(new TypeDefinition('Set ID', SI::class, maxReps: 1));
+        $this->add(new TypeDefinition('Patient Class', CWE::class, isRequired: true, maxReps: 1));
+        $this->add(new TypeDefinition('Assigned Patient Location', PL::class, maxReps: 1));
+        $this->add(new TypeDefinition('Admission Type', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Preadmit Number', CX::class, maxReps: 1));
+        $this->add(new TypeDefinition('Prior Patient Location', PL::class, maxReps: 1));
+        $this->add(new TypeDefinition('Attending Doctor', XCN::class));
+        $this->add(new TypeDefinition('Referring Doctor', XCN::class));
+        $this->add(new TypeDefinition('Consulting Doctor', XCN::class));
+        $this->add(new TypeDefinition('Hospital Service', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Temporary Location', PL::class, maxReps: 1));
+        $this->add(new TypeDefinition('Preadmit Test Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Re-admission Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Admit Source', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Ambulatory Status', CWE::class));
+        $this->add(new TypeDefinition('VIP Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Admitting Doctor', XCN::class));
+        $this->add(new TypeDefinition('Patient Type', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Visit Number', CX::class, maxReps: 1));
+        $this->add(new TypeDefinition('Financial Class', FC::class));
+        $this->add(new TypeDefinition('Charge Price Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Courtesy Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Credit Rating', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Contract Code', CWE::class));
+        $this->add(new TypeDefinition('Contract Effective Date', DT::class));
+        $this->add(new TypeDefinition('Contract Amount', NM::class));
+        $this->add(new TypeDefinition('Contract Period', NM::class));
+        $this->add(new TypeDefinition('Interest Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Transfer to Bad Debt Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Transfer to Bad Debt Date', DT::class, maxReps: 1));
+        $this->add(new TypeDefinition('Bad Debt Agency Code', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Bad Debt Transfer Amount', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Bad Debt Recovery Amount', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Delete Account Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Delete Account Date', DT::class, maxReps: 1));
+        $this->add(new TypeDefinition('Discharge Disposition', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Discharged to Location', DLD::class, maxReps: 1));
+        $this->add(new TypeDefinition('Diet Type', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Servicing Facility', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Bed Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Account Status', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Pending Location', PL::class, maxReps: 1));
+        $this->add(new TypeDefinition('Prior Temporary Location', PL::class, maxReps: 1));
+        $this->add(new TypeDefinition('Admit Date/Time', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Discharge Date/Time', DTM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Current Patient Balance', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Total Charges', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Total Adjustments', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Total Payments', NM::class, maxReps: 1));
+        $this->add(new TypeDefinition('Alternate Visit ID', CX::class));
+        $this->add(new TypeDefinition('Visit Indicator', CWE::class, maxReps: 1));
+        $this->add(new TypeDefinition('Other Healthcare Provider', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Service Episode Description', ST::class, maxReps: 1));
+        $this->add(new TypeDefinition('Service Episode Identifier', CX::class, maxReps: 1));
     }
 
     public function getIdentity(): SI
     {
-        return $this->getField(1)->getInstance();
+        return $this->getFieldRepetition(1, 0);
     }
 
     public function getPatientClass(): CWE
     {
-        return $this->getField(2)->getInstance();
+        return $this->getFieldRepetition(2, 0);
     }
 
     public function getAssignedPatientLocation(): PL
     {
-        return $this->getField(3)->getInstance();
+        return $this->getFieldRepetition(3, 0);
     }
 
     public function getAdmissionType(): CWE
     {
-        return $this->getField(4)->getInstance();
+        return $this->getFieldRepetition(4, 0);
     }
 
     public function getPreadmitNumber(): CX
     {
-        return $this->getField(5)->getInstance();
+        return $this->getFieldRepetition(5, 0);
     }
 
     public function getPriorPatientLocation(): PL
     {
-        return $this->getField(6)->getInstance();
+        return $this->getFieldRepetition(6, 0);
     }
 
     /**
@@ -123,7 +118,7 @@ final class PV1 extends BaseSegment
      */
     public function getAttendingDoctor(): array
     {
-        return $this->getField(7)->getInstance();
+        return $this->getField(7);
     }
 
     /**
@@ -131,7 +126,7 @@ final class PV1 extends BaseSegment
      */
     public function getReferringDoctor(): array
     {
-        return $this->getField(8)->getInstance();
+        return $this->getField(8);
     }
 
     /**
@@ -139,32 +134,32 @@ final class PV1 extends BaseSegment
      */
     public function getConsultingDoctor(): array
     {
-        return $this->getField(9)->getInstance();
+        return $this->getField(9);
     }
 
     public function getHospitalService(): CWE
     {
-        return $this->getField(10)->getInstance();
+        return $this->getFieldRepetition(10, 0);
     }
 
     public function getTemporaryLocation(): PL
     {
-        return $this->getField(11)->getInstance();
+        return $this->getFieldRepetition(11, 0);
     }
 
     public function getPreadmitTestIndicator(): CWE
     {
-        return $this->getField(12)->getInstance();
+        return $this->getFieldRepetition(12, 0);
     }
 
     public function getReadmissionIndicator(): CWE
     {
-        return $this->getField(13)->getInstance();
+        return $this->getFieldRepetition(13, 0);
     }
 
     public function getAdmitSource(): CWE
     {
-        return $this->getField(14)->getInstance();
+        return $this->getFieldRepetition(14, 0);
     }
 
     /**
@@ -172,12 +167,12 @@ final class PV1 extends BaseSegment
      */
     public function getAmbulatoryStatus(): array
     {
-        return $this->getField(15)->getInstance();
+        return $this->getField(15);
     }
 
     public function getVipIndicator(): CWE
     {
-        return $this->getField(16)->getInstance();
+        return $this->getFieldRepetition(16, 0);
     }
 
     /**
@@ -185,17 +180,17 @@ final class PV1 extends BaseSegment
      */
     public function getAdmittingDoctor(): array
     {
-        return $this->getField(17)->getInstance();
+        return $this->getField(17);
     }
 
     public function getPatientType(): CWE
     {
-        return $this->getField(18)->getInstance();
+        return $this->getFieldRepetition(18, 0);
     }
 
     public function getVisitNumber(): CX
     {
-        return $this->getField(19)->getInstance();
+        return $this->getFieldRepetition(19, 0);
     }
 
     /**
@@ -203,22 +198,22 @@ final class PV1 extends BaseSegment
      */
     public function getFinancialClass(): array
     {
-        return $this->getField(20)->getInstance();
+        return $this->getField(20);
     }
 
     public function getChargePriceIndicator(): CWE
     {
-        return $this->getField(21)->getInstance();
+        return $this->getFieldRepetition(21, 0);
     }
 
     public function getCourtesyCode(): CWE
     {
-        return $this->getField(22)->getInstance();
+        return $this->getFieldRepetition(22, 0);
     }
 
     public function getCreditRating(): CWE
     {
-        return $this->getField(23)->getInstance();
+        return $this->getFieldRepetition(23, 0);
     }
 
     /**
@@ -226,7 +221,7 @@ final class PV1 extends BaseSegment
      */
     public function getContractCode(): array
     {
-        return $this->getField(24)->getInstance();
+        return $this->getField(24);
     }
 
     /**
@@ -234,7 +229,7 @@ final class PV1 extends BaseSegment
      */
     public function getContractEffectiveDate(): array
     {
-        return $this->getField(25)->getInstance();
+        return $this->getField(25);
     }
 
     /**
@@ -242,7 +237,7 @@ final class PV1 extends BaseSegment
      */
     public function getContractAmount(): array
     {
-        return $this->getField(26)->getInstance();
+        return $this->getField(26);
     }
 
     /**
@@ -250,117 +245,117 @@ final class PV1 extends BaseSegment
      */
     public function getContractPeriod(): array
     {
-        return $this->getField(27)->getInstance();
+        return $this->getField(27);
     }
 
     public function getInterestCode(): CWE
     {
-        return $this->getField(28)->getInstance();
+        return $this->getFieldRepetition(28, 0);
     }
 
     public function getTransferToBadDebtCode(): CWE
     {
-        return $this->getField(29)->getInstance();
+        return $this->getFieldRepetition(29, 0);
     }
 
     public function getTransferToBadDebtDate(): DT
     {
-        return $this->getField(30)->getInstance();
+        return $this->getFieldRepetition(30, 0);
     }
 
     public function getBadDebtAgencyCode(): CWE
     {
-        return $this->getField(31)->getInstance();
+        return $this->getFieldRepetition(31, 0);
     }
 
     public function getBadDebtTransferAmount(): NM
     {
-        return $this->getField(32)->getInstance();
+        return $this->getFieldRepetition(32, 0);
     }
 
     public function getBadDebtRecoveryAmount(): NM
     {
-        return $this->getField(33)->getInstance();
+        return $this->getFieldRepetition(33, 0);
     }
 
     public function getDeleteAccountIndicator(): CWE
     {
-        return $this->getField(34)->getInstance();
+        return $this->getFieldRepetition(34, 0);
     }
 
     public function getDeleteAccountDate(): DT
     {
-        return $this->getField(35)->getInstance();
+        return $this->getFieldRepetition(35, 0);
     }
 
     public function getDischargeDisposition(): CWE
     {
-        return $this->getField(36)->getInstance();
+        return $this->getFieldRepetition(36, 0);
     }
 
     public function getDischargedToLocation(): DLD
     {
-        return $this->getField(37)->getInstance();
+        return $this->getFieldRepetition(37, 0);
     }
 
     public function getDietType(): CWE
     {
-        return $this->getField(38)->getInstance();
+        return $this->getFieldRepetition(38, 0);
     }
 
     public function getServicingFacility(): CWE
     {
-        return $this->getField(39)->getInstance();
+        return $this->getFieldRepetition(39, 0);
     }
 
     public function getBedStatus(): CWE
     {
-        return $this->getField(40)->getInstance();
+        return $this->getFieldRepetition(40, 0);
     }
 
     public function getAccountStatus(): CWE
     {
-        return $this->getField(41)->getInstance();
+        return $this->getFieldRepetition(41, 0);
     }
 
     public function getPendingLocation(): PL
     {
-        return $this->getField(42)->getInstance();
+        return $this->getFieldRepetition(42, 0);
     }
 
     public function getPriorTemporaryLocation(): PL
     {
-        return $this->getField(43)->getInstance();
+        return $this->getFieldRepetition(43, 0);
     }
 
     public function getAdmitDateTime(): DTM
     {
-        return $this->getField(44)->getInstance();
+        return $this->getFieldRepetition(44, 0);
     }
 
     public function getDischargeDateTime(): DTM
     {
-        return $this->getField(45)->getInstance();
+        return $this->getFieldRepetition(45, 0);
     }
 
     public function getCurrentPatientBalance(): NM
     {
-        return $this->getField(46)->getInstance();
+        return $this->getFieldRepetition(46, 0);
     }
 
     public function getTotalCharges(): NM
     {
-        return $this->getField(47)->getInstance();
+        return $this->getFieldRepetition(47, 0);
     }
 
     public function getTotalAdjustments(): NM
     {
-        return $this->getField(48)->getInstance();
+        return $this->getFieldRepetition(48, 0);
     }
 
     public function getTotalPayments(): NM
     {
-        return $this->getField(49)->getInstance();
+        return $this->getFieldRepetition(49, 0);
     }
 
     /**
@@ -368,26 +363,26 @@ final class PV1 extends BaseSegment
      */
     public function getAlternateVisitId(): array
     {
-        return $this->getField(50)->getInstance();
+        return $this->getField(50);
     }
 
     public function getVisitIndicator(): CWE
     {
-        return $this->getField(51)->getInstance();
+        return $this->getFieldRepetition(51, 0);
     }
 
     public function getOtherHealthcareProvider(): ST
     {
-        return $this->getField(52)->getInstance();
+        return $this->getFieldRepetition(52, 0);
     }
 
     public function getServiceEpisodeDescription(): ST
     {
-        return $this->getField(53)->getInstance();
+        return $this->getFieldRepetition(53, 0);
     }
 
     public function getServiceEpisodeIdentifier(): CX
     {
-        return $this->getField(54)->getInstance();
+        return $this->getFieldRepetition(54, 0);
     }
 }

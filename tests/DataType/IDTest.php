@@ -12,31 +12,27 @@ use RoundingWell\HL7\Encoding;
 #[CoversClass(ID::class)]
 final class IDTest extends TestCase
 {
-    public function testUnsetValueReportsNoValue(): void
+    public function testUnsetValueReportsEmptyString(): void
     {
         // An unpopulated coded field must read as empty rather than error.
         $id = new ID(76);
 
-        $this->assertFalse($id->hasValue());
         $this->assertSame('', $id->getValue());
-        $this->assertSame('', (string) $id);
     }
 
-    public function testSetRawDecodesAndStoresTheValue(): void
+    public function testParseDecodesAndStoresTheValue(): void
     {
         $id = new ID(76);
-        $id->setRaw(new Encoding(), 'ADT');
+        $id->parse(new Encoding(), 'ADT');
 
-        $this->assertTrue($id->hasValue());
         $this->assertSame('ADT', $id->getValue());
-        $this->assertSame('ADT', (string) $id);
     }
 
-    public function testSetRawIgnoresEmptyInput(): void
+    public function testTableIsRetained(): void
     {
+        // The table backs value validation, so it must survive construction.
         $id = new ID(76);
-        $id->setRaw(new Encoding(), '');
 
-        $this->assertFalse($id->hasValue());
+        $this->assertSame(76, $id->getTable());
     }
 }

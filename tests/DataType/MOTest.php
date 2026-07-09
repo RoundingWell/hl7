@@ -16,9 +16,9 @@ final class MOTest extends TestCase
     {
         // Money pairs a numeric quantity with its currency denomination.
         $mo = new MO();
-        $mo->setRaw(new Encoding(), '99.50^USD');
+        $mo->parse(new Encoding(), '99.50^USD');
 
-        $this->assertSame('99.50', $mo->quantity->getValue());
-        $this->assertSame('USD', $mo->denomination->getValue());
+        $this->assertSame('99.50', $mo->getQuantity()->getValue());
+        $this->assertSame('USD', $mo->getDenomination()->getValue());
     }
 }

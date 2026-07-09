@@ -16,9 +16,9 @@ final class FCTest extends TestCase
     {
         // A financial class pairs its coded class with the date it takes effect.
         $fc = new FC();
-        $fc->setRaw(new Encoding(), 'SELF^20260708');
+        $fc->parse(new Encoding(), 'SELF^20260708');
 
-        $this->assertSame('SELF', $fc->financialClassCode->identifier->getValue());
-        $this->assertSame('20260708', $fc->effectiveDate->getValue());
+        $this->assertSame('SELF', $fc->getFinancialClassCode()->getIdentifier()->getValue());
+        $this->assertSame('20260708', $fc->getEffectiveDate()->getValue());
     }
 }
