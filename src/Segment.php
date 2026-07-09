@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
-use RoundingWell\HL7\DataType\ST;
+use RoundingWell\HL7\DataType\Generic;
 use RoundingWell\HL7\Exception\InvalidField;
 
 class Segment
@@ -31,11 +31,7 @@ class Segment
     {
         // @mago-expect lint:no-isset
         if (!isset($this->fields[$number])) {
-            if ($this::class === self::class) {
-                return $this->createGenericField($number);
-            }
-
-            throw InvalidField::notDefined($this->getId(), $number);
+            return $this->createGenericField($number);
         }
 
         // @mago-expect analysis:nullable-return-statement,possibly-undefined-int-array-index,invalid-return-statement
@@ -66,8 +62,8 @@ class Segment
 
     private function createGenericField(int $number): Field
     {
-        // For generic segments, all fields MUST be ST type.
-        $field = new Field('Unknown', ST::class);
+        // Unknown fields are created as Generic type fields, allowing any value to be set.
+        $field = new Field('Unknown', Generic::class);
 
         $this->addField($number, $field);
 

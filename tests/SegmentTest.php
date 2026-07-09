@@ -6,6 +6,7 @@ namespace RoundingWell\HL7\Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\DataType\Generic;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidField;
@@ -41,7 +42,7 @@ final class SegmentTest extends TestCase
         $segment->addField(0, new Field('Bad', ST::class));
     }
 
-    public function testGenericSegmentSynthesizesUnknownFieldsAsStrings(): void
+    public function testGenericSegmentSynthesizesUnknownFieldsAsGenericType(): void
     {
         // A segment with no schema still needs to expose arbitrary fields as raw strings.
         $segment = new Segment('ZZZ');
@@ -49,7 +50,7 @@ final class SegmentTest extends TestCase
         $field = $segment->getField(3);
 
         $this->assertSame('Unknown', $field->getName());
-        $this->assertInstanceOf(ST::class, $field->getInstance());
+        $this->assertInstanceOf(Generic::class, $field->getInstance());
     }
 
     public function testSetRawAssignsValuesByOneBasedFieldPosition(): void
@@ -58,18 +59,23 @@ final class SegmentTest extends TestCase
         $segment = new Segment('ZZZ');
         $segment->setRaw(new Encoding(), ['first', 'second']);
 
-        $this->assertSame('first', $segment->getField(1)->getInstance()->getValue());
-        $this->assertSame('second', $segment->getField(2)->getInstance()->getValue());
+        $first = $segment->getField(1)->getInstance();
+        $second = $segment->getField(2)->getInstance();
+
+        $this->assertInstanceOf(Generic::class, $first);
+        $this->assertInstanceOf(Generic::class, $second);
+
+        $this->assertSame('first', $first->getPath('1'));
+        $this->assertSame(['second'], $second->getValue());
     }
 
-    public function testSchemaSegmentRejectsUndefinedFields(): void
+    public function testSchemaSegmentCreatesUnknownFieldsAsGeneric(): void
     {
         // A typed segment (MSH) must not silently invent fields outside its schema.
         $msh = new MSH();
 
-        $this->expectException(InvalidField::class);
-        $this->expectExceptionMessageIsOrContains("Field 'MSH.99' is not defined");
+        $field = $msh->getField(99);
 
-        $msh->getField(99);
+        $this->assertInstanceOf(Generic::class, $field->getInstance());
     }
 }
