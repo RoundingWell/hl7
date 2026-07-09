@@ -23,18 +23,25 @@ final class DTMTest extends TestCase
         $this->assertSame('', $dtm->getValue());
         $this->assertNull($dtm->getDateTime());
         $this->assertSame('', (string) $dtm);
+
+        // Clearing the value must also discard the derived format.
+        $this->assertNull($dtm->getFormat());
     }
 
     public function testYearOnlyValueParsesWithoutOptionalComponents(): void
     {
-        // The smallest legal precision (year) must parse without any month/time components.
+        // The smallest legal precision (year) must parse without any month/time components,
+        // and the absent components must be zeroed rather than filled from "now".
         $dtm = new DTM();
         $dtm->setValue('2024');
 
         $this->assertTrue($dtm->hasValue());
         $this->assertSame('2024', $dtm->getValue());
         $this->assertSame('2024', (string) $dtm);
-        $this->assertSame('2024', $dtm->getDateTime()?->format('Y'));
+        $this->assertSame('2024-01-01 00:00:00', $dtm->getDateTime()?->format('Y-m-d H:i:s'));
+
+        // Year-only precision must derive a year-only format, with ! forcing zeroed components.
+        $this->assertSame('!Y', $dtm->getFormat());
     }
 
     public function testFullValueParsesEveryOptionalComponent(): void
@@ -45,6 +52,9 @@ final class DTMTest extends TestCase
 
         $this->assertSame('20240315123045.1234+0500', $dtm->getValue());
         $this->assertSame('2024-03-15 12:30:45 +05:00', $dtm->getDateTime()?->format('Y-m-d H:i:s P'));
+
+        // Full precision must derive a format covering every optional component.
+        $this->assertSame('!YmdHis.uO', $dtm->getFormat());
     }
 
     public function testInvalidValueIsRejected(): void

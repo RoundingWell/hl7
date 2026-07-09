@@ -19,6 +19,7 @@ final class DT implements Type, \Stringable
     private const string PATTERN = '/^(\d{4})(\d{2})?(\d{2})?$/';
 
     private ?DateTimeImmutable $date = null;
+    private ?string $format = null;
     private string $value;
 
     public function hasValue(): bool
@@ -32,6 +33,7 @@ final class DT implements Type, \Stringable
         if ($value === '') {
             $this->date = null;
 
+            unset($this->format);
             unset($this->value);
 
             return;
@@ -43,7 +45,8 @@ final class DT implements Type, \Stringable
             throw InvalidDateTime::invalidValue($value);
         }
 
-        $format = 'Y';
+        // Prefix the format with ! to force all elements to start at zero.
+        $format = '!Y';
         if (isset($matches[2])) { // @mago-expect lint:no-isset
             $format .= 'm';
         }
@@ -53,6 +56,7 @@ final class DT implements Type, \Stringable
 
         // @mago-expect analysis:invalid-property-assignment-value
         $this->date = DateTimeImmutable::createFromFormat($format, $value);
+        $this->format = $format;
         $this->value = $value;
     }
 
@@ -75,6 +79,15 @@ final class DT implements Type, \Stringable
     {
         if ($this->hasValue()) {
             return $this->date;
+        }
+
+        return null;
+    }
+
+    public function getFormat(): ?string
+    {
+        if ($this->hasValue()) {
+            return $this->format;
         }
 
         return null;

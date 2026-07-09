@@ -23,18 +23,25 @@ final class DTTest extends TestCase
         $this->assertSame('', $dt->getValue());
         $this->assertNull($dt->getDateTime());
         $this->assertSame('', (string) $dt);
+
+        // Clearing the value must also discard the derived format.
+        $this->assertNull($dt->getFormat());
     }
 
     public function testYearOnlyValueParsesWithoutOptionalComponents(): void
     {
-        // The smallest legal precision (year) must parse without any month/day components.
+        // The smallest legal precision (year) must parse without any month/day components,
+        // and the absent components must be zeroed rather than filled from "now".
         $dt = new DT();
         $dt->setValue('2024');
 
         $this->assertTrue($dt->hasValue());
         $this->assertSame('2024', $dt->getValue());
         $this->assertSame('2024', (string) $dt);
-        $this->assertSame('2024', $dt->getDateTime()?->format('Y'));
+        $this->assertSame('2024-01-01', $dt->getDateTime()?->format('Y-m-d'));
+
+        // Year-only precision must derive a year-only format, with ! forcing zeroed components.
+        $this->assertSame('!Y', $dt->getFormat());
     }
 
     public function testFullValueParsesEveryOptionalComponent(): void
@@ -47,6 +54,9 @@ final class DTTest extends TestCase
         $this->assertSame('20240315', (string) $dt);
         $this->assertNotNull($dt->getDateTime());
         $this->assertSame('2024-03-15', $dt->getDateTime()?->format('Y-m-d'));
+
+        // Full precision must derive a format covering year, month, and day.
+        $this->assertSame('!Ymd', $dt->getFormat());
     }
 
     public function testInvalidValueIsRejected(): void
