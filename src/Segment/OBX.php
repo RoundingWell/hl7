@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CNE;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DTM;
@@ -16,48 +18,50 @@ use RoundingWell\HL7\DataType\Varies;
 use RoundingWell\HL7\DataType\XAD;
 use RoundingWell\HL7\DataType\XCN;
 use RoundingWell\HL7\DataType\XON;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Observation/Result Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class OBX extends Segment
+final class OBX extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('OBX');
 
-        $this->addField(1, new Field('Set ID', SI::class));
-        $this->addField(2, new Field('Value Type', ID::class, required: true, args: ['table' => 125]));
-        $this->addField(3, new Field('Observation Identifier', CWE::class, required: true));
-        $this->addField(4, new Field('Observation Sub-ID', ST::class, required: true));
-        $this->addField(5, new Field('Observation Value', Varies::class, repeating: true));
-        $this->addField(6, new Field('Units', CWE::class));
-        $this->addField(7, new Field('References Range', ST::class));
-        $this->addField(8, new Field('Interpretation Codes', CWE::class, repeating: true));
-        $this->addField(9, new Field('Probability', NM::class));
-        $this->addField(10, new Field('Nature of Abnormal Test', ID::class, repeating: true, args: ['table' => 80]));
-        $this->addField(11, new Field('Observation Result Status', ID::class, required: true, args: ['table' => 85]));
-        $this->addField(12, new Field('Effective Date of Reference Range', DTM::class));
-        $this->addField(13, new Field('User Defined Access Checks', ST::class));
-        $this->addField(14, new Field('Date/Time of the Observation', DTM::class));
-        $this->addField(15, new Field("Producer's ID", CWE::class));
-        $this->addField(16, new Field('Responsible Observer', XCN::class, repeating: true));
-        $this->addField(17, new Field('Observation Method', CWE::class, repeating: true));
-        $this->addField(18, new Field('Equipment Instance Identifier', EI::class, repeating: true));
-        $this->addField(19, new Field('Date/Time of the Analysis', DTM::class));
-        $this->addField(20, new Field('Observation Site', CWE::class, repeating: true));
-        $this->addField(21, new Field('Observation Instance Identifier', EI::class));
-        $this->addField(22, new Field('Mood Code', CNE::class));
-        $this->addField(23, new Field('Performing Organization Name', XON::class));
-        $this->addField(24, new Field('Performing Organization Address', XAD::class));
-        $this->addField(25, new Field('Performing Organization Medical Director', XCN::class));
-        $this->addField(26, new Field('Patient Results Release Category', ID::class, args: ['table' => 909]));
-        $this->addField(27, new Field('Root Cause', CWE::class));
-        $this->addField(28, new Field('Local Process Control', CWE::class, repeating: true));
+        $this->addField(1, new BaseField('Set ID', SI::class));
+        $this->addField(2, new BaseField('Value Type', ID::class, required: true, args: ['table' => 125]));
+        $this->addField(3, new BaseField('Observation Identifier', CWE::class, required: true));
+        $this->addField(4, new BaseField('Observation Sub-ID', ST::class, required: true));
+        $this->addField(5, new BaseField('Observation Value', Varies::class, repeating: true));
+        $this->addField(6, new BaseField('Units', CWE::class));
+        $this->addField(7, new BaseField('References Range', ST::class));
+        $this->addField(8, new BaseField('Interpretation Codes', CWE::class, repeating: true));
+        $this->addField(9, new BaseField('Probability', NM::class));
+        $this->addField(10, new BaseField('Nature of Abnormal Test', ID::class, repeating: true, args: [
+            'table' => 80,
+        ]));
+        $this->addField(11, new BaseField('Observation Result Status', ID::class, required: true, args: [
+            'table' => 85,
+        ]));
+        $this->addField(12, new BaseField('Effective Date of Reference Range', DTM::class));
+        $this->addField(13, new BaseField('User Defined Access Checks', ST::class));
+        $this->addField(14, new BaseField('Date/Time of the Observation', DTM::class));
+        $this->addField(15, new BaseField("Producer's ID", CWE::class));
+        $this->addField(16, new BaseField('Responsible Observer', XCN::class, repeating: true));
+        $this->addField(17, new BaseField('Observation Method', CWE::class, repeating: true));
+        $this->addField(18, new BaseField('Equipment Instance Identifier', EI::class, repeating: true));
+        $this->addField(19, new BaseField('Date/Time of the Analysis', DTM::class));
+        $this->addField(20, new BaseField('Observation Site', CWE::class, repeating: true));
+        $this->addField(21, new BaseField('Observation Instance Identifier', EI::class));
+        $this->addField(22, new BaseField('Mood Code', CNE::class));
+        $this->addField(23, new BaseField('Performing Organization Name', XON::class));
+        $this->addField(24, new BaseField('Performing Organization Address', XAD::class));
+        $this->addField(25, new BaseField('Performing Organization Medical Director', XCN::class));
+        $this->addField(26, new BaseField('Patient Results Release Category', ID::class, args: ['table' => 909]));
+        $this->addField(27, new BaseField('Root Cause', CWE::class));
+        $this->addField(28, new BaseField('Local Process Control', CWE::class, repeating: true));
     }
 
     public function getIdentity(): SI

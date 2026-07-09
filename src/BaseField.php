@@ -10,7 +10,7 @@ use RoundingWell\HL7\DataType\Type;
 /**
  * @template T of Type
  */
-final class Field
+final class BaseField
 {
     /** @var list<T> */
     private array $instances = [];

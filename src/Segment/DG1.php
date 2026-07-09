@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CNE;
 use RoundingWell\HL7\DataType\CP;
 use RoundingWell\HL7\DataType\CWE;
@@ -14,46 +16,44 @@ use RoundingWell\HL7\DataType\NM;
 use RoundingWell\HL7\DataType\SI;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XCN;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Diagnosis Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class DG1 extends Segment
+final class DG1 extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('DG1');
 
-        $this->addField(1, new Field('Set ID', SI::class, required: true));
-        $this->addField(2, new Field('Diagnosis Coding Method', ST::class));
-        $this->addField(3, new Field('Diagnosis Code', CWE::class, required: true));
-        $this->addField(4, new Field('Diagnosis Description', ST::class));
-        $this->addField(5, new Field('Diagnosis Date/Time', DTM::class));
-        $this->addField(6, new Field('Diagnosis Type', CWE::class, required: true));
-        $this->addField(7, new Field('Major Diagnostic Category', CNE::class));
-        $this->addField(8, new Field('Diagnostic Related Group', CNE::class));
-        $this->addField(9, new Field('DRG Approval Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(10, new Field('DRG Grouper Review Code', CWE::class));
-        $this->addField(11, new Field('Outlier Type', CWE::class));
-        $this->addField(12, new Field('Outlier Days', NM::class));
-        $this->addField(13, new Field('Outlier Cost', CP::class));
-        $this->addField(14, new Field('Grouper Version And Type', ST::class));
-        $this->addField(15, new Field('Diagnosis Priority', NM::class));
-        $this->addField(16, new Field('Diagnosing Clinician', XCN::class, repeating: true));
-        $this->addField(17, new Field('Diagnosis Classification', CWE::class));
-        $this->addField(18, new Field('Confidential Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(19, new Field('Attestation Date/Time', DTM::class));
-        $this->addField(20, new Field('Diagnosis Identifier', EI::class));
-        $this->addField(21, new Field('Diagnosis Action Code', ID::class, args: ['table' => 206]));
-        $this->addField(22, new Field('Parent Diagnosis', EI::class));
-        $this->addField(23, new Field('DRG CCL Value Code', CWE::class));
-        $this->addField(24, new Field('DRG Grouping Usage', ID::class, args: ['table' => 136]));
-        $this->addField(25, new Field('DRG Diagnosis Determination Status', CWE::class));
-        $this->addField(26, new Field('Present On Admission (POA) Indicator', CWE::class));
+        $this->addField(1, new BaseField('Set ID', SI::class, required: true));
+        $this->addField(2, new BaseField('Diagnosis Coding Method', ST::class));
+        $this->addField(3, new BaseField('Diagnosis Code', CWE::class, required: true));
+        $this->addField(4, new BaseField('Diagnosis Description', ST::class));
+        $this->addField(5, new BaseField('Diagnosis Date/Time', DTM::class));
+        $this->addField(6, new BaseField('Diagnosis Type', CWE::class, required: true));
+        $this->addField(7, new BaseField('Major Diagnostic Category', CNE::class));
+        $this->addField(8, new BaseField('Diagnostic Related Group', CNE::class));
+        $this->addField(9, new BaseField('DRG Approval Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(10, new BaseField('DRG Grouper Review Code', CWE::class));
+        $this->addField(11, new BaseField('Outlier Type', CWE::class));
+        $this->addField(12, new BaseField('Outlier Days', NM::class));
+        $this->addField(13, new BaseField('Outlier Cost', CP::class));
+        $this->addField(14, new BaseField('Grouper Version And Type', ST::class));
+        $this->addField(15, new BaseField('Diagnosis Priority', NM::class));
+        $this->addField(16, new BaseField('Diagnosing Clinician', XCN::class, repeating: true));
+        $this->addField(17, new BaseField('Diagnosis Classification', CWE::class));
+        $this->addField(18, new BaseField('Confidential Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(19, new BaseField('Attestation Date/Time', DTM::class));
+        $this->addField(20, new BaseField('Diagnosis Identifier', EI::class));
+        $this->addField(21, new BaseField('Diagnosis Action Code', ID::class, args: ['table' => 206]));
+        $this->addField(22, new BaseField('Parent Diagnosis', EI::class));
+        $this->addField(23, new BaseField('DRG CCL Value Code', CWE::class));
+        $this->addField(24, new BaseField('DRG Grouping Usage', ID::class, args: ['table' => 136]));
+        $this->addField(25, new BaseField('DRG Diagnosis Determination Status', CWE::class));
+        $this->addField(26, new BaseField('Present On Admission (POA) Indicator', CWE::class));
     }
 
     public function getIdentity(): SI

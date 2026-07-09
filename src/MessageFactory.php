@@ -10,7 +10,7 @@ use RoundingWell\HL7\Segment\MSH;
 
 final readonly class MessageFactory
 {
-    public function parseFile(string $path): Message
+    public function parseFile(string $path): BaseMessage
     {
         if (!is_file($path)) {
             throw InvalidFile::doesNotExist($path);
@@ -25,7 +25,7 @@ final readonly class MessageFactory
         return $this->parse($content);
     }
 
-    public function parse(string $data): Message
+    public function parse(string $data): BaseMessage
     {
         // Encoding MUST be detected before parsing segments.
         $encoding = $this->detectEncoding($data);
@@ -99,9 +99,9 @@ final readonly class MessageFactory
     }
 
     /**
-     * @param list<Segment> $segments
+     * @param list<BaseSegment> $segments
      */
-    private function create(MSH $msh, array $segments): Message
+    private function create(MSH $msh, array $segments): BaseMessage
     {
         $type = $msh->getMessageType()->messageType->getValue();
         $event = $msh->getMessageType()->triggerEvent->getValue();
@@ -112,10 +112,10 @@ final readonly class MessageFactory
                 'A03' => new Message\ADT\A03($segments),
                 'A06' => new Message\ADT\A06($segments),
                 'A08' => new Message\ADT\A08($segments),
-                default => new Message($segments),
+                default => new BaseMessage($segments),
             };
         }
 
-        return new Message($segments);
+        return new BaseMessage($segments);
     }
 }

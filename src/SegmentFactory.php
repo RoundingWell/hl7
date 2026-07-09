@@ -10,7 +10,7 @@ final readonly class SegmentFactory
         private Encoding $encoding = new Encoding(),
     ) {}
 
-    public function parse(string $data): Segment
+    public function parse(string $data): BaseSegment
     {
         $values = explode($this->encoding->fieldSeparator, $data);
 
@@ -29,7 +29,7 @@ final readonly class SegmentFactory
     /**
      * @param list<string> $values
      */
-    private function create(string $id, array $values): Segment
+    private function create(string $id, array $values): BaseSegment
     {
         $segment = match ($id) {
             'MSH' => new Segment\MSH(),
@@ -41,7 +41,7 @@ final readonly class SegmentFactory
             'DG1' => new Segment\DG1(),
             'DRG' => new Segment\DRG(),
             'OBX' => new Segment\OBX(),
-            default => new Segment($id),
+            default => new BaseSegment($id),
         };
 
         $segment->setRaw($this->encoding, $values);

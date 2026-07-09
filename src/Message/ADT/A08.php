@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Message\ADT;
 
-use RoundingWell\HL7\Message;
+use RoundingWell\HL7\BaseMessage;
 use RoundingWell\HL7\Segment\DG1;
 use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
@@ -47,7 +47,7 @@ use RoundingWell\HL7\Segment\PV2;
  * 24. UB2 (Uniform Billing Data) (optional)
  * 25. PDA (Patient Death and Autopsy) (optional)
  */
-final readonly class A08 extends Message
+final readonly class A08 extends BaseMessage
 {
     public function getEVN(): EVN
     {

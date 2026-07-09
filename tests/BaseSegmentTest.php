@@ -6,26 +6,26 @@ namespace RoundingWell\HL7\Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\Generic;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidField;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 use RoundingWell\HL7\Segment\MSH;
 
-#[CoversClass(Segment::class)]
-final class SegmentTest extends TestCase
+#[CoversClass(BaseSegment::class)]
+final class BaseSegmentTest extends TestCase
 {
     public function testExposesItsIdentifier(): void
     {
-        $this->assertSame('PID', new Segment('PID')->getId());
+        $this->assertSame('PID', new BaseSegment('PID')->getId());
     }
 
     public function testReturnsAnExplicitlyAddedField(): void
     {
-        $segment = new Segment('PID');
-        $field = new Field('Set ID', ST::class);
+        $segment = new BaseSegment('PID');
+        $field = new BaseField('Set ID', ST::class);
         $segment->addField(1, $field);
 
         $this->assertSame($field, $segment->getField(1));
@@ -34,18 +34,18 @@ final class SegmentTest extends TestCase
     public function testAddFieldRejectsFieldNumbersBelowOne(): void
     {
         // Field numbers are 1-based; a number below 1 cannot address any real field.
-        $segment = new Segment('PID');
+        $segment = new BaseSegment('PID');
 
         $this->expectException(InvalidField::class);
         $this->expectExceptionMessageIsOrContains("Field 'PID.0' is too low");
 
-        $segment->addField(0, new Field('Bad', ST::class));
+        $segment->addField(0, new BaseField('Bad', ST::class));
     }
 
     public function testGenericSegmentSynthesizesUnknownFieldsAsGenericType(): void
     {
         // A segment with no schema still needs to expose arbitrary fields as raw strings.
-        $segment = new Segment('ZZZ');
+        $segment = new BaseSegment('ZZZ');
 
         $field = $segment->getField(3);
 
@@ -56,7 +56,7 @@ final class SegmentTest extends TestCase
     public function testSetRawAssignsValuesByOneBasedFieldPosition(): void
     {
         // Field values arrive positionally, so index 0 must populate field number 1.
-        $segment = new Segment('ZZZ');
+        $segment = new BaseSegment('ZZZ');
         $segment->setRaw(new Encoding(), ['first', 'second']);
 
         $first = $segment->getField(1)->getInstance();

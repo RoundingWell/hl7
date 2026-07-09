@@ -6,22 +6,22 @@ namespace RoundingWell\HL7\Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\BaseMessage;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\Exception\InvalidSegment;
-use RoundingWell\HL7\Message;
-use RoundingWell\HL7\Segment;
 use RoundingWell\HL7\Segment\MSH;
 
-#[CoversClass(Message::class)]
-final class MessageTest extends TestCase
+#[CoversClass(BaseMessage::class)]
+final class BaseMessageTest extends TestCase
 {
-    private Message $message;
+    private BaseMessage $message;
 
     protected function setUp(): void
     {
-        $this->message = new Message([
+        $this->message = new BaseMessage([
             new MSH(),
-            new Segment('DG1'),
-            new Segment('DG1'),
+            new BaseSegment('DG1'),
+            new BaseSegment('DG1'),
         ]);
     }
 
@@ -29,7 +29,7 @@ final class MessageTest extends TestCase
     {
         $segment = $this->message->getSegment('DG1');
 
-        $this->assertInstanceOf(Segment::class, $segment);
+        $this->assertInstanceOf(BaseSegment::class, $segment);
         $this->assertSame('DG1', $segment?->getId());
     }
 
@@ -49,7 +49,7 @@ final class MessageTest extends TestCase
     {
         // A required segment that is missing is a structural error the caller must know about.
         $this->expectException(InvalidSegment::class);
-        $this->expectExceptionMessageIsOrContains("Segment 'Message.ZZZ' is not defined");
+        $this->expectExceptionMessageIsOrContains("Segment 'BaseMessage.ZZZ' is not defined");
 
         $this->message->getRequiredSegment('ZZZ');
     }

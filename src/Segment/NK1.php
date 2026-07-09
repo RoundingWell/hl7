@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\CX;
 use RoundingWell\HL7\DataType\DT;
@@ -16,61 +18,59 @@ use RoundingWell\HL7\DataType\XAD;
 use RoundingWell\HL7\DataType\XON;
 use RoundingWell\HL7\DataType\XPN;
 use RoundingWell\HL7\DataType\XTN;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Next of Kin / Associated Parties Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class NK1 extends Segment
+final class NK1 extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('NK1');
 
-        $this->addField(1, new Field('Set ID', SI::class, required: true));
-        $this->addField(2, new Field('Name', XPN::class, repeating: true));
-        $this->addField(3, new Field('Relationship', CWE::class));
-        $this->addField(4, new Field('Address', XAD::class, repeating: true));
-        $this->addField(5, new Field('Phone Number', XTN::class, repeating: true));
-        $this->addField(6, new Field('Business Phone Number', XTN::class, repeating: true));
-        $this->addField(7, new Field('Contact Role', CWE::class));
-        $this->addField(8, new Field('Start Date', DT::class));
-        $this->addField(9, new Field('End Date', DT::class));
-        $this->addField(10, new Field('Job Title', ST::class));
-        $this->addField(11, new Field('Job Code/Class', JCC::class));
-        $this->addField(12, new Field('Employee Number', CX::class));
-        $this->addField(13, new Field('Organization Name', XON::class, repeating: true));
-        $this->addField(14, new Field('Marital Status', CWE::class));
-        $this->addField(15, new Field('Administrative Sex', CWE::class));
-        $this->addField(16, new Field('Date/Time of Birth', DTM::class));
-        $this->addField(17, new Field('Living Dependency', CWE::class, repeating: true));
-        $this->addField(18, new Field('Ambulatory Status', CWE::class, repeating: true));
-        $this->addField(19, new Field('Citizenship', CWE::class, repeating: true));
-        $this->addField(20, new Field('Primary Language', CWE::class));
-        $this->addField(21, new Field('Living Arrangement', CWE::class));
-        $this->addField(22, new Field('Publicity Code', CWE::class));
-        $this->addField(23, new Field('Protection Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(24, new Field('Student Indicator', CWE::class));
-        $this->addField(25, new Field('Religion', CWE::class));
-        $this->addField(26, new Field("Mother's Maiden Name", XPN::class, repeating: true));
-        $this->addField(27, new Field('Nationality', CWE::class));
-        $this->addField(28, new Field('Ethnic Group', CWE::class, repeating: true));
-        $this->addField(29, new Field('Contact Reason', CWE::class, repeating: true));
-        $this->addField(30, new Field("Contact Person's Name", XPN::class, repeating: true));
-        $this->addField(31, new Field("Contact Person's Telephone Number", XTN::class, repeating: true));
-        $this->addField(32, new Field("Contact Person's Address", XAD::class, repeating: true));
-        $this->addField(33, new Field("Associated Party's Identifiers", CX::class, repeating: true));
-        $this->addField(34, new Field('Job Status', CWE::class));
-        $this->addField(35, new Field('Race', CWE::class, repeating: true));
-        $this->addField(36, new Field('Handicap', CWE::class));
-        $this->addField(37, new Field('Contact Person Social Security Number', ST::class));
-        $this->addField(38, new Field('Next of Kin Birth Place', ST::class));
-        $this->addField(39, new Field('VIP Indicator', CWE::class));
-        $this->addField(40, new Field('Next of Kin Telecommunication Information', XTN::class));
-        $this->addField(41, new Field("Contact Person's Telecommunication Information", XTN::class));
+        $this->addField(1, new BaseField('Set ID', SI::class, required: true));
+        $this->addField(2, new BaseField('Name', XPN::class, repeating: true));
+        $this->addField(3, new BaseField('Relationship', CWE::class));
+        $this->addField(4, new BaseField('Address', XAD::class, repeating: true));
+        $this->addField(5, new BaseField('Phone Number', XTN::class, repeating: true));
+        $this->addField(6, new BaseField('Business Phone Number', XTN::class, repeating: true));
+        $this->addField(7, new BaseField('Contact Role', CWE::class));
+        $this->addField(8, new BaseField('Start Date', DT::class));
+        $this->addField(9, new BaseField('End Date', DT::class));
+        $this->addField(10, new BaseField('Job Title', ST::class));
+        $this->addField(11, new BaseField('Job Code/Class', JCC::class));
+        $this->addField(12, new BaseField('Employee Number', CX::class));
+        $this->addField(13, new BaseField('Organization Name', XON::class, repeating: true));
+        $this->addField(14, new BaseField('Marital Status', CWE::class));
+        $this->addField(15, new BaseField('Administrative Sex', CWE::class));
+        $this->addField(16, new BaseField('Date/Time of Birth', DTM::class));
+        $this->addField(17, new BaseField('Living Dependency', CWE::class, repeating: true));
+        $this->addField(18, new BaseField('Ambulatory Status', CWE::class, repeating: true));
+        $this->addField(19, new BaseField('Citizenship', CWE::class, repeating: true));
+        $this->addField(20, new BaseField('Primary Language', CWE::class));
+        $this->addField(21, new BaseField('Living Arrangement', CWE::class));
+        $this->addField(22, new BaseField('Publicity Code', CWE::class));
+        $this->addField(23, new BaseField('Protection Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(24, new BaseField('Student Indicator', CWE::class));
+        $this->addField(25, new BaseField('Religion', CWE::class));
+        $this->addField(26, new BaseField("Mother's Maiden Name", XPN::class, repeating: true));
+        $this->addField(27, new BaseField('Nationality', CWE::class));
+        $this->addField(28, new BaseField('Ethnic Group', CWE::class, repeating: true));
+        $this->addField(29, new BaseField('Contact Reason', CWE::class, repeating: true));
+        $this->addField(30, new BaseField("Contact Person's Name", XPN::class, repeating: true));
+        $this->addField(31, new BaseField("Contact Person's Telephone Number", XTN::class, repeating: true));
+        $this->addField(32, new BaseField("Contact Person's Address", XAD::class, repeating: true));
+        $this->addField(33, new BaseField("Associated Party's Identifiers", CX::class, repeating: true));
+        $this->addField(34, new BaseField('Job Status', CWE::class));
+        $this->addField(35, new BaseField('Race', CWE::class, repeating: true));
+        $this->addField(36, new BaseField('Handicap', CWE::class));
+        $this->addField(37, new BaseField('Contact Person Social Security Number', ST::class));
+        $this->addField(38, new BaseField('Next of Kin Birth Place', ST::class));
+        $this->addField(39, new BaseField('VIP Indicator', CWE::class));
+        $this->addField(40, new BaseField('Next of Kin Telecommunication Information', XTN::class));
+        $this->addField(41, new BaseField("Contact Person's Telecommunication Information", XTN::class));
     }
 
     public function getIdentity(): SI

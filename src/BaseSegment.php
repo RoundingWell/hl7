@@ -7,11 +7,11 @@ namespace RoundingWell\HL7;
 use RoundingWell\HL7\DataType\Generic;
 use RoundingWell\HL7\Exception\InvalidField;
 
-class Segment
+class BaseSegment
 {
     private readonly string $id;
 
-    /** @var array<int, Field> */
+    /** @var array<int, BaseField> */
     private array $fields = [];
 
     public function __construct(string $id)
@@ -27,7 +27,7 @@ class Segment
     /**
      * @throws InvalidField if the field is not defined.
      */
-    final public function getField(int $number): Field
+    final public function getField(int $number): BaseField
     {
         // @mago-expect lint:no-isset
         if (!isset($this->fields[$number])) {
@@ -41,7 +41,7 @@ class Segment
     /**
      * @throws InvalidField if the field number lower than 1.
      */
-    final public function addField(int $number, Field $field): void
+    final public function addField(int $number, BaseField $field): void
     {
         if ($number < 1) {
             throw InvalidField::tooLow($this->getId(), $number);
@@ -60,10 +60,10 @@ class Segment
         }
     }
 
-    private function createGenericField(int $number): Field
+    private function createGenericField(int $number): BaseField
     {
         // Unknown fields are created as Generic type fields, allowing any value to be set.
-        $field = new Field('Unknown', Generic::class);
+        $field = new BaseField('Unknown', Generic::class);
 
         $this->addField($number, $field);
 

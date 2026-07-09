@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CNE;
 use RoundingWell\HL7\DataType\CP;
 use RoundingWell\HL7\DataType\CWE;
@@ -13,53 +15,51 @@ use RoundingWell\HL7\DataType\MO;
 use RoundingWell\HL7\DataType\NM;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XPN;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Diagnosis Related Group Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class DRG extends Segment
+final class DRG extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('DRG');
 
-        $this->addField(1, new Field('Diagnostic Related Group', CNE::class));
-        $this->addField(2, new Field('DRG Assigned Date/Time', DTM::class));
-        $this->addField(3, new Field('DRG Approval Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(4, new Field('DRG Grouper Review Code', CWE::class));
-        $this->addField(5, new Field('Outlier Type', CWE::class));
-        $this->addField(6, new Field('Outlier Days', NM::class));
-        $this->addField(7, new Field('Outlier Cost', CP::class));
-        $this->addField(8, new Field('DRG Payor', CWE::class));
-        $this->addField(9, new Field('Outlier Reimbursement', CP::class));
-        $this->addField(10, new Field('Confidential Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(11, new Field('DRG Transfer Type', CWE::class));
-        $this->addField(12, new Field('Name of Coder', XPN::class));
-        $this->addField(13, new Field('Grouper Status', CWE::class));
-        $this->addField(14, new Field('PCCL Value Code', CWE::class));
-        $this->addField(15, new Field('Effective Weight', NM::class));
-        $this->addField(16, new Field('Monetary Amount', MO::class));
-        $this->addField(17, new Field('Status Patient', CWE::class));
-        $this->addField(18, new Field('Grouper Software Name', ST::class));
-        $this->addField(19, new Field('Grouper Software Version', ST::class));
-        $this->addField(20, new Field('Status Financial Calculation', CWE::class));
-        $this->addField(21, new Field('Relative Discount/Surcharge', MO::class));
-        $this->addField(22, new Field('Basic Charge', MO::class));
-        $this->addField(23, new Field('Total Charge', MO::class));
-        $this->addField(24, new Field('Discount/Surcharge', MO::class));
-        $this->addField(25, new Field('Calculated Days', NM::class));
-        $this->addField(26, new Field('Status Gender', CWE::class));
-        $this->addField(27, new Field('Status Age', CWE::class));
-        $this->addField(28, new Field('Status Length of Stay', CWE::class));
-        $this->addField(29, new Field('Status Same Day Flag', CWE::class));
-        $this->addField(30, new Field('Status Separation Mode', CWE::class));
-        $this->addField(31, new Field('Status Weight at Birth', CWE::class));
-        $this->addField(32, new Field('Status Respiration Minutes', CWE::class));
-        $this->addField(33, new Field('Status Admission', CWE::class));
+        $this->addField(1, new BaseField('Diagnostic Related Group', CNE::class));
+        $this->addField(2, new BaseField('DRG Assigned Date/Time', DTM::class));
+        $this->addField(3, new BaseField('DRG Approval Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(4, new BaseField('DRG Grouper Review Code', CWE::class));
+        $this->addField(5, new BaseField('Outlier Type', CWE::class));
+        $this->addField(6, new BaseField('Outlier Days', NM::class));
+        $this->addField(7, new BaseField('Outlier Cost', CP::class));
+        $this->addField(8, new BaseField('DRG Payor', CWE::class));
+        $this->addField(9, new BaseField('Outlier Reimbursement', CP::class));
+        $this->addField(10, new BaseField('Confidential Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(11, new BaseField('DRG Transfer Type', CWE::class));
+        $this->addField(12, new BaseField('Name of Coder', XPN::class));
+        $this->addField(13, new BaseField('Grouper Status', CWE::class));
+        $this->addField(14, new BaseField('PCCL Value Code', CWE::class));
+        $this->addField(15, new BaseField('Effective Weight', NM::class));
+        $this->addField(16, new BaseField('Monetary Amount', MO::class));
+        $this->addField(17, new BaseField('Status Patient', CWE::class));
+        $this->addField(18, new BaseField('Grouper Software Name', ST::class));
+        $this->addField(19, new BaseField('Grouper Software Version', ST::class));
+        $this->addField(20, new BaseField('Status Financial Calculation', CWE::class));
+        $this->addField(21, new BaseField('Relative Discount/Surcharge', MO::class));
+        $this->addField(22, new BaseField('Basic Charge', MO::class));
+        $this->addField(23, new BaseField('Total Charge', MO::class));
+        $this->addField(24, new BaseField('Discount/Surcharge', MO::class));
+        $this->addField(25, new BaseField('Calculated Days', NM::class));
+        $this->addField(26, new BaseField('Status Gender', CWE::class));
+        $this->addField(27, new BaseField('Status Age', CWE::class));
+        $this->addField(28, new BaseField('Status Length of Stay', CWE::class));
+        $this->addField(29, new BaseField('Status Same Day Flag', CWE::class));
+        $this->addField(30, new BaseField('Status Separation Mode', CWE::class));
+        $this->addField(31, new BaseField('Status Weight at Birth', CWE::class));
+        $this->addField(32, new BaseField('Status Respiration Minutes', CWE::class));
+        $this->addField(33, new BaseField('Status Admission', CWE::class));
     }
 
     public function getDiagnosticRelatedGroup(): CNE

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DTM;
 use RoundingWell\HL7\DataType\EI;
@@ -15,51 +17,51 @@ use RoundingWell\HL7\DataType\PT;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\VID;
 use RoundingWell\HL7\DataType\XON;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Message Header Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class MSH extends Segment
+final class MSH extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('MSH');
 
-        $this->addField(1, new Field('Field Separator', ST::class, required: true, args: [
+        $this->addField(1, new BaseField('Field Separator', ST::class, required: true, args: [
             'minLength' => 1,
             'maxLength' => 1,
         ]));
-        $this->addField(2, new Field('Encoding Characters', ST::class, required: true, args: [
+        $this->addField(2, new BaseField('Encoding Characters', ST::class, required: true, args: [
             'minLength' => 4,
             'maxLength' => 5,
         ]));
-        $this->addField(3, new Field('Sending Application', HD::class));
-        $this->addField(4, new Field('Sending Facility', HD::class));
-        $this->addField(5, new Field('Receiving Application', HD::class));
-        $this->addField(6, new Field('Receiving Facility', HD::class));
-        $this->addField(7, new Field('Date/Time of Message', DTM::class, required: true));
-        $this->addField(8, new Field('Security', ST::class));
-        $this->addField(9, new Field('Message Type', MSG::class, required: true));
-        $this->addField(10, new Field('Message Control ID', ST::class, required: true));
-        $this->addField(11, new Field('Processing ID', PT::class, required: true));
-        $this->addField(12, new Field('Version ID', VID::class, required: true));
-        $this->addField(13, new Field('Sequence Number', NM::class));
-        $this->addField(14, new Field('Continuation Pointer', ST::class));
-        $this->addField(15, new Field('Accept Acknowledgement Type', ID::class, args: ['table' => 155]));
-        $this->addField(16, new Field('Application Acknowledgement Type', ID::class, args: ['table' => 155]));
-        $this->addField(17, new Field('Country Code', ID::class, args: ['table' => 399]));
-        $this->addField(18, new Field('Character Set', ID::class, repeating: true, args: ['table' => 211]));
-        $this->addField(19, new Field('Principal Language of Message', CWE::class));
-        $this->addField(20, new Field('Alternate Character Set Handling Scheme', ID::class, args: ['table' => 356]));
-        $this->addField(21, new Field('Message Profile Identifier', EI::class, repeating: true));
-        $this->addField(22, new Field('Sending Responsible Organization', XON::class));
-        $this->addField(23, new Field('Receiving Responsible Organization', XON::class));
-        $this->addField(24, new Field('Sending Network Address', HD::class));
-        $this->addField(25, new Field('Receiving Network Address', HD::class));
+        $this->addField(3, new BaseField('Sending Application', HD::class));
+        $this->addField(4, new BaseField('Sending Facility', HD::class));
+        $this->addField(5, new BaseField('Receiving Application', HD::class));
+        $this->addField(6, new BaseField('Receiving Facility', HD::class));
+        $this->addField(7, new BaseField('Date/Time of Message', DTM::class, required: true));
+        $this->addField(8, new BaseField('Security', ST::class));
+        $this->addField(9, new BaseField('Message Type', MSG::class, required: true));
+        $this->addField(10, new BaseField('Message Control ID', ST::class, required: true));
+        $this->addField(11, new BaseField('Processing ID', PT::class, required: true));
+        $this->addField(12, new BaseField('Version ID', VID::class, required: true));
+        $this->addField(13, new BaseField('Sequence Number', NM::class));
+        $this->addField(14, new BaseField('Continuation Pointer', ST::class));
+        $this->addField(15, new BaseField('Accept Acknowledgement Type', ID::class, args: ['table' => 155]));
+        $this->addField(16, new BaseField('Application Acknowledgement Type', ID::class, args: ['table' => 155]));
+        $this->addField(17, new BaseField('Country Code', ID::class, args: ['table' => 399]));
+        $this->addField(18, new BaseField('Character Set', ID::class, repeating: true, args: ['table' => 211]));
+        $this->addField(19, new BaseField('Principal Language of Message', CWE::class));
+        $this->addField(20, new BaseField('Alternate Character Set Handling Scheme', ID::class, args: [
+            'table' => 356,
+        ]));
+        $this->addField(21, new BaseField('Message Profile Identifier', EI::class, repeating: true));
+        $this->addField(22, new BaseField('Sending Responsible Organization', XON::class));
+        $this->addField(23, new BaseField('Receiving Responsible Organization', XON::class));
+        $this->addField(24, new BaseField('Sending Network Address', HD::class));
+        $this->addField(25, new BaseField('Receiving Network Address', HD::class));
     }
 
     public function getFieldSeparator(): ST

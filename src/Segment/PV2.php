@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DT;
 use RoundingWell\HL7\DataType\DTM;
@@ -13,15 +15,13 @@ use RoundingWell\HL7\DataType\PL;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XCN;
 use RoundingWell\HL7\DataType\XON;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Patient Visit - Additional Information Segment
  *
  * @mago-expect lint:too-many-methods
  */
-final class PV2 extends Segment
+final class PV2 extends BaseSegment
 {
     /**
      * @mago-expect lint:halstead
@@ -30,56 +30,56 @@ final class PV2 extends Segment
     {
         parent::__construct('PV2');
 
-        $this->addField(1, new Field('Prior Pending Location', PL::class));
-        $this->addField(2, new Field('Accommodation Code', CWE::class));
-        $this->addField(3, new Field('Admit Reason', CWE::class));
-        $this->addField(4, new Field('Transfer Reason', CWE::class));
-        $this->addField(5, new Field('Patient Valuables', ST::class, repeating: true));
-        $this->addField(6, new Field('Patient Valuables Location', ST::class));
-        $this->addField(7, new Field('Visit User Code', CWE::class, repeating: true));
-        $this->addField(8, new Field('Expected Admit Date/Time', DTM::class));
-        $this->addField(9, new Field('Expected Discharge Date/Time', DTM::class));
-        $this->addField(10, new Field('Estimated Length of Inpatient Stay', NM::class));
-        $this->addField(11, new Field('Actual Length of Inpatient Stay', NM::class));
-        $this->addField(12, new Field('Visit Description', ST::class));
-        $this->addField(13, new Field('Referral Source Code', XCN::class, repeating: true));
-        $this->addField(14, new Field('Previous Service Date', DT::class));
-        $this->addField(15, new Field('Employment Illness Related Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(16, new Field('Purge Status Code', CWE::class));
-        $this->addField(17, new Field('Purge Status Date', DT::class));
-        $this->addField(18, new Field('Special Program Code', CWE::class));
-        $this->addField(19, new Field('Retention Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(20, new Field('Expected Number of Insurance Plans', NM::class));
-        $this->addField(21, new Field('Visit Publicity Code', CWE::class));
-        $this->addField(22, new Field('Visit Protection Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(23, new Field('Clinic Organization Name', XON::class, repeating: true));
-        $this->addField(24, new Field('Patient Status Code', CWE::class));
-        $this->addField(25, new Field('Visit Priority Code', CWE::class));
-        $this->addField(26, new Field('Previous Treatment Date', DT::class));
-        $this->addField(27, new Field('Expected Discharge Disposition', CWE::class));
-        $this->addField(28, new Field('Signature on File Date', DT::class));
-        $this->addField(29, new Field('First Similar Illness Date', DT::class));
-        $this->addField(30, new Field('Patient Charge Adjustment Code', CWE::class));
-        $this->addField(31, new Field('Recurring Service Code', CWE::class));
-        $this->addField(32, new Field('Billing Media Code', ID::class, args: ['table' => 136]));
-        $this->addField(33, new Field('Expected Surgery Date and Time', DTM::class));
-        $this->addField(34, new Field('Military Partnership Code', ID::class, args: ['table' => 136]));
-        $this->addField(35, new Field('Military Non-Availability Code', ID::class, args: ['table' => 136]));
-        $this->addField(36, new Field('Newborn Baby Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(37, new Field('Baby Detained Indicator', ID::class, args: ['table' => 136]));
-        $this->addField(38, new Field('Mode of Arrival Code', CWE::class));
-        $this->addField(39, new Field('Recreational Drug Use Code', CWE::class, repeating: true));
-        $this->addField(40, new Field('Admission Level of Care Code', CWE::class));
-        $this->addField(41, new Field('Precaution Code', CWE::class, repeating: true));
-        $this->addField(42, new Field('Patient Condition Code', CWE::class));
-        $this->addField(43, new Field('Living Will Code', CWE::class));
-        $this->addField(44, new Field('Organ Donor Code', CWE::class));
-        $this->addField(45, new Field('Advance Directive Code', CWE::class, repeating: true));
-        $this->addField(46, new Field('Patient Status Effective Date', DT::class));
-        $this->addField(47, new Field('Expected LOA Return Date/Time', DTM::class));
-        $this->addField(48, new Field('Expected Pre-admission Testing Date/Time', DTM::class));
-        $this->addField(49, new Field('Notify Clergy Code', CWE::class, repeating: true));
-        $this->addField(50, new Field('Advance Directive Last Verified Date', DT::class));
+        $this->addField(1, new BaseField('Prior Pending Location', PL::class));
+        $this->addField(2, new BaseField('Accommodation Code', CWE::class));
+        $this->addField(3, new BaseField('Admit Reason', CWE::class));
+        $this->addField(4, new BaseField('Transfer Reason', CWE::class));
+        $this->addField(5, new BaseField('Patient Valuables', ST::class, repeating: true));
+        $this->addField(6, new BaseField('Patient Valuables Location', ST::class));
+        $this->addField(7, new BaseField('Visit User Code', CWE::class, repeating: true));
+        $this->addField(8, new BaseField('Expected Admit Date/Time', DTM::class));
+        $this->addField(9, new BaseField('Expected Discharge Date/Time', DTM::class));
+        $this->addField(10, new BaseField('Estimated Length of Inpatient Stay', NM::class));
+        $this->addField(11, new BaseField('Actual Length of Inpatient Stay', NM::class));
+        $this->addField(12, new BaseField('Visit Description', ST::class));
+        $this->addField(13, new BaseField('Referral Source Code', XCN::class, repeating: true));
+        $this->addField(14, new BaseField('Previous Service Date', DT::class));
+        $this->addField(15, new BaseField('Employment Illness Related Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(16, new BaseField('Purge Status Code', CWE::class));
+        $this->addField(17, new BaseField('Purge Status Date', DT::class));
+        $this->addField(18, new BaseField('Special Program Code', CWE::class));
+        $this->addField(19, new BaseField('Retention Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(20, new BaseField('Expected Number of Insurance Plans', NM::class));
+        $this->addField(21, new BaseField('Visit Publicity Code', CWE::class));
+        $this->addField(22, new BaseField('Visit Protection Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(23, new BaseField('Clinic Organization Name', XON::class, repeating: true));
+        $this->addField(24, new BaseField('Patient Status Code', CWE::class));
+        $this->addField(25, new BaseField('Visit Priority Code', CWE::class));
+        $this->addField(26, new BaseField('Previous Treatment Date', DT::class));
+        $this->addField(27, new BaseField('Expected Discharge Disposition', CWE::class));
+        $this->addField(28, new BaseField('Signature on File Date', DT::class));
+        $this->addField(29, new BaseField('First Similar Illness Date', DT::class));
+        $this->addField(30, new BaseField('Patient Charge Adjustment Code', CWE::class));
+        $this->addField(31, new BaseField('Recurring Service Code', CWE::class));
+        $this->addField(32, new BaseField('Billing Media Code', ID::class, args: ['table' => 136]));
+        $this->addField(33, new BaseField('Expected Surgery Date and Time', DTM::class));
+        $this->addField(34, new BaseField('Military Partnership Code', ID::class, args: ['table' => 136]));
+        $this->addField(35, new BaseField('Military Non-Availability Code', ID::class, args: ['table' => 136]));
+        $this->addField(36, new BaseField('Newborn Baby Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(37, new BaseField('Baby Detained Indicator', ID::class, args: ['table' => 136]));
+        $this->addField(38, new BaseField('Mode of Arrival Code', CWE::class));
+        $this->addField(39, new BaseField('Recreational Drug Use Code', CWE::class, repeating: true));
+        $this->addField(40, new BaseField('Admission Level of Care Code', CWE::class));
+        $this->addField(41, new BaseField('Precaution Code', CWE::class, repeating: true));
+        $this->addField(42, new BaseField('Patient Condition Code', CWE::class));
+        $this->addField(43, new BaseField('Living Will Code', CWE::class));
+        $this->addField(44, new BaseField('Organ Donor Code', CWE::class));
+        $this->addField(45, new BaseField('Advance Directive Code', CWE::class, repeating: true));
+        $this->addField(46, new BaseField('Patient Status Effective Date', DT::class));
+        $this->addField(47, new BaseField('Expected LOA Return Date/Time', DTM::class));
+        $this->addField(48, new BaseField('Expected Pre-admission Testing Date/Time', DTM::class));
+        $this->addField(49, new BaseField('Notify Clergy Code', CWE::class, repeating: true));
+        $this->addField(50, new BaseField('Advance Directive Last Verified Date', DT::class));
     }
 
     public function getPriorPendingLocation(): PL

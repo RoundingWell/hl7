@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Segment;
 
+use RoundingWell\HL7\BaseField;
+use RoundingWell\HL7\BaseSegment;
 use RoundingWell\HL7\DataType\CWE;
 use RoundingWell\HL7\DataType\DTM;
 use RoundingWell\HL7\DataType\HD;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\XCN;
-use RoundingWell\HL7\Field;
-use RoundingWell\HL7\Segment;
 
 /**
  * Event Type Segment
  */
-final class EVN extends Segment
+final class EVN extends BaseSegment
 {
     public function __construct()
     {
         parent::__construct('EVN');
 
-        $this->addField(1, new Field('Event Type Code', ST::class));
-        $this->addField(2, new Field('Recorded Date/Time', DTM::class, required: true));
-        $this->addField(3, new Field('Date/Time Planned Event', DTM::class));
-        $this->addField(4, new Field('Event Reason Code', CWE::class));
-        $this->addField(5, new Field('Operator ID', XCN::class, repeating: true));
-        $this->addField(6, new Field('Event Occurred', DTM::class));
-        $this->addField(7, new Field('Event Facility', HD::class));
+        $this->addField(1, new BaseField('Event Type Code', ST::class));
+        $this->addField(2, new BaseField('Recorded Date/Time', DTM::class, required: true));
+        $this->addField(3, new BaseField('Date/Time Planned Event', DTM::class));
+        $this->addField(4, new BaseField('Event Reason Code', CWE::class));
+        $this->addField(5, new BaseField('Operator ID', XCN::class, repeating: true));
+        $this->addField(6, new BaseField('Event Occurred', DTM::class));
+        $this->addField(7, new BaseField('Event Facility', HD::class));
     }
 
     public function getTypeCode(): ST
