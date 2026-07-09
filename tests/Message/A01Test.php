@@ -18,9 +18,6 @@ use RoundingWell\HL7\Segment\PID;
 use RoundingWell\HL7\Segment\PV1;
 use RoundingWell\HL7\Segment\PV2;
 
-/**
- * @mago-expect lint:too-many-methods
- */
 #[CoversClass(A01::class)]
 final class A01Test extends TestCase
 {

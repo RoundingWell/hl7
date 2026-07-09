@@ -10,9 +10,6 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\PV1;
 
-/**
- * @mago-expect lint:too-many-methods
- */
 #[CoversClass(PV1::class)]
 final class PV1Test extends TestCase
 {

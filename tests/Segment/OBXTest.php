@@ -10,9 +10,6 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\OBX;
 
-/**
- * @mago-expect lint:too-many-methods
- */
 #[CoversClass(OBX::class)]
 final class OBXTest extends TestCase
 {

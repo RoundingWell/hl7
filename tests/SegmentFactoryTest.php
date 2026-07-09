@@ -19,9 +19,6 @@ use RoundingWell\HL7\Segment\PV1;
 use RoundingWell\HL7\Segment\PV2;
 use RoundingWell\HL7\SegmentFactory;
 
-/**
- * @mago-expect lint:too-many-methods
- */
 #[CoversClass(SegmentFactory::class)]
 final class SegmentFactoryTest extends TestCase
 {
