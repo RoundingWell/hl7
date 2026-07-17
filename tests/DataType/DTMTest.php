@@ -76,4 +76,16 @@ final class DTMTest extends TestCase
 
         $dtm->setValue('2024+0500');
     }
+
+    public function testSetValueParsesOffsetWithoutFractionalSeconds(): void
+    {
+        // An offset-bearing timestamp without fractional seconds is a legal HL7 DTM and must
+        // parse (regression guard: setValue previously threw InvalidDateTime here due to an
+        // isset/empty-string bug when the offset was present but fractional seconds were not).
+        $dtm = new DTM();
+        $dtm->setValue('20260717120000+0000');
+
+        $this->assertSame('20260717120000+0000', $dtm->getValue());
+        $this->assertSame('2026-07-17 12:00:00 +00:00', $dtm->getDateTime()?->format('Y-m-d H:i:s P'));
+    }
 }
