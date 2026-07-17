@@ -35,7 +35,7 @@ final class STTest extends TestCase
         $st = new ST(minLength: 3);
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of ST must be at least 3 characters long');
+        $this->expectExceptionMessage('Value of ST must be at least 3 characters long');
 
         $st->setValue('ab');
     }
@@ -45,7 +45,7 @@ final class STTest extends TestCase
         $st = new ST(maxLength: 2);
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of ST must be at most 2 characters long');
+        $this->expectExceptionMessage('Value of ST must be at most 2 characters long');
 
         $st->setValue('abc');
     }

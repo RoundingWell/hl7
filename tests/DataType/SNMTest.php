@@ -35,7 +35,7 @@ final class SNMTest extends TestCase
         $snm = new SNM();
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of SNM must be numeric, got 555-1212');
+        $this->expectExceptionMessage('Value of SNM must be numeric, got 555-1212');
 
         $snm->setValue('555-1212');
     }

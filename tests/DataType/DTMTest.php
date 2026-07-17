@@ -57,7 +57,7 @@ final class DTMTest extends TestCase
         $dtm = new DTM();
 
         $this->expectException(InvalidDateTime::class);
-        $this->expectExceptionMessageIsOrContains('HL7 expected date/time');
+        $this->expectExceptionMessage('HL7 expected date/time');
 
         $dtm->setValue('not-a-date');
     }
@@ -72,7 +72,7 @@ final class DTMTest extends TestCase
         $dtm = new DTM();
 
         $this->expectException(InvalidDateTime::class);
-        $this->expectExceptionMessageIsOrContains('HL7 expected date/time');
+        $this->expectExceptionMessage('HL7 expected date/time');
 
         $dtm->setValue('2024+0500');
     }

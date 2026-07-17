@@ -44,7 +44,7 @@ final class NMTest extends TestCase
         $nm = new NM();
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of NM must be numeric, got abc');
+        $this->expectExceptionMessage('Value of NM must be numeric, got abc');
 
         $nm->setValue('abc');
     }
@@ -54,7 +54,7 @@ final class NMTest extends TestCase
         $nm = new NM(min: 10);
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of NM must be greater than or equal to 10');
+        $this->expectExceptionMessage('Value of NM must be greater than or equal to 10');
 
         $nm->setValue('5');
     }
@@ -64,7 +64,7 @@ final class NMTest extends TestCase
         $nm = new NM(max: 3);
 
         $this->expectException(InvalidValue::class);
-        $this->expectExceptionMessageIsOrContains('Value of NM must be less than or equal to 3');
+        $this->expectExceptionMessage('Value of NM must be less than or equal to 3');
 
         $nm->setValue('5');
     }

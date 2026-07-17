@@ -15,7 +15,7 @@
     "require-dev": {
         "carthage-software/mago": "^1.29",
         "ergebnis/composer-normalize": "^2.52",
-        "phpunit/phpunit": "^13.1",
+        "phpunit/phpunit": "^12.5",
         "rregeer/phpunit-coverage-check": "^0.3.1",
         "symfony/var-dumper": "^8.0"
     },

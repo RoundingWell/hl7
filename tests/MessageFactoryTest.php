@@ -76,7 +76,7 @@ final class MessageFactoryTest extends TestCase
     {
         // A missing input file is a distinct, actionable failure from a malformed message.
         $this->expectException(InvalidFile::class);
-        $this->expectExceptionMessageIsOrContains('HL7 file does not exist');
+        $this->expectExceptionMessage('HL7 file does not exist');
 
         $this->messageFactory->parseFile($this->messagePath('does-not-exist'));
     }
@@ -100,7 +100,7 @@ final class MessageFactoryTest extends TestCase
 
         try {
             $this->expectException(InvalidFile::class);
-            $this->expectExceptionMessageIsOrContains('HL7 file cannot be read');
+            $this->expectExceptionMessage('HL7 file cannot be read');
 
             $this->messageFactory->parseFile($path);
         } finally {
@@ -113,7 +113,7 @@ final class MessageFactoryTest extends TestCase
     public function testParseThrowsWhenTheMessageDoesNotStartWithMsh(): void
     {
         $this->expectException(InvalidMessage::class);
-        $this->expectExceptionMessageIsOrContains("must start with 'MSH' segment");
+        $this->expectExceptionMessage("must start with 'MSH' segment");
 
         $this->messageFactory->parse('PID|1||10006579');
     }
@@ -122,7 +122,7 @@ final class MessageFactoryTest extends TestCase
     {
         // Without the delimiter after "MSH" there is nothing to split fields on.
         $this->expectException(InvalidMessage::class);
-        $this->expectExceptionMessageIsOrContains('must have a field separator');
+        $this->expectExceptionMessage('must have a field separator');
 
         $this->messageFactory->parse('MSH');
     }
@@ -131,7 +131,7 @@ final class MessageFactoryTest extends TestCase
     {
         // The four encoding characters are required to interpret every downstream field.
         $this->expectException(InvalidMessage::class);
-        $this->expectExceptionMessageIsOrContains('must have 4+ encoding characters');
+        $this->expectExceptionMessage('must have 4+ encoding characters');
 
         $this->messageFactory->parse('MSH|^~');
     }
