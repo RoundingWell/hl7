@@ -118,7 +118,7 @@ Any components beyond the first are preserved on the primitive's extra component
 
 **Segments:** `DG1`, `DRG`, `EVN`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
 
-**Data types:** `CNE`, `CP`, `CWE`, `CX`, `DLD`, `DR`, `DT`, `DTM`, `EI`, `FC`, `FNx`, `Generic`,
+**Data types:** `CE`, `CNE`, `CP`, `CWE`, `CX`, `DLD`, `DR`, `DT`, `DTM`, `EI`, `FC`, `FNx`, `Generic`,
 `HD`, `ID`, `IS`, `JCC`, `MO`, `MSG`, `NM`, `PL`, `PT`, `SAD`, `SI`, `SNM`, `ST`, `TS`, `TX`,
 `VID`, `Varies`, `XAD`, `XCN`, `XON`, `XPN`, `XTN`
 
