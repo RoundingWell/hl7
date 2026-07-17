@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RoundingWell\HL7\DataType;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Override;
 use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\Exception\InvalidDateTime;
@@ -29,6 +30,13 @@ final class DTM extends AbstractPrimitive
     public function getFormat(): ?string
     {
         return $this->format;
+    }
+
+    public function setDateTime(DateTimeInterface $value): void
+    {
+        // Delegate to setValue() so the derived DateTimeImmutable and format stay
+        // consistent with a parsed value — one code path builds the internal state.
+        $this->setValue($value->format('YmdHisO'));
     }
 
     #[Override]

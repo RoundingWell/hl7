@@ -81,6 +81,31 @@ foreach ($pid->getIdentifierList() as $cx) {
 Every composite also exposes its components positionally via `getComponent(int $index)`
 (0-based) and `getComponents()`, which the named accessors are built on.
 
+### Generating acknowledgments
+
+Any parsed message can produce an `ACK` response. Supply an acknowledgment code, a
+[PSR-20](https://www.php-fig.org/psr/psr-20/) clock (for `MSH-7`), and an `IdGenerator`
+(for the acknowledgment's own `MSH-10`):
+
+```php
+use RoundingWell\HL7\AcknowledgmentCode;
+use RoundingWell\HL7\SymfonyUidGenerator;
+use Symfony\Component\Clock\NativeClock;
+
+$ack = $message->generateACK(
+    AcknowledgmentCode::AA,
+    new NativeClock(),
+    new SymfonyUidGenerator(),
+);
+```
+
+`generateACK()` swaps the sender/receiver, echoes the request's control ID into `MSA-2`,
+and writes the acknowledgment code to `MSA-1`. The returned `ACK` is a `Message` object;
+serialization to an HL7 wire string is not yet provided.
+
+> `SymfonyUidGenerator` and `NativeClock` require the optional `symfony/uid` and
+> `symfony/clock` packages. Any PSR-20 clock and any `IdGenerator` implementation work.
+
 ## Concepts
 
 | Type            | Responsibility                                                                                                          |
@@ -92,6 +117,9 @@ Every composite also exposes its components positionally via `getComponent(int $
 | `Segment`         | Interface for a collection of numbered fields (each a `Type`), read with `getField()` / `getFieldRepetition()`. Typed subclasses (e.g. `PID`, `MSH`) add named accessors. |
 | `Type`            | An HL7 data type — a `Primitive` scalar (`ST`, `NM`, `DTM`, …), a `Composite` of other types, or a `Varies` placeholder for undefined fields. |
 | `Encoding`        | The field, component, repetition, and sub-component separators, plus the escape and truncation characters and line ending. |
+| `AcknowledgmentCode` | Enum of the HL7 table 0008 acknowledgment codes (`AA`, `AE`, `AR`) accepted by `generateACK()`. |
+| `IdGenerator`      | Interface for generating unique message control IDs (`MSH-10`), e.g. for a generated `ACK`. |
+| `SymfonyUidGenerator` | `IdGenerator` implementation backed by `symfony/uid`, producing time-ordered UUIDv7 identifiers. |
 
 ### Untyped fields
 
@@ -114,9 +142,9 @@ Any components beyond the first are preserved on the primitive's extra component
 
 ## Supported types
 
-**Messages:** `A01`, `A03`, `A06`, `A08`
+**Messages:** `A01`, `A03`, `A06`, `A08`, `ACK`
 
-**Segments:** `DG1`, `DRG`, `EVN`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
+**Segments:** `DG1`, `DRG`, `EVN`, `MSA`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
 
 **Data types:** `CE`, `CNE`, `CP`, `CWE`, `CX`, `DLD`, `DR`, `DT`, `DTM`, `EI`, `FC`, `FNx`, `Generic`,
 `HD`, `ID`, `IS`, `JCC`, `MO`, `MSG`, `NM`, `PL`, `PT`, `SAD`, `SI`, `SNM`, `ST`, `TS`, `TX`,
