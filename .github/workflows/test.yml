@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Format
+        run: composer format-check
+
       - name: Lint
         run: composer lint
 
