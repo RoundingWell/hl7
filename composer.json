@@ -58,6 +58,7 @@
             "mago format"
         ],
         "format": "mago format",
+        "format-check": "mago format --check",
         "lint": "mago lint",
         "phpunit": "phpunit -d memory_limit=4G",
         "test": [

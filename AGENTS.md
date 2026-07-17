@@ -83,6 +83,7 @@ Use [conventional commits](https://www.conventionalcommits.org/) for commit mess
 
 ### Running Tools
 Always use these tools with these flags:
+- `composer format-check` to check formatting
 - `composer lint` to check for code style violations
 - `composer format` to fix code style violations
 - `composer analyze` to run static analysis
