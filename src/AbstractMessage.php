@@ -42,11 +42,8 @@ abstract class AbstractMessage extends AbstractGroup implements Message
         return $this->getSegment('MSH', 0);
     }
 
-    public function generateACK(
-        AcknowledgmentCode $code,
-        ClockInterface $clock,
-        IdGenerator $idGenerator,
-    ): Message {
+    public function generateACK(AcknowledgmentCode $code, ClockInterface $clock, IdGenerator $idGenerator): Message
+    {
         $ack = new ACK();
 
         $this->fillResponseHeader($ack, $clock, $idGenerator);
