@@ -66,7 +66,7 @@ final class DTM extends AbstractPrimitive
         if (isset($matches[6])) { // @mago-expect lint:no-isset
             $format .= 's';
         }
-        if (isset($matches[7])) { // @mago-expect lint:no-isset
+        if (isset($matches[7]) && $matches[7] !== '') { // @mago-expect lint:no-isset
             $format .= '.u';
         }
         if (isset($matches[8])) { // @mago-expect lint:no-isset
