@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests\DataType;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -122,5 +124,16 @@ final class DTMTest extends TestCase
         $this->expectExceptionMessage('HL7 expected date/time');
 
         $dtm->setValue($value);
+    }
+
+    public function testSetDateTimeFormatsToHl7TimestampWithOffset(): void
+    {
+        // MSH-7 is populated from an injected clock; setDateTime must render an HL7 DTM
+        // (YYYYMMDDHHMMSS±ZZZZ) and round-trip back through the parser to a consistent instant.
+        $dtm = new DTM();
+        $dtm->setDateTime(new DateTimeImmutable('2026-07-17 12:00:00', new DateTimeZone('+00:00')));
+
+        $this->assertSame('20260717120000+0000', $dtm->getValue());
+        $this->assertSame('2026-07-17 12:00:00 +00:00', $dtm->getDateTime()?->format('Y-m-d H:i:s P'));
     }
 }

@@ -7,15 +7,20 @@ namespace RoundingWell\HL7\Tests;
 use InvalidArgumentException;
 use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\AbstractGroup;
 use RoundingWell\HL7\AbstractMessage;
+use RoundingWell\HL7\AcknowledgmentCode;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Group;
+use RoundingWell\HL7\IdGenerator;
+use RoundingWell\HL7\Message\ACK;
 use RoundingWell\HL7\Segment\MSH;
 use RoundingWell\HL7\StructureDefinition;
 use RoundingWell\HL7\Tests\Fixtures\FakeGroupMessage;
 use RoundingWell\HL7\Tests\Fixtures\FakeProcedure;
+use Symfony\Component\Clock\MockClock;
 
 #[CoversClass(AbstractMessage::class)]
 #[CoversClass(AbstractGroup::class)]
@@ -153,5 +158,118 @@ final class AbstractMessageTest extends TestCase
         $message->parse($this->encoding, 'MSH|^~\\&|App|Fac|||202601011200||ORU^R01|1|P|2.8.1');
 
         $this->assertSame('2.8.1', $message->getVersion());
+    }
+
+    private function inboundMessage(): FakeGroupMessage
+    {
+        $message = new FakeGroupMessage();
+        $message->parse(
+            $this->encoding,
+            'MSH|^~\\&|SendApp|SendFac|RecvApp^1.2.3^ISO|RecvFac|20240101120000||ADT^A01^ADT_A01|MSGCTRL1|P|2.5.1',
+        );
+
+        return $message;
+    }
+
+    private function fixedIdGenerator(string $id): IdGenerator
+    {
+        return new class($id) implements IdGenerator {
+            public function __construct(
+                private string $id,
+            ) {}
+
+            public function generate(): string
+            {
+                return $this->id;
+            }
+        };
+    }
+
+    public function testGenerateAckSwapsSenderAndReceiver(): void
+    {
+        // The acknowledgment must route back to the original sender, so the outbound
+        // sending app/facility come from the inbound receiving app/facility and vice versa.
+        $ack = $this->inboundMessage()->generateACK(
+            AcknowledgmentCode::AA,
+            new MockClock('2024-02-02 10:00:00', '+00:00'),
+            $this->fixedIdGenerator('ACK-ID-1'),
+        );
+
+        $this->assertInstanceOf(ACK::class, $ack);
+        $msh = $ack->getMSH();
+        $this->assertSame('RecvApp', $msh->getSendingApplication()->getNamespaceId()->getValue());
+        $this->assertSame('RecvFac', $msh->getSendingFacility()->getNamespaceId()->getValue());
+        $this->assertSame('SendApp', $msh->getReceivingApplication()->getNamespaceId()->getValue());
+        $this->assertSame('SendFac', $msh->getReceivingFacility()->getNamespaceId()->getValue());
+
+        // The inbound receiving application carries all three HD components; copyType must
+        // recurse across every component of the composite, not just the first.
+        $this->assertSame('1.2.3', $msh->getSendingApplication()->getUniversalId()->getValue());
+        $this->assertSame('ISO', $msh->getSendingApplication()->getUniversalIdType()->getValue());
+    }
+
+    public function testGenerateAckStampsTimestampAndFreshControlId(): void
+    {
+        // MSH-7 comes from the injected clock; MSH-10 is a NEW id for the ACK itself
+        // (the ACK is its own message), while MSA-2 echoes the request's control id so
+        // the original sender can correlate the acknowledgment to what it sent.
+        $ack = $this->inboundMessage()->generateACK(
+            AcknowledgmentCode::AA,
+            new MockClock('2024-02-02 10:00:00', '+00:00'),
+            $this->fixedIdGenerator('ACK-ID-1'),
+        );
+
+        $this->assertInstanceOf(ACK::class, $ack);
+        $this->assertSame('20240202100000+0000', $ack->getMSH()->getDateTimeOfMessage()->getValue());
+        $this->assertSame('ACK-ID-1', $ack->getMSH()->getMessageControlId()->getValue());
+        $this->assertSame('MSGCTRL1', $ack->getMSA()->getMessageControlId()->getValue());
+    }
+
+    public function testGenerateAckSetsHeaderTypeProcessingIdAndVersion(): void
+    {
+        // MSH-9 must identify the reply as an ACK carrying the inbound trigger event;
+        // processing id and version are echoed so the reply matches the request's context.
+        $ack = $this->inboundMessage()->generateACK(
+            AcknowledgmentCode::AA,
+            new MockClock('2024-02-02 10:00:00', '+00:00'),
+            $this->fixedIdGenerator('ACK-ID-1'),
+        );
+
+        $this->assertInstanceOf(ACK::class, $ack);
+        $msh = $ack->getMSH();
+        $this->assertSame('ACK', $msh->getMessageType()->getMessageType()->getValue());
+        $this->assertSame('A01', $msh->getMessageType()->getTriggerEvent()->getValue());
+        $this->assertSame('ACK', $msh->getMessageType()->getMessageStructure()->getValue());
+        $this->assertSame('|', $msh->getFieldSeparator()->getValue());
+        $this->assertSame('^~\\&', $msh->getEncodingCharacters()->getValue());
+        $this->assertSame('P', $msh->getProcessingId()->getId()->getValue());
+        $this->assertSame('2.5.1', $msh->getVersionId()->getId()->getValue());
+    }
+
+    /**
+     * @return list<array{AcknowledgmentCode, string}>
+     */
+    public static function acknowledgmentCodeProvider(): array
+    {
+        return [
+            [AcknowledgmentCode::AA, 'AA'],
+            [AcknowledgmentCode::AE, 'AE'],
+            [AcknowledgmentCode::AR, 'AR'],
+        ];
+    }
+
+    #[DataProvider('acknowledgmentCodeProvider')]
+    public function testGenerateAckWritesTheAcknowledgmentCodeToMsa1(AcknowledgmentCode $code, string $expected): void
+    {
+        // The ack code parameter is the whole point of choosing accept/error/reject; it must
+        // land in MSA-1 exactly, for every supported code.
+        $ack = $this->inboundMessage()->generateACK(
+            $code,
+            new MockClock('2024-02-02 10:00:00', '+00:00'),
+            $this->fixedIdGenerator('ACK-ID-1'),
+        );
+
+        $this->assertInstanceOf(ACK::class, $ack);
+        $this->assertSame($expected, $ack->getMSA()->getAcknowledgmentCode()->getValue());
     }
 }

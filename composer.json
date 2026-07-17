@@ -10,14 +10,21 @@
         }
     ],
     "require": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "psr/clock": "^1.0"
     },
     "require-dev": {
         "carthage-software/mago": "^1.29",
         "ergebnis/composer-normalize": "^2.52",
         "phpunit/phpunit": "^12.5",
         "rregeer/phpunit-coverage-check": "^0.3.1",
+        "symfony/clock": "^8.0",
+        "symfony/uid": "^8.0",
         "symfony/var-dumper": "^8.0"
+    },
+    "suggest": {
+        "symfony/clock": "Provides a PSR-20 clock (e.g. NativeClock) to pass to AbstractMessage::generateACK()",
+        "symfony/uid": "Required by SymfonyUidGenerator, the reference UUIDv7 IdGenerator implementation"
     },
     "minimum-stability": "stable",
     "autoload": {
@@ -33,17 +40,26 @@
             "RoundingWell\\HL7\\Tests\\": "tests/"
         }
     },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        },
+        "platform": {
+            "php": "8.5"
+        },
+        "sort-packages": true
+    },
     "scripts": {
+        "analyze": "mago analyze",
         "coverage-check": "coverage-check tmp/phpunit/clover.xml 100",
         "coverage-open": "open tmp/phpunit/coverage/index.html",
-        "lint": "mago lint",
-        "format": "mago format",
-        "analyze": "mago analyze",
-        "phpunit": "phpunit -d memory_limit=4G",
         "fix": [
             "mago lint --fix",
             "mago format"
         ],
+        "format": "mago format",
+        "lint": "mago lint",
+        "phpunit": "phpunit -d memory_limit=4G",
         "test": [
             "@phpunit",
             "@coverage-check"
@@ -53,14 +69,5 @@
             "@analyze",
             "@test"
         ]
-    },
-    "config": {
-        "allow-plugins": {
-            "ergebnis/composer-normalize": true
-        },
-        "platform": {
-            "php": "8.5"
-        },
-        "sort-packages": true
     }
 }
