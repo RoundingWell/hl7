@@ -57,7 +57,7 @@ final class DTTest extends TestCase
         $dt = new DT();
 
         $this->expectException(InvalidDateTime::class);
-        $this->expectExceptionMessageIsOrContains('HL7 expected date/time');
+        $this->expectExceptionMessage('HL7 expected date/time');
 
         $dt->setValue('not-a-date');
     }

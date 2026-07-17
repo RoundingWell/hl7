@@ -123,7 +123,7 @@ final class VariesTest extends TestCase
         };
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessageIsOrContains('Cannot set data on ' . GenericPrimitive::class);
+        $this->expectExceptionMessage('Cannot set data on ' . GenericPrimitive::class);
 
         $varies->setData($nonPrimitive);
     }
