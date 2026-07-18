@@ -225,4 +225,42 @@ final class AbstractSegmentTest extends TestCase
 
         $segment->maxRepetitions(1);
     }
+
+    public function testSerializeRoundTripsAFieldWithComponents(): void
+    {
+        // A no-schema segment round-trips component structure because generic fields are composites.
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a^b^c|d');
+
+        $this->assertSame('FakeSegment|a^b^c|d', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeRoundTripsRepeatingFields(): void
+    {
+        // Repetitions rejoin with the repetition separator "~".
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a~b~c');
+
+        $this->assertSame('FakeSegment|a~b~c', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeTrimsTrailingEmptyFields(): void
+    {
+        // Trailing empty fields collapse; an interior empty field is preserved by position.
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a||c||');
+
+        $this->assertSame('FakeSegment|a||c', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeOfAFieldlessSegmentIsJustItsName(): void
+    {
+        // A segment with no fields is canonical as its bare name; the field separator is only
+        // written when a field follows it, so parse(name) round-trips exactly rather than
+        // emitting a dangling "Name|".
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment');
+
+        $this->assertSame('FakeSegment', $segment->serialize(new Encoding()));
+    }
 }

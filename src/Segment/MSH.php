@@ -19,7 +19,6 @@ use RoundingWell\HL7\DataType\VID;
 use RoundingWell\HL7\DataType\XON;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
-use RoundingWell\HL7\Primitive;
 use RoundingWell\HL7\TypeDefinition;
 
 /**
@@ -117,6 +116,16 @@ final class MSH extends AbstractSegment
                 $this->getFieldRepetition($idx + 3, $rep)->parse($encoding, $value);
             }
         }
+    }
+
+    #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        // The values for MSH.1 and MSH.2 MUST come from the encoding object, since all
+        // subsequent fields are encoded using these characters.
+        $header = 'MSH' . $encoding->fieldSeparator . $encoding->encodingCharacters() . $encoding->fieldSeparator;
+
+        return trim($header . $this->serializeFields($encoding, 3), $encoding->fieldSeparator);
     }
 
     public function getFieldSeparator(): ST

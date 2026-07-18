@@ -60,4 +60,30 @@ final class GenericMessageTest extends TestCase
         $this->assertCount(2, $message->getAll('OBX'));
         $this->assertCount(1, $message->getAll('NTE'));
     }
+
+    public function testSerializePreservesOriginalSegmentOrder(): void
+    {
+        // GenericMessage has no schema, so its only correct order is the original one. A repeating
+        // segment that appears in non-contiguous clusters (OBX ... NTE ... OBX) must serialize in
+        // the exact order it arrived, not grouped by name.
+        $data = "MSH|^~\\&|A|B|C|D|20050110045504||X^Y|599102|P|2.8\rOBX|1\rNTE|note\rOBX|2";
+
+        $message = new GenericMessage('TEST', '2.8');
+        $message->parse(new Encoding(), $data);
+
+        $this->assertSame($data, $message->serialize(new Encoding()));
+        // Every occurrence is still retained and reachable by name.
+        $this->assertCount(2, $message->getAll('OBX'));
+    }
+
+    public function testSerializeFallsBackToParentWhenNeverParsed(): void
+    {
+        // A hand-built message that was never parsed has no recorded order (`$ordered` is empty),
+        // so serialize() must still work by walking the schema instead of emitting nothing.
+        $message = new GenericMessage('TEST', '2.8');
+        $message->getMSH()->getFieldSeparator()->setValue('|');
+        $message->getMSH()->getEncodingCharacters()->setValue('^~\\&');
+
+        $this->assertSame('MSH|^~\\&', $message->serialize(new Encoding()));
+    }
 }

@@ -29,4 +29,16 @@ final class ACKTest extends TestCase
         $this->assertSame('AA', $ack->getMSA()->getAcknowledgmentCode()->getValue());
         $this->assertSame('REQCTRL9', $ack->getMSA()->getMessageControlId()->getValue());
     }
+
+    public function testSerializeRoundTripsAStructuredMessageInSchemaOrder(): void
+    {
+        // A schema-backed message serializes in definition order (canonical HL7 order), joining
+        // segments with the line ending. MSH then MSA come back exactly as parsed.
+        $data = "MSH|^~\\&|A|B|C|D|20050110045504||ACK^A01^ACK|599102|P|2.8\rMSA|AA|599102";
+
+        $ack = new ACK();
+        $ack->parse(new Encoding(), $data);
+
+        $this->assertSame($data, $ack->serialize(new Encoding()));
+    }
 }

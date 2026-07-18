@@ -41,6 +41,12 @@ final class Varies implements Variable
     }
 
     #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        return $this->getData()->serialize($encoding);
+    }
+
+    #[Override]
     public function getData(): Type
     {
         return $this->data;

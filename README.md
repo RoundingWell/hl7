@@ -100,18 +100,31 @@ $ack = $message->generateACK(
 ```
 
 `generateACK()` swaps the sender/receiver, echoes the request's control ID into `MSA-2`,
-and writes the acknowledgment code to `MSA-1`. The returned `ACK` is a `Message` object;
-serialization to an HL7 wire string is not yet provided.
+and writes the acknowledgment code to `MSA-1`. The returned `ACK` is a `Message` object,
+which can be serialized back to HL7 (see below).
 
 > `SymfonyUidGenerator` and `NativeClock` require the optional `symfony/uid` and
 > `symfony/clock` packages. Any PSR-20 clock and any `IdGenerator` implementation work.
+
+### Serializing back to HL7
+
+Any `Message` can be turned back into a wire string with `serialize()`:
+
+```php
+$wire = $message->serialize($encoding);
+```
+
+`parse()` followed by `serialize()` reproduces the original message, with two deviations from a
+byte-for-byte round-trip: trailing empty fields, components, and subcomponents are trimmed (HL7
+treats trailing delimiters as optional), and segments are joined by the line ending rather than
+terminated by it (no trailing line ending is appended).
 
 ## Concepts
 
 | Type            | Responsibility                                                                                                          |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `MessageFactory`  | Parses raw HL7 into a `Message`, resolving encoding and message type.                                                   |
-| `Message`         | Interface for a whole message: a `Group` plus `getMSH()`, `getVersion()`, and `parse()`.                                |
+| `Message`         | Interface for a whole message: a `Group` plus `getMSH()`, `getVersion()`, `parse()`, and `serialize()`.                 |
 | `Group`           | Interface for a named collection of `Structure`s (segments and nested groups) with lookup helpers (`get`, `getAll`, `getRepetition`, `getNames`, `isRequired`, `isRepeating`, `isGroup`). |
 | `Message\ADT\Axx` | Specific ADT message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
 | `Segment`         | Interface for a collection of numbered fields (each a `Type`), read with `getField()` / `getFieldRepetition()`. Typed subclasses (e.g. `PID`, `MSH`) add named accessors. |
