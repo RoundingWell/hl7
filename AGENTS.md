@@ -103,4 +103,3 @@ To run a specific test by name, use:
 
 ### Releasing
 Always use [semantic versioning](https://semver.org/) when tagging a release.
-Always update `version` in `package.json` to align with the release version, commit it, then tag.
