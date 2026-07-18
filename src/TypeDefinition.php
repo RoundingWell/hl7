@@ -14,8 +14,13 @@ final readonly class TypeDefinition
 
     public function __construct(
         private string $name = '',
+        // A field sits above the component level, so an undefined field defaults to a
+        // GenericComposite -- preserving its component structure ("^" depth) rather than
+        // flattening it into a primitive. Trade-off: unlike Varies, a GenericComposite is not a
+        // deferred placeholder, so a generic field cannot be upgraded to a concrete type via
+        // setData() after parsing. Subcomponents still resolve to Varies via ExtraComponents.
         /** @var class-string<Type> */
-        private string $type = Varies::class,
+        private string $type = GenericComposite::class,
         /** @var array<string, mixed> */
         private array $args = [],
         private bool $isRequired = false,

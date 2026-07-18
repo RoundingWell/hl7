@@ -18,6 +18,15 @@ abstract class AbstractComposite implements Composite
     /** @var list<TypeDefinition> */
     private array $definitions = [];
 
+    /**
+     * Whether this composite is nested as a component of another composite.
+     *
+     * Depth fixes the separator: a field-level composite splits its input on the component
+     * separator, but a nested composite sits one level down, so its own parts arrive as
+     * subcomponents and it splits on the subcomponent separator instead.
+     */
+    private bool $nested = false;
+
     private ExtraComponents $extra;
 
     public function __construct()
@@ -66,7 +75,16 @@ abstract class AbstractComposite implements Composite
             "Component {$this->getName()}.{$number} is not defined",
         );
 
-        return $definition->newInstance();
+        $component = $definition->newInstance();
+
+        // A composite occupying a component slot is nested one level down, so it parses its parts
+        // as subcomponents. Field-level composites are created by the segment, never here, so
+        // they are never marked nested.
+        if ($component instanceof self) {
+            $component->nested = true;
+        }
+
+        return $component;
     }
 
     #[Override]
@@ -86,27 +104,24 @@ abstract class AbstractComposite implements Composite
     {
         $this->clear();
 
-        match (true) {
-            $data === '' => null,
-            str_contains($data, $encoding->componentSeparator) => $this->parseComponents(
-                $encoding,
-                $data,
-                $encoding->componentSeparator,
-            ),
-            str_contains($data, $encoding->subcomponentSeparator) => $this->parseComponents(
-                $encoding,
-                $data,
-                $encoding->subcomponentSeparator,
-            ),
-            default => $this->parseComponents($encoding, $data, $encoding->componentSeparator),
-        };
+        if ($data === '') {
+            return;
+        }
+
+        // Depth is fixed by the separator hierarchy, not inferred from content. A field-level
+        // composite splits on the component separator; a nested composite splits on the
+        // subcomponent separator (see $nested). A component that carries a "&" it should keep is
+        // handled by that component's own parse(), which peels off subcomponents.
+        $separator = $this->nested ? $encoding->subcomponentSeparator : $encoding->componentSeparator;
+
+        $this->parseComponents($encoding, $separator, $data);
     }
 
-    private function parseComponents(Encoding $encoding, string $data, string $delimiter): void
+    private function parseComponents(Encoding $encoding, string $separator, string $data): void
     {
         $overflow = count($this->definitions);
 
-        foreach (explode($delimiter, $data) as $number => $value) {
+        foreach (explode($separator, $data) as $number => $value) {
             $component = $number >= $overflow
                 ? $this->getExtraComponents()->getComponent($number - $overflow)
                 : $this->getComponent($number);

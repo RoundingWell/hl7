@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\DataType\ID;
 use RoundingWell\HL7\DataType\ST;
+use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\TypeDefinition;
-use RoundingWell\HL7\Varies;
 
 #[CoversClass(TypeDefinition::class)]
 final class TypeDefinitionTest extends TestCase
@@ -26,14 +26,15 @@ final class TypeDefinitionTest extends TestCase
         $this->assertSame(3, $definition->getMaxReps());
     }
 
-    public function testDefaultsToAnOptionalUnboundedVariesField(): void
+    public function testDefaultsToAnOptionalUnboundedGenericCompositeField(): void
     {
-        // The zero-argument defaults describe a schema-less field: a Varies type with no name,
-        // not required, and no repetition limit (0 = unbounded).
+        // The zero-argument defaults describe a schema-less field. A field sits above the
+        // component level, so an undefined one is a GenericComposite -- preserving any component
+        // structure -- rather than a flat Varies primitive. Not required, no repetition limit.
         $definition = new TypeDefinition();
         $instance = $definition->newInstance();
 
-        $this->assertInstanceOf(Varies::class, $instance);
+        $this->assertInstanceOf(GenericComposite::class, $instance);
     }
 
     public function testRejectsATypeThatDoesNotImplementType(): void

@@ -19,15 +19,28 @@ final class AbstractPrimitiveTest extends TestCase
         $this->assertSame('FakePrimitive', new FakePrimitive()->getName());
     }
 
-    public function testParseRetainsTheLeadingValueAndCapturesTrailingSubcomponentsAsExtras(): void
+    public function testParseSplitsOnlyOnTheSubcomponentSeparator(): void
     {
-        // A primitive is a single value: the first component is the value, and any additional
-        // components are preserved as extra components rather than being discarded.
+        // A primitive sits at the bottom of the separator hierarchy: its parts are subcomponents,
+        // split by "&". The leading part is the value; every trailing part is a subcomponent,
+        // preserving depth rather than being discarded or merged with component-level data.
         $primitive = new FakePrimitive();
-        $primitive->parse(new Encoding(), 'value^surplus');
+        $primitive->parse(new Encoding(), 'value&sub');
 
         $this->assertSame('value', $primitive->getValue());
         $this->assertCount(1, $primitive->getExtraComponents());
+    }
+
+    public function testParseKeepsALiteralComponentSeparatorInTheValue(): void
+    {
+        // A component separator ("^") that reaches a primitive is literal value data, not a
+        // structural split: the primitive is already below the component level, so it must
+        // never carve "^" into extra components.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'left^right');
+
+        $this->assertSame('left^right', $primitive->getValue());
+        $this->assertCount(0, $primitive->getExtraComponents());
     }
 
     public function testParseClearsTheValueForEmptyData(): void
