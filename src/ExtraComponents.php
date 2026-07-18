@@ -27,6 +27,11 @@ final class ExtraComponents implements Countable
         return count($this->components);
     }
 
+    public function clear(): void
+    {
+        $this->components = [];
+    }
+
     /**
      * @return list<Varies>
      */

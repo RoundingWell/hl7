@@ -43,6 +43,19 @@ final class AbstractPrimitiveTest extends TestCase
         $this->assertCount(0, $primitive->getExtraComponents());
     }
 
+    public function testReparsingDropsSubcomponentsFromAnEarlierParse(): void
+    {
+        // clear() runs on every parse() so a primitive can be re-parsed. If the extra subcomponents
+        // survive that reset, a later parse without a "&" leaves the earlier subcomponent behind --
+        // re-parse must reflect only the latest data, never leak prior structure.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'a&b');
+        $primitive->parse(new Encoding(), 'x');
+
+        $this->assertSame('x', $primitive->getValue());
+        $this->assertCount(0, $primitive->getExtraComponents());
+    }
+
     public function testParseClearsTheValueForEmptyData(): void
     {
         // Re-parsing empty data must reset any previously held value.

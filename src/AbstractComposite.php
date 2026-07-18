@@ -97,6 +97,7 @@ abstract class AbstractComposite implements Composite
     public function clear(): void
     {
         $this->components = [];
+        $this->extra->clear();
     }
 
     #[Override]

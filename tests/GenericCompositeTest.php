@@ -47,6 +47,20 @@ final class GenericCompositeTest extends TestCase
         $this->assertSame('b', self::componentValues($subcomponents)[0]);
     }
 
+    public function testReparsingReplacesExtraComponentsInsteadOfLeakingThem(): void
+    {
+        // clear() runs at the start of every parse() so an instance can be re-parsed. If the extra
+        // components survive that reset, a shorter second parse leaves stale trailing components
+        // behind -- re-parse must expose the new structure only, never a merge of both parses.
+        $composite = new GenericComposite();
+        $composite->parse(new Encoding(), 'a^b^c');
+        $composite->parse(new Encoding(), 'x');
+
+        $extra = $composite->getExtraComponents();
+        $this->assertCount(1, $extra);
+        $this->assertSame(['x'], self::componentValues($extra));
+    }
+
     /**
      * @return list<string>
      */

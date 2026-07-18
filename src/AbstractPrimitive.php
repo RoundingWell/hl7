@@ -46,14 +46,15 @@ abstract class AbstractPrimitive implements Primitive
     public function clear(): void
     {
         $this->value = '';
+        $this->extra->clear();
     }
 
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
-        if ($data === '') {
-            $this->clear();
+        $this->clear();
 
+        if ($data === '') {
             return;
         }
 
