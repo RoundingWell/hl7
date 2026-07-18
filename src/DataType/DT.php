@@ -7,7 +7,7 @@ namespace RoundingWell\HL7\DataType;
 use DateTimeImmutable;
 use Override;
 use RoundingWell\HL7\AbstractPrimitive;
-use RoundingWell\HL7\Exception\InvalidDateTime;
+use RoundingWell\HL7\Exception\InvalidDate;
 
 /**
  * Date
@@ -46,7 +46,7 @@ final class DT extends AbstractPrimitive
         $matches = [];
 
         if (!preg_match(self::PATTERN, $value, $matches)) {
-            throw InvalidDateTime::invalidValue($value);
+            throw InvalidDate::invalidValue($value);
         }
 
         // Prefix the format with ! to force all elements to start at zero.
@@ -58,10 +58,26 @@ final class DT extends AbstractPrimitive
             $format .= 'd';
         }
 
-        // A date-only value matching PATTERN always builds, but createFromFormat is typed
-        // DateTimeImmutable|false, so the (unreachable) failure branch is guarded inline.
         $dt = DateTimeImmutable::createFromFormat($format, $value);
-        $this->date = $dt === false ? throw InvalidDateTime::invalidValue($value) : $dt;
+
+        if (!$dt || $this->hasDateTimeErrors()) {
+            throw InvalidDate::invalidValue($value);
+        }
+
+        $this->date = $dt;
         $this->format = $format;
+    }
+
+    private function hasDateTimeErrors(): bool
+    {
+        $errors = DateTimeImmutable::getLastErrors();
+
+        // DateTimeImmutable::createFromFormat silently rolls over out-of-range components
+        // (e.g. month 13 becomes January of the next year, Feb 30 becomes March 2),
+        // reporting them only as warnings while still returning a date.
+        // DateTimeImmutable::getLastErrors() returns false when the parse was clean.
+        // Reject any warning so a component outside its calendar range is
+        // never accepted as a different, valid instant.
+        return $errors !== false && $errors['warning_count'] > 0;
     }
 }
