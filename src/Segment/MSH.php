@@ -18,6 +18,7 @@ use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\DataType\VID;
 use RoundingWell\HL7\DataType\XON;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\Primitive;
 use RoundingWell\HL7\TypeDefinition;
 
@@ -95,34 +96,27 @@ final class MSH extends AbstractSegment
     {
         $fields = explode($encoding->fieldSeparator, $data);
 
+        if (count($fields) < 2) {
+            throw InvalidSegment::invalidMSH($data);
+        }
+
         // Drop the "MSH" segment identifier.
         array_shift($fields);
 
-        // MSH.1 is the field separator and MSH.2 is the encoding characters. Together they
-        // define the delimiters the message was encoded with, so both are stored verbatim:
-        // MSH.1 was consumed as a delimiter while splitting, and parsing MSH.2 would
-        // misinterpret its own component and repetition separators.
-        $this->setEncodingField(1, $encoding->fieldSeparator);
-        $this->setEncodingField(2, array_shift($fields) ?? '');
+        // MSH.1 MUST be the field separator, and it MUST be stored verbatim.
+        $this->getFieldSeparator()->setValue($encoding->fieldSeparator);
+
+        // MSH.2 MUST be the encoding characters, and it MUST be stored verbatim.
+        // @mago-expect analysis:possibly-null-argument
+        $this->getEncodingCharacters()->setValue(array_shift($fields));
 
         // The remaining values map to MSH.3 onward.
         foreach ($fields as $idx => $field) {
             foreach (explode($encoding->repetitionSeparator, $field) as $rep => $value) {
                 // $idx starts at 0 for MSH.3, so the field number is always 3 or greater.
-                // @mago-expect analysis:possibly-invalid-argument
                 $this->getFieldRepetition($idx + 3, $rep)->parse($encoding, $value);
             }
         }
-    }
-
-    private function setEncodingField(int $number, string $value): void
-    {
-        $field = $this->getFieldRepetition($number, 0);
-
-        // MSH.1 and MSH.2 are always ST primitives.
-        assert($field instanceof Primitive, "MSH.{$number} must be a primitive");
-
-        $field->setValue($value);
     }
 
     public function getFieldSeparator(): ST
