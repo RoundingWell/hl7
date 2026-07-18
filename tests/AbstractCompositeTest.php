@@ -7,9 +7,12 @@ namespace RoundingWell\HL7\Tests;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\AbstractComposite;
+use RoundingWell\HL7\Composite;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\ExtraComponents;
 use RoundingWell\HL7\Primitive;
 use RoundingWell\HL7\Tests\Fixtures\FakeComposite;
+use RoundingWell\HL7\Tests\Fixtures\FakeNestedComposite;
 
 #[CoversClass(AbstractComposite::class)]
 final class AbstractCompositeTest extends TestCase
@@ -64,15 +67,37 @@ final class AbstractCompositeTest extends TestCase
         $this->assertCount(0, $composite->getExtraComponents());
     }
 
-    public function testParseFallsBackToSubcomponentDelimiterWhenNoComponentsPresent(): void
+    public function testAlwaysSplitsOnTheComponentSeparatorSoSubcomponentsStayInTheirComponent(): void
     {
-        // When a value carries only subcomponent delimiters, it is still split into components
-        // so nested data is not treated as a single opaque string.
+        // Depth is fixed by the separator, not inferred from content: a composite ALWAYS splits
+        // on "^". A "&" inside a component is that component's own subcomponent, so "a^b&c" is two
+        // components -- "a" and "b" -- where "c" is a subcomponent of "b", never a third component.
+        $composite = new FakeComposite();
+        $composite->parse(new Encoding(), 'a^b&c');
+
+        $this->assertSame('a', $this->valueOf($composite->getComponent(0)));
+        $this->assertSame('b', $this->valueOf($composite->getComponent(1)));
+
+        $subcomponents = $composite->getComponent(1)->getExtraComponents();
+        $this->assertCount(1, $subcomponents);
+        $this->assertSame('c', $this->subcomponentValueOf($subcomponents, 0));
+    }
+
+    public function testDoesNotSplitAComponentOnTheSubcomponentSeparator(): void
+    {
+        // "a&b" with no "^" is a single component "a" carrying subcomponent "b", NOT two
+        // components: the composite must not infer a component split from a "&".
         $composite = new FakeComposite();
         $composite->parse(new Encoding(), 'first&second');
 
         $this->assertSame('first', $this->valueOf($composite->getComponent(0)));
-        $this->assertSame('second', $this->valueOf($composite->getComponent(1)));
+
+        $subcomponents = $composite->getComponent(0)->getExtraComponents();
+        $this->assertCount(1, $subcomponents);
+        $this->assertSame('second', $this->subcomponentValueOf($subcomponents, 0));
+
+        // The "&" did not spill into a second component.
+        $this->assertSame('', $this->valueOf($composite->getComponent(1)));
     }
 
     public function testParseAssignsASingleUndelimitedValueToTheFirstComponent(): void
@@ -84,10 +109,31 @@ final class AbstractCompositeTest extends TestCase
         $this->assertSame('solo', $this->valueOf($composite->getComponent(0)));
     }
 
+    public function testANestedCompositeComponentSplitsOnTheSubcomponentSeparator(): void
+    {
+        // Depth, not content, picks the separator: a composite nested as another composite's
+        // component sits one level down, so ITS parts arrive as subcomponents ("&"), while the
+        // outer composite still delimits on "^". "x&y^z" => inner composite (x, y), then "z".
+        $composite = new FakeNestedComposite();
+        $composite->parse(new Encoding(), 'x&y^z');
+
+        $inner = $composite->getComponent(0);
+        $this->assertInstanceOf(Composite::class, $inner);
+        $this->assertSame('x', $this->valueOf($inner->getComponent(0)));
+        $this->assertSame('y', $this->valueOf($inner->getComponent(1)));
+
+        $this->assertSame('z', $this->valueOf($composite->getComponent(1)));
+    }
+
     private function valueOf(mixed $component): string
     {
         $this->assertInstanceOf(Primitive::class, $component);
 
         return $component->getValue();
+    }
+
+    private function subcomponentValueOf(ExtraComponents $extra, int $index): string
+    {
+        return $this->valueOf($extra->getComponent($index)->getData());
     }
 }

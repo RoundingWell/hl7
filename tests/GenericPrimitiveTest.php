@@ -89,25 +89,26 @@ final class GenericPrimitiveTest extends TestCase
         $this->assertCount(0, $primitive->getExtraComponents());
     }
 
-    public function testParseSplitsSeparatedDataIntoValueAndExtraComponents(): void
+    public function testParseSplitsSubcomponentsOffTheValueButKeepsComponentSeparatorsLiteral(): void
     {
-        // Data carrying component (^) or subcomponent (&) separators is flattened:
-        // the first piece is the primitive's value, and every remaining piece is
-        // captured as proprietary extra data rather than folded into the value.
+        // A primitive is at the bottom of the depth hierarchy: only the subcomponent
+        // separator (&) carves off extra data. A component separator (^) that reaches a
+        // primitive is literal value data, so it stays in the value rather than being
+        // merged with subcomponents into one flat list.
         $primitive = new GenericPrimitive();
         $primitive->parse(new Encoding(), 'A^B&C');
 
-        $this->assertSame('A', $primitive->getValue());
-        $this->assertSame(['B', 'C'], self::extraValues($primitive->getExtraComponents()));
+        $this->assertSame('A^B', $primitive->getValue());
+        $this->assertSame(['C'], self::extraValues($primitive->getExtraComponents()));
     }
 
-    public function testParseDecodesTheValueAndEachExtraComponent(): void
+    public function testParseDecodesTheValueAndEachSubcomponent(): void
     {
-        // Splitting happens on the raw separators, but every stored piece -- both the
-        // value and each extra component -- must be the decoded text so an escaped
+        // Splitting happens on the raw subcomponent separator, but every stored piece --
+        // both the value and each subcomponent -- must be the decoded text so an escaped
         // delimiter is preserved as a literal instead of being split on.
         $primitive = new GenericPrimitive();
-        $primitive->parse(new Encoding(), 'X\\F\\Y^P\\F\\Q');
+        $primitive->parse(new Encoding(), 'X\\F\\Y&P\\F\\Q');
 
         $this->assertSame('X|Y', $primitive->getValue());
         $this->assertSame(['P|Q'], self::extraValues($primitive->getExtraComponents()));

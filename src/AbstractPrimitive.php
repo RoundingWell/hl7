@@ -46,34 +46,36 @@ abstract class AbstractPrimitive implements Primitive
     public function clear(): void
     {
         $this->value = '';
+        $this->extra->clear();
     }
 
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
-        if ($data === '') {
-            $this->clear();
+        $this->clear();
 
+        if ($data === '') {
             return;
         }
 
-        $cs = $encoding->componentSeparator;
         $ss = $encoding->subcomponentSeparator;
 
-        if (!str_contains($data, $cs) && !str_contains($data, $ss)) {
+        // A primitive is the bottom of the separator hierarchy: its only structural split is
+        // the subcomponent separator (&). A component separator (^) that reaches a primitive is
+        // literal value data, so it is left untouched here.
+        if (!str_contains($data, $ss)) {
             $this->setValue($encoding->decode($data));
 
             return;
         }
 
-        // Create a flattened array of components and subcomponents.
-        $components = array_merge(...array_map(static fn(string $val) => explode($ss, $val), explode($cs, $data)));
+        $subcomponents = explode($ss, $data);
 
-        // The first component is the value of the primitive.
-        $this->setValue($encoding->decode(array_shift($components)));
+        // The first part is the value of the primitive.
+        $this->setValue($encoding->decode(array_shift($subcomponents)));
 
-        // All other components are treated as extra subcomponents.
-        foreach ($components as $val) {
+        // Every remaining part is an extra subcomponent.
+        foreach ($subcomponents as $val) {
             $this->extra->getComponent(count($this->extra))->parse($encoding, $val);
         }
     }

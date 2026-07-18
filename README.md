@@ -125,20 +125,23 @@ serialization to an HL7 wire string is not yet provided.
 
 Fields that are not defined for a segment are still parsed so no data is lost. Whole segments
 that have no typed subclass (for example `GT1` in an ADT message) are exposed as
-`GenericSegment`s, and their fields are `Varies` instances — a wrapper that defers to a
-`GenericPrimitive` until a concrete type is assigned.
+`GenericSegment`s, and their fields are `GenericComposite` instances — a schema-less composite
+that preserves any component (`^`) structure instead of flattening it.
 
-Read an undefined field the same way as any other, then unwrap it with `getData()`:
+A `GenericComposite` has no defined components, so every parsed component lands in its extra
+components (`getExtraComponents()`), each a `Varies` wrapping a `GenericPrimitive`. Read a
+scalar field through its single component:
 
 ```php
 $gt1 = $message->get('GT1');
 
-$field = $gt1->getFieldRepetition(2, 0); // a Varies instance
-echo $field->getData()->getValue();      // "8291" — the field value as a string
+$field = $gt1->getFieldRepetition(2, 0);                        // a GenericComposite
+echo $field->getExtraComponents()->getComponent(0)->getData()->getValue(); // "8291"
 ```
 
-Any components beyond the first are preserved on the primitive's extra components
-(`getExtraComponents()`) rather than being discarded.
+Component structure is retained: an undefined field `a^b^c` keeps three components (one extra
+component per `^`), and a component carrying subcomponents (`a&b`) keeps `b` as a subcomponent
+of that component rather than promoting it to its own component.
 
 ## Supported types
 

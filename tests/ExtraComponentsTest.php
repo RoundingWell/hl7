@@ -58,6 +58,19 @@ final class ExtraComponentsTest extends TestCase
         $this->assertNotSame($components[1], $components[2]);
     }
 
+    public function testClearRemovesAllComponents(): void
+    {
+        // clear() lets an owning type reset its extras when it is re-parsed, so stale components
+        // from an earlier parse cannot leak into the next one.
+        $extra = new ExtraComponents();
+        $extra->getComponent(1);
+
+        $extra->clear();
+
+        $this->assertCount(0, $extra);
+        $this->assertSame([], $extra->getComponents());
+    }
+
     public function testGetComponentsExposesCreatedComponents(): void
     {
         // getComponents must return exactly the components that were materialised,

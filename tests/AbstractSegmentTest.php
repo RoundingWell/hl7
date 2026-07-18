@@ -10,10 +10,10 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\GenericPrimitive;
 use RoundingWell\HL7\Tests\Fixtures\FakeSegment;
 use RoundingWell\HL7\TypeDefinition;
-use RoundingWell\HL7\Varies;
 
 #[CoversClass(AbstractSegment::class)]
 final class AbstractSegmentTest extends TestCase
@@ -40,12 +40,14 @@ final class AbstractSegmentTest extends TestCase
         $segment->getField(0);
     }
 
-    public function testGetFieldRepetitionSynthesizesUndefinedFieldsAsVaries(): void
+    public function testGetFieldRepetitionSynthesizesUndefinedFieldsAsGenericComposite(): void
     {
-        // A field accessed without a definition must still exist, defaulting to the "varies" data type.
+        // A field sits above the component level, so an undefined one defaults to a
+        // GenericComposite: this preserves any component structure the field carries instead of
+        // flattening it into a primitive.
         $segment = new FakeSegment();
 
-        $this->assertInstanceOf(Varies::class, $segment->getFieldRepetition(3, 0));
+        $this->assertInstanceOf(GenericComposite::class, $segment->getFieldRepetition(3, 0));
     }
 
     public function testGetFieldRepetitionInstantiatesTheDefinedType(): void
@@ -146,9 +148,11 @@ final class AbstractSegmentTest extends TestCase
     private function fieldValue(FakeSegment $segment, int $number, int $repetition): string
     {
         $field = $segment->getFieldRepetition($number, $repetition);
-        $this->assertInstanceOf(Varies::class, $field);
+        $this->assertInstanceOf(GenericComposite::class, $field);
 
-        $data = $field->getData();
+        // An undefined field is a schema-less composite, so a plain value lands as its single
+        // overflow component: a Varies wrapping a GenericPrimitive.
+        $data = $field->getExtraComponents()->getComponent(0)->getData();
         $this->assertInstanceOf(GenericPrimitive::class, $data);
 
         return $data->getValue();
