@@ -8,6 +8,7 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\Segment\MSH;
 
 #[CoversClass(MSH::class)]
@@ -129,5 +130,16 @@ final class MSHTest extends TestCase
         $this->assertCount(2, $profiles);
         $this->assertSame('PROF1', $profiles[0]->getId()->getValue());
         $this->assertSame('PROF2', $profiles[1]->getId()->getValue());
+    }
+
+    public function testParseRejectsHeaderMissingMandatoryEncodingFields(): void
+    {
+        // A header with only the id and encoding characters lacks MSH.3 onward, so the mandatory
+        // encoding fields cannot be established; parsing must fail loudly rather than silently
+        // producing a half-populated segment.
+        $this->expectException(InvalidSegment::class);
+        $this->expectExceptionMessageMatches('/required fields are missing/');
+
+        new MSH()->parse(new Encoding(), 'MSH');
     }
 }

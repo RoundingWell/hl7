@@ -30,4 +30,14 @@ final class InvalidSegmentTest extends TestCase
         // The message type and missing segment id must appear so the caller knows what was absent.
         $this->assertSame("Segment 'A01.PID' is not defined", InvalidSegment::notDefined('A01', 'PID')->getMessage());
     }
+
+    public function testInvalidMshEchoesTheOffendingSegmentData(): void
+    {
+        // MSH.1 and MSH.2 are mandatory delimiters; the raw data is echoed so the caller can see
+        // exactly which malformed header was rejected.
+        $this->assertSame(
+            "Invalid 'MSH' segment, required fields are missing: MSH|^~\\&",
+            InvalidSegment::invalidMSH('MSH|^~\\&')->getMessage(),
+        );
+    }
 }

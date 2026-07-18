@@ -10,4 +10,9 @@ final class InvalidSegment extends \OutOfBoundsException implements HL7Exception
     {
         return new self("Segment '{$message}.{$segment}' is not defined");
     }
+
+    public static function invalidMSH(string $data): self
+    {
+        return new self("Invalid 'MSH' segment, required fields are missing: {$data}");
+    }
 }
