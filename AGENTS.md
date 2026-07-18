@@ -66,13 +66,15 @@ Default to surfacing uncertainty, not hiding it.
    1. If there are violations, try using `composer format` to fix them
    2. Then re-run `composer lint`
    3. If there are still violations, fix them manually and restart validation
-2. Always run `composer analyze` to check for static analysis errors and fix them
-3. Always run any new or modified tests (e.g. `composer phpunit -- --no-progress --filter MyTest`) and fix any failing tests
-4. If blocked, report the failing command and reason, then ask the user for guidance on how to proceed
+2. Always run `composer format-check` to check formatting, fix any issues, then re-run the check
+3. Always run `composer analyze` to check for static analysis errors, fix any issues, then re-run the check
+4. Always run any new or modified tests (e.g. `composer phpunit -- --no-progress --filter MyTest`) and fix any failing tests
+5. If blocked, report the failing command and reason, then ask the user for guidance on how to proceed
 
 ### Final Validation
 When all tasks are complete, perform the final validation steps:
-1. Run the full test suite `composer test -- --no-progress` and fix any failing tests or coverage issues
+1. Format all files using `composer format`
+2. Run the full test suite `composer test -- --no-progress` and fix any failing tests or coverage issues
 
 ## Rule 13 — Development guidelines
 Prefer composition over inheritance.
