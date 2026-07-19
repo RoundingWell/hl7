@@ -22,6 +22,14 @@ abstract class AbstractGroup implements Group
     /** @var array<string, StructureDefinition> */
     private array $definitions = [];
 
+    /**
+     * Retained Z-segments keyed by anchor: the "name.repetition" of the direct child each
+     * one followed during parsing, or '' when it preceded every child.
+     *
+     * @var array<string, list<Segment>>
+     */
+    private array $anchored = [];
+
     public function add(string $name, StructureDefinition $definition): void
     {
         if ($this->definitions[$name] ?? null) {
@@ -111,6 +119,10 @@ abstract class AbstractGroup implements Group
         $names = $this->getNames();
         $pointer = 0;
 
+        // Where a retained Z-segment splices back in on serialization: after the most
+        // recently parsed direct child, or before every child when none has parsed yet.
+        $anchor = '';
+
         while (true) {
             $element = $segments[$offset] ?? null;
 
@@ -128,6 +140,15 @@ abstract class AbstractGroup implements Group
                     return $offset;
                 }
 
+                if (str_starts_with($element->name, 'Z') && !in_array($element->name, $names, true)) {
+                    // An undeclared Z-segment carries site-defined data: retain it in place.
+                    $this->retainSegment($encoding, $element, $anchor);
+
+                    $offset++;
+
+                    continue;
+                }
+
                 // Truly foreign: tolerate by skipping (decision 4A), keep parsing this group.
                 $offset++;
 
@@ -136,7 +157,9 @@ abstract class AbstractGroup implements Group
 
             [$pointer, $name] = $match;
 
-            $structure = $this->getRepetition($name, count($this->getAll($name)));
+            $repetition = count($this->getAll($name));
+
+            $structure = $this->getRepetition($name, $repetition);
 
             $offset = $structure->parseSegments(
                 $encoding,
@@ -145,6 +168,8 @@ abstract class AbstractGroup implements Group
                 $offset,
             );
 
+            $anchor = "{$name}.{$repetition}";
+
             if (!$this->isRepeating($name)) {
                 $pointer++;
             }
@@ -152,20 +177,59 @@ abstract class AbstractGroup implements Group
     }
 
     /**
+     * Retains an undeclared Z-segment so it survives round-trip serialization.
+     *
+     * The segment is stored twice: in $structures so get()/getAll() expose it, and in
+     * $anchored so serializeLines() can splice it back after the child it followed.
+     * Retained names are never added to $definitions, so they cannot participate in
+     * structure matching or be double-emitted by the schema-order walk.
+     */
+    private function retainSegment(Encoding $encoding, SegmentElement $element, string $anchor): void
+    {
+        $segment = new GenericSegment($element->name);
+        $segment->parse($encoding, $element->raw);
+
+        $this->structures[$element->name][] = $segment;
+        $this->anchored[$anchor][] = $segment;
+    }
+
+    /**
      * Serializes every structure in definition order, recursing into nested groups.
      *
      * The mirror of {@see parseSegments()}: segments serialize to their line, groups expand to
-     * their contained lines, preserving the schema's structure order.
+     * their contained lines, preserving the schema's structure order. Z-segments retained during
+     * parsing are spliced back in after the child they followed.
      */
     #[Override]
     public function serializeLines(Encoding $encoding): array
     {
-        $lines = [];
+        // Z-segments retained before any schema child serialize first.
+        $lines = $this->anchoredLines($encoding, '');
 
         foreach ($this->getNames() as $name) {
-            foreach ($this->getAll($name) as $structure) {
-                $lines = [...$lines, ...$structure->serializeLines($encoding)];
+            foreach ($this->getAll($name) as $repetition => $structure) {
+                $lines = [
+                    ...$lines,
+                    ...$structure->serializeLines($encoding),
+                    ...$this->anchoredLines($encoding, "{$name}.{$repetition}"),
+                ];
             }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Lines of the Z-segments retained at the given anchor position.
+     *
+     * @return list<string>
+     */
+    private function anchoredLines(Encoding $encoding, string $anchor): array
+    {
+        $lines = [];
+
+        foreach ($this->anchored[$anchor] ?? [] as $segment) {
+            $lines = [...$lines, ...$segment->serializeLines($encoding)];
         }
 
         return $lines;

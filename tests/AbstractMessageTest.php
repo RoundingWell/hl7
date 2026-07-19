@@ -13,6 +13,8 @@ use RoundingWell\HL7\AbstractGroup;
 use RoundingWell\HL7\AbstractMessage;
 use RoundingWell\HL7\AcknowledgmentCode;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\GenericComposite;
+use RoundingWell\HL7\GenericSegment;
 use RoundingWell\HL7\Group;
 use RoundingWell\HL7\IdGenerator;
 use RoundingWell\HL7\Message\ACK;
@@ -87,26 +89,111 @@ final class AbstractMessageTest extends TestCase
 
     public function testParseSkipsUnmatchedSegments(): void
     {
-        // An unexpected/out-of-place segment is tolerated (decision 4A), never fatal.
+        // An unexpected/out-of-place non-Z segment is tolerated by dropping it (decision 4A),
+        // never fatal — retention is reserved for site-defined Z-segments.
         $message = new FakeGroupMessage();
-        $message->parse($this->encoding, "MSH|^~\\&\rZZZ|junk\rNK1|1");
+        $message->parse($this->encoding, "MSH|^~\\&\rQQQ|junk\rNK1|1");
 
         $this->assertCount(1, $message->getAll('NK1'));
-        $this->assertSame([], $message->getAll('ZZZ'));
+        $this->assertSame([], $message->getAll('QQQ'));
+        $this->assertSame("MSH|^~\\&\rNK1|1", $message->serialize($this->encoding));
     }
 
-    public function testForeignSegmentInsideGroupDoesNotStrandItsMembers(): void
+    public function testOutOfPositionDeclaredZSegmentIsDroppedNotRetained(): void
     {
-        // A vendor Z-segment between a group's lead and a later member must be skipped without
-        // dropping that member — otherwise real feeds silently lose data inside PROCEDURE/INSURANCE.
+        // Dynamic retention is reserved for names the schema does not declare. A second
+        // occurrence of the declared, non-repeating ZFA must be skipped (decision 4A);
+        // retaining it would also double-emit it through the schema-order walk.
         $message = new FakeGroupMessage();
-        $message->parse($this->encoding, "MSH|^~\\&\rPR1|1\rZZZ|junk\rROL|1");
+        $message->parse($this->encoding, "MSH|^~\\&\rZFA|1\rZFA|2");
+
+        $this->assertCount(1, $message->getAll('ZFA'));
+        $this->assertSame("MSH|^~\\&\rZFA|1", $message->serialize($this->encoding));
+    }
+
+    public function testParseRetainsUndeclaredZSegmentInPlace(): void
+    {
+        // A vendor Z-segment must survive parse → serialize in its original position, so
+        // typed messages can pass feeds through without losing site-defined data.
+        $data = "MSH|^~\\&\rNK1|1\rZAA|custom\rNK1|2";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testRetainedZSegmentIsReadable(): void
+    {
+        // Retention is not just pass-through: site-defined fields must stay readable, the
+        // same way GenericMessage exposes them.
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, "MSH|^~\\&\rZAA|custom");
+
+        $segments = $message->getAll('ZAA');
+        $this->assertCount(1, $segments);
+        $segment = $segments[0];
+        $this->assertInstanceOf(GenericSegment::class, $segment);
+        $field = $segment->getFieldRepetition(1, 0);
+        $this->assertInstanceOf(GenericComposite::class, $field);
+        $this->assertSame('custom', $field->getExtraComponents()->getComponent(0)->getData()->getValue());
+    }
+
+    public function testZSegmentInsideGroupIsRetainedOnThatGroup(): void
+    {
+        // A vendor Z-segment between a group's lead and a later member must not strand the
+        // member, and is retained on the group itself so byte order survives the round trip.
+        $data = "MSH|^~\\&\rPR1|1\rZZZ|junk\rROL|1";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
 
         $procedures = $message->getAll('PROCEDURE');
         $this->assertCount(1, $procedures);
         $procedure = $procedures[0];
         $this->assertInstanceOf(Group::class, $procedure);
         $this->assertCount(1, $procedure->getAll('ROL'));
+        $this->assertCount(1, $procedure->getAll('ZZZ'));
+        $this->assertSame([], $message->getAll('ZZZ'));
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testSameZNameIsRetainedAtEachPosition(): void
+    {
+        // Each occurrence of a Z name splices back at its own position; grouping them
+        // together would reorder the wire format.
+        $data = "MSH|^~\\&\rZAA|1\rNK1|1\rZAA|2";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertCount(2, $message->getAll('ZAA'));
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testStructureAddedAfterParseStillSerializes(): void
+    {
+        // Retention must not freeze the parse-time order: a repetition added after parsing
+        // (common when enriching a message before forwarding) must not be dropped. This is
+        // the failure mode that ruled out recorded-parse-order serialization.
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, "MSH|^~\\&\rNK1|1\rZAA|1");
+
+        $message->getSegment('NK1', 1)->parse($this->encoding, 'NK1|2');
+
+        $this->assertSame("MSH|^~\\&\rNK1|1\rZAA|1\rNK1|2", $message->serialize($this->encoding));
+    }
+
+    public function testHandBuiltMessageSerializesInSchemaOrder(): void
+    {
+        // A never-parsed message has no retained Z-segments; serialization must remain a
+        // pure schema-order walk, not creation order: PV2 is built first here, but NK1
+        // serializes ahead of it because the schema declares NK1 first.
+        $message = new FakeGroupMessage();
+        $message->getSegment('PV2', 0)->parse($this->encoding, 'PV2|1');
+        $message->getSegment('NK1', 0)->parse($this->encoding, 'NK1|1');
+
+        $this->assertSame("NK1|1\rPV2|1", $message->serialize($this->encoding));
     }
 
     public function testSerializeExpandsNestedGroupMembersInOrder(): void

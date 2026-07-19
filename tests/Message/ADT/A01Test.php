@@ -162,4 +162,26 @@ final class A01Test extends TestCase
         $this->assertCount(1, $after);
         $this->assertNotSame($before[0], $after[0]);
     }
+
+    public function testRetainsZSegmentsInPlaceOnRoundTrip(): void
+    {
+        // Vendor feeds routinely interleave and append Z-segments (e.g. ZDS from downstream
+        // systems); a typed A01 must pass them through without loss so a forwarded message
+        // is byte-identical.
+        $data = implode("\r", [
+            'MSH|^~\\&',
+            'EVN|A01',
+            'PID|1',
+            'ZBC|1|site-defined',
+            'PV1|1',
+            'ZDS|1.2.3^app',
+        ]);
+
+        $message = new A01();
+        $message->parse($this->encoding, $data);
+
+        $this->assertCount(1, $message->getAll('ZBC'));
+        $this->assertCount(1, $message->getAll('ZDS'));
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
 }

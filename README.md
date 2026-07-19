@@ -156,6 +156,19 @@ Component structure is retained: an undefined field `a^b^c` keeps three componen
 component per `^`), and a component carrying subcomponents (`a&b`) keeps `b` as a subcomponent
 of that component rather than promoting it to its own component.
 
+### Z-segments
+
+Typed messages tolerate site-defined Z-segments (any segment name beginning with `Z` that the
+message's schema does not declare). Each one is parsed as a `GenericSegment`, exposed through
+`get()` / `getAll()` on the group where it appeared, and serialized back in its original
+position, so parse → serialize round trips do not lose vendor data:
+
+```php
+$zds = $message->get('ZDS'); // a GenericSegment, readable like any untyped segment
+```
+
+Other unrecognized segments (names not beginning with `Z`) are skipped during parsing.
+
 ## Supported types
 
 **Messages:** `A01`, `A03`, `A06`, `A08`, `ACK`
