@@ -24,7 +24,7 @@ abstract class AbstractGroup implements Group
 
     public function add(string $name, StructureDefinition $definition): void
     {
-        if (isset($this->definitions[$name])) { // @mago-expect lint:no-isset
+        if ($this->definitions[$name] ?? null) {
             throw new InvalidArgumentException(
                 "Cannot add {$this->getName()}.{$name}, a structure with that key already exists",
             );
