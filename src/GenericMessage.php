@@ -38,11 +38,7 @@ class GenericMessage extends AbstractMessage
     #[Override]
     public function getMSH(): MSH
     {
-        $msh = $this->getRepetition('MSH', 0);
-
-        assert($msh instanceof MSH, "Expected {$this->getName()}.MSH to be an MSH segment");
-
-        return $msh;
+        return $this->getSegment('MSH', 0);
     }
 
     /**
@@ -69,9 +65,7 @@ class GenericMessage extends AbstractMessage
                 $this->add($name, new StructureDefinition(GenericSegment::class, [$name], isRepeating: true));
             }
 
-            $segment = $this->getRepetition($name, count($this->getAll($name)));
-
-            assert($segment instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
+            $segment = $this->getSegment($name, count($this->getAll($name)));
 
             $segment->parse($encoding, $line);
 
