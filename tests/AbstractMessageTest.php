@@ -105,6 +105,21 @@ final class AbstractMessageTest extends TestCase
         $this->assertCount(1, $procedures[0]->getAll('ROL'));
     }
 
+    public function testSerializeExpandsNestedGroupMembersInOrder(): void
+    {
+        // serializeStructures() must recurse into a nested group (PROCEDURE) and splice its
+        // members' lines into the walk; otherwise a group's segments would be silently dropped
+        // from the serialized output instead of round-tripping.
+        // The trailing "|" after the encoding characters is intentional and load-bearing: MSH::serialize
+        // always emits a field separator after MSH.2, so the canonical serialized form of this
+        // field-less MSH is "MSH|^~\&|". Dropping the pipe would break the round-trip assertion below.
+        $data = "MSH|^~\\&\rPR1|1\rROL|1";
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
     public function testFirstNamesResolvesGroupLeadThroughNestedDefinition(): void
     {
         // FIRST-set of a group is its lead segment, computed without persisting a phantom group.

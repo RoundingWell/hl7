@@ -120,11 +120,26 @@ final class VariesTest extends TestCase
 
             #[\Override]
             public function parse(Encoding $encoding, string $data): void {}
+
+            #[\Override]
+            public function serialize(Encoding $encoding): string
+            {
+                return '';
+            }
         };
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Cannot set data on ' . GenericPrimitive::class);
 
         $varies->setData($nonPrimitive);
+    }
+
+    public function testSerializeDelegatesToTheWrappedData(): void
+    {
+        // Varies is a thin wrapper: serialize mirrors its parse delegation to the inner type.
+        $varies = new Varies();
+        $varies->parse(new Encoding(), 'a&b');
+
+        $this->assertSame('a&b', $varies->serialize(new Encoding()));
     }
 }

@@ -11,6 +11,7 @@ use ReflectionObject;
 
 // @mago-expect lint:too-many-methods
 // @mago-expect lint:cyclomatic-complexity
+// @mago-expect lint:kan-defect
 abstract class AbstractGroup implements Group
 {
     use CanAssertNumbers;
@@ -147,6 +148,35 @@ abstract class AbstractGroup implements Group
                 $pointer++;
             }
         }
+    }
+
+    /**
+     * Serializes every structure in definition order, recursing into nested groups.
+     *
+     * The mirror of {@see parseStructures()}: segments are serialized to lines, groups expand to
+     * their contained lines, preserving the schema's structure order.
+     *
+     * @return list<string>
+     */
+    protected function serializeStructures(Encoding $encoding): array
+    {
+        $lines = [];
+
+        foreach ($this->getNames() as $name) {
+            foreach ($this->getAll($name) as $structure) {
+                if ($structure instanceof self) {
+                    $lines = [...$lines, ...$structure->serializeStructures($encoding)];
+
+                    continue;
+                }
+
+                assert($structure instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
+
+                $lines[] = $structure->serialize($encoding);
+            }
+        }
+
+        return $lines;
     }
 
     /**

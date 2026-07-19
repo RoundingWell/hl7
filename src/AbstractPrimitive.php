@@ -9,6 +9,8 @@ use ReflectionObject;
 
 abstract class AbstractPrimitive implements Primitive
 {
+    use CanJoinElements;
+
     private string $value = '';
 
     private ExtraComponents $extra;
@@ -78,5 +80,17 @@ abstract class AbstractPrimitive implements Primitive
         foreach ($subcomponents as $val) {
             $this->extra->getComponent(count($this->extra))->parse($encoding, $val);
         }
+    }
+
+    #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        $parts = [$encoding->encode($this->value)];
+
+        foreach ($this->extra->getComponents() as $component) {
+            $parts[] = $component->serialize($encoding);
+        }
+
+        return $this->joinTrimmed($parts, $encoding->subcomponentSeparator);
     }
 }

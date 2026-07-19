@@ -16,4 +16,6 @@ interface Message extends Group
     public function getMSH(): MSH;
 
     public function parse(Encoding $encoding, string $data): void;
+
+    public function serialize(Encoding $encoding): string;
 }

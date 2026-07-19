@@ -11,6 +11,7 @@ use ReflectionObject;
 abstract class AbstractComposite implements Composite
 {
     use CanAssertNumbers;
+    use CanJoinElements;
 
     /** @var list<Type> */
     private array $components = [];
@@ -129,5 +130,25 @@ abstract class AbstractComposite implements Composite
 
             $component->parse($encoding, $value);
         }
+    }
+
+    #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        // Same depth rule as parse(): a field-level composite joins components with the component
+        // separator, a nested composite joins its parts with the subcomponent separator.
+        $separator = $this->nested ? $encoding->subcomponentSeparator : $encoding->componentSeparator;
+
+        $parts = [];
+
+        foreach ($this->getComponents() as $component) {
+            $parts[] = $component->serialize($encoding);
+        }
+
+        foreach ($this->extra->getComponents() as $component) {
+            $parts[] = $component->serialize($encoding);
+        }
+
+        return $this->joinTrimmed($parts, $separator);
     }
 }

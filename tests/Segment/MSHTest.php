@@ -142,4 +142,35 @@ final class MSHTest extends TestCase
 
         new MSH()->parse(new Encoding(), 'MSH');
     }
+
+    public function testSerializeRoundTripsAnEncodedHeader(): void
+    {
+        // MSH.1/MSH.2 come from the serializing encoding (not re-encoded through Type::serialize);
+        // here it matches the parsed encoding, so the header round-trips. MSH.3+ round-trip via the
+        // shared field logic. The empty MSH.8 (Security) is an interior gap and must be preserved.
+        $data = 'MSH|^~\\&|AccMgr^App^ISO|SendFac|RecvApp|RecvFac|20050110045504||ADT^A01^ADT_A01|599102|P|2.8';
+
+        $msh = new MSH();
+        $msh->parse(new Encoding(), $data);
+
+        $this->assertSame($data, $msh->serialize(new Encoding()));
+    }
+
+    public function testSerializeSourcesMsh1AndMsh2FromTheEncoding(): void
+    {
+        // MSH.1/MSH.2 declare the delimiters the rest of the segment is written with, so they must
+        // come from the encoding used to serialize -- not the delimiters the message was parsed with.
+        // Serializing with a different encoding must emit that encoding's delimiters, keeping the
+        // header consistent with the body it prefixes.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|AccMgr^App|SendFac|||20050110045504||ADT^A01|599102|P|2.8');
+
+        $serialized = $msh->serialize(new Encoding(fieldSeparator: '#', componentSeparator: '@'));
+
+        // MSH.1 (#) and MSH.2 (@~\&) are the serializing encoding's delimiters, and the body reuses
+        // them, so none of the parsed-with delimiters ("|", "^") survive.
+        $this->assertStringStartsWith('MSH#@~\\&#', $serialized);
+        $this->assertStringNotContainsString('|', $serialized);
+        $this->assertStringNotContainsString('^', $serialized);
+    }
 }

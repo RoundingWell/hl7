@@ -125,6 +125,53 @@ final class AbstractCompositeTest extends TestCase
         $this->assertSame('z', $this->valueOf($composite->getComponent(1)));
     }
 
+    public function testSerializeRoundTripsComponents(): void
+    {
+        // Field-level composite: components rejoin with the component separator "^".
+        $composite = new FakeComposite();
+        $composite->parse(new Encoding(), 'alpha^beta');
+
+        $this->assertSame('alpha^beta', $composite->serialize(new Encoding()));
+    }
+
+    public function testSerializeRoundTripsAComponentThatCarriesASubcomponent(): void
+    {
+        // "a^b&c": the "&" belongs to component "b" and must serialize back inside it, not as a
+        // third component -- proving depth is preserved through the round trip.
+        $composite = new FakeComposite();
+        $composite->parse(new Encoding(), 'a^b&c');
+
+        $this->assertSame('a^b&c', $composite->serialize(new Encoding()));
+    }
+
+    public function testSerializeRoundTripsExtraComponentsBeyondTheSchema(): void
+    {
+        // Surplus components are retained and re-emitted in order after the defined ones.
+        $composite = new FakeComposite();
+        $composite->parse(new Encoding(), 'a^b^x1^x2');
+
+        $this->assertSame('a^b^x1^x2', $composite->serialize(new Encoding()));
+    }
+
+    public function testSerializeTrimsTrailingEmptyComponents(): void
+    {
+        // A schema of two components holding only the first emits just that value, never "a^".
+        $composite = new FakeComposite();
+        $composite->parse(new Encoding(), 'a');
+
+        $this->assertSame('a', $composite->serialize(new Encoding()));
+    }
+
+    public function testSerializeUsesTheSubcomponentSeparatorForANestedComposite(): void
+    {
+        // Depth, not content, picks the separator on the way out too: the inner composite sits one
+        // level down, so its parts rejoin with "&" while the outer composite uses "^".
+        $composite = new FakeNestedComposite();
+        $composite->parse(new Encoding(), 'x&y^z');
+
+        $this->assertSame('x&y^z', $composite->serialize(new Encoding()));
+    }
+
     private function valueOf(mixed $component): string
     {
         $this->assertInstanceOf(Primitive::class, $component);

@@ -13,6 +13,7 @@ use ReflectionObject;
 abstract class AbstractSegment implements Segment
 {
     use CanAssertNumbers;
+    use CanJoinElements;
 
     /** @var array<int, list<Type>> */
     private array $fields = [];
@@ -139,5 +140,31 @@ abstract class AbstractSegment implements Segment
                 $this->getFieldRepetition($idx + 1, $rep)->parse($encoding, $value);
             }
         }
+    }
+
+    #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        // Treating the name and the serialized fields as trimmable parts means an empty fields
+        // string (no non-empty fields) is dropped instead of leaving a dangling field separator.
+        return $this->joinTrimmed([$this->getName(), $this->serializeFields($encoding, 1)], $encoding->fieldSeparator);
+    }
+
+    protected function serializeFields(Encoding $encoding, int $from): string
+    {
+        $fields = [];
+
+        for ($number = $from; $number <= $this->getFieldCount(); $number++) {
+            $repetitions = [];
+
+            // @mago-expect analysis:possibly-invalid-argument
+            foreach ($this->getField($number) as $repetition) {
+                $repetitions[] = $repetition->serialize($encoding);
+            }
+
+            $fields[] = $this->joinTrimmed($repetitions, $encoding->repetitionSeparator);
+        }
+
+        return $this->joinTrimmed($fields, $encoding->fieldSeparator);
     }
 }

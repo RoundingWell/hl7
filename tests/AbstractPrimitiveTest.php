@@ -65,4 +65,59 @@ final class AbstractPrimitiveTest extends TestCase
 
         $this->assertSame('', $primitive->getValue());
     }
+
+    public function testSerializeRoundTripsAPlainValue(): void
+    {
+        // serialize is the inverse of parse: a decoded value is re-encoded to the same bytes.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'value');
+
+        $this->assertSame('value', $primitive->serialize(new Encoding()));
+    }
+
+    public function testSerializeReEncodesSeparatorCharactersInTheValue(): void
+    {
+        // A component separator that reached the primitive is literal data; serialize must escape
+        // it, so parse(serialize(x)) recovers the same value.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'a\\S\\b'); // "\S\" decodes to "^"
+
+        $this->assertSame('a^b', $primitive->getValue());
+        $this->assertSame('a\\S\\b', $primitive->serialize(new Encoding()));
+    }
+
+    public function testSerializeEmitsSubcomponentsJoinedByTheSubcomponentSeparator(): void
+    {
+        // Extra parts are subcomponents; they rejoin with "&" at the primitive's own level.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'a&b&c');
+
+        $this->assertSame('a&b&c', $primitive->serialize(new Encoding()));
+    }
+
+    public function testSerializeTrimsTrailingEmptySubcomponents(): void
+    {
+        // Trailing empty subcomponents are canonical noise and collapse away.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'a&b&');
+
+        $this->assertSame('a&b', $primitive->serialize(new Encoding()));
+    }
+
+    public function testSerializeKeepsInteriorEmptySubcomponents(): void
+    {
+        // An interior empty subcomponent is positional and must survive.
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), 'a&&c');
+
+        $this->assertSame('a&&c', $primitive->serialize(new Encoding()));
+    }
+
+    public function testSerializeOfEmptyDataIsEmpty(): void
+    {
+        $primitive = new FakePrimitive();
+        $primitive->parse(new Encoding(), '');
+
+        $this->assertSame('', $primitive->serialize(new Encoding()));
+    }
 }

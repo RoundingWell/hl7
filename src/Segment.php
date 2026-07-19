@@ -72,4 +72,9 @@ interface Segment extends Structure
      * Parse the given segment data, populating the field values
      */
     public function parse(Encoding $encoding, string $data): void;
+
+    /**
+     * Serializes this segment back to an HL7 encoded line
+     */
+    public function serialize(Encoding $encoding): string;
 }

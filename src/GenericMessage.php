@@ -12,6 +12,9 @@ class GenericMessage extends AbstractMessage
     private string $name;
     private string $version;
 
+    /** @var list<Segment> */
+    private array $ordered = [];
+
     public function __construct(string $name, string $version)
     {
         $this->name = $name;
@@ -45,40 +48,15 @@ class GenericMessage extends AbstractMessage
     /**
      * Parses arbitrary HL7 messages, tolerating segments this class has no model for.
      *
-     * Segments are grouped by name (order-independent) so that a repeating segment which
-     * appears in non-contiguous clusters (e.g. OBX ... NTE ... OBX) keeps every occurrence.
-     * Any name not already registered (i.e. anything but MSH) is registered on the fly as a
-     * repeating {@see GenericSegment}, preserving the tolerance the old BaseMessage container offered.
+     * Lines are processed in order so the original segment sequence is preserved even when a
+     * repeating segment appears in non-contiguous clusters (e.g. OBX ... NTE ... OBX). Any name
+     * not already registered (i.e. anything but MSH) is registered on the fly as a repeating
+     * {@see GenericSegment}. The parse order is recorded so {@see serialize()} can reproduce it.
      */
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
-        foreach ($this->groupByName($encoding, $data) as $name => $lines) {
-            if (!in_array($name, $this->getNames(), true)) {
-                $this->add($name, new StructureDefinition(GenericSegment::class, [$name], isRepeating: true));
-            }
-
-            foreach ($lines as $repetition => $line) {
-                $segment = $this->getRepetition($name, $repetition);
-
-                assert(
-                    $segment instanceof Segment,
-                    "Expected {$this->getName()}.{$name}.{$repetition} to be a Segment",
-                );
-
-                $segment->parse($encoding, $line);
-            }
-        }
-    }
-
-    /**
-     * Groups raw segment lines by segment name, preserving repetition order within each name.
-     *
-     * @return array<string, list<string>>
-     */
-    private function groupByName(Encoding $encoding, string $data): array
-    {
-        $segments = [];
+        $this->ordered = [];
 
         foreach (explode($encoding->lineEnding, $data) as $line) {
             if ($line === '') {
@@ -87,9 +65,30 @@ class GenericMessage extends AbstractMessage
 
             [$name] = explode($encoding->fieldSeparator, $line, 2);
 
-            $segments[$name][] = $line;
+            if (!in_array($name, $this->getNames(), true)) {
+                $this->add($name, new StructureDefinition(GenericSegment::class, [$name], isRepeating: true));
+            }
+
+            $segment = $this->getRepetition($name, count($this->getAll($name)));
+
+            assert($segment instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
+
+            $segment->parse($encoding, $line);
+
+            $this->ordered[] = $segment;
+        }
+    }
+
+    #[Override]
+    public function serialize(Encoding $encoding): string
+    {
+        // A hand-built message (never parsed) has no recorded order; fall back to schema-order walk.
+        if ($this->ordered === []) {
+            return parent::serialize($encoding);
         }
 
-        return $segments;
+        return implode($encoding->lineEnding, array_map(static fn(Segment $segment): string => $segment->serialize(
+            $encoding,
+        ), $this->ordered));
     }
 }
