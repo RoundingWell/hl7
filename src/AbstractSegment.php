@@ -49,7 +49,6 @@ abstract class AbstractSegment implements Segment
         return $this->fields[$number - 1] ?? [];
     }
 
-    // @mago-expect lint:halstead
     #[Override]
     public function getFieldRepetition(int $number, int $repetition): Type
     {
@@ -68,7 +67,17 @@ abstract class AbstractSegment implements Segment
             $this->add(new TypeDefinition());
         }
 
-        $total = count($this->fields[$idx] ?? []);
+        $this->assertRepetitionAllowed($number, $repetition);
+
+        return $this->fields[$idx][$repetition] = $this->getDefinition($number)->newInstance();
+    }
+
+    /**
+     * @param positive-int $number starting at 1
+     */
+    private function assertRepetitionAllowed(int $number, int $repetition): void
+    {
+        $total = $this->getLength($number);
 
         if ($repetition > $total) {
             throw new OutOfBoundsException(
@@ -83,12 +92,6 @@ abstract class AbstractSegment implements Segment
                 "Cannot get repetition #{$repetition} of {$this->getName()}.{$number}, only {$max} repetitions are allowed",
             );
         }
-
-        $definition = $this->definitions[$number - 1] ?? throw new InvalidArgumentException(
-            "Cannot create field {$this->getName()}.{$number}, it has not been added",
-        );
-
-        return $this->fields[$idx][$repetition] = $definition->newInstance();
     }
 
     #[Override]
@@ -128,6 +131,24 @@ abstract class AbstractSegment implements Segment
     }
 
     #[Override]
+    public function firstNames(): array
+    {
+        return [$this->getName()];
+    }
+
+    #[Override]
+    public function parseSegments(Encoding $encoding, array $segments, array $additionalNames, int $offset): int
+    {
+        $element = $segments[$offset] ?? throw new OutOfBoundsException(
+            "Cannot parse {$this->getName()} at #{$offset}, the segment stream is exhausted",
+        );
+
+        $this->parse($encoding, $element->raw);
+
+        return $offset + 1;
+    }
+
+    #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
         $fields = explode($encoding->fieldSeparator, $data);
@@ -140,6 +161,12 @@ abstract class AbstractSegment implements Segment
                 $this->getFieldRepetition($idx + 1, $rep)->parse($encoding, $value);
             }
         }
+    }
+
+    #[Override]
+    public function serializeLines(Encoding $encoding): array
+    {
+        return [$this->serialize($encoding)];
     }
 
     #[Override]

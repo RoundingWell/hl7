@@ -12,6 +12,7 @@ use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\GenericPrimitive;
+use RoundingWell\HL7\SegmentElement;
 use RoundingWell\HL7\Tests\Fixtures\FakeSegment;
 use RoundingWell\HL7\TypeDefinition;
 
@@ -262,5 +263,53 @@ final class AbstractSegmentTest extends TestCase
         $segment->parse(new Encoding(), 'FakeSegment');
 
         $this->assertSame('FakeSegment', $segment->serialize(new Encoding()));
+    }
+
+    public function testFirstNamesIsTheSegmentsOwnName(): void
+    {
+        // A segment's FIRST-set is itself: groups match stream segments to structures with it,
+        // without needing to know whether the structure is a segment or a group.
+        $this->assertSame(['FakeSegment'], new FakeSegment()->firstNames());
+    }
+
+    public function testParseSegmentsConsumesExactlyOneElement(): void
+    {
+        // A segment claims a single line from the stream and returns the next offset, so an
+        // enclosing group resumes immediately after it instead of losing its position.
+        $segment = new FakeSegment();
+
+        $next = $segment->parseSegments(
+            new Encoding(),
+            [
+                new SegmentElement('FakeSegment', 'FakeSegment|a'),
+                new SegmentElement('ZZZ', 'ZZZ|b'),
+            ],
+            [],
+            0,
+        );
+
+        $this->assertSame(1, $next);
+        $this->assertSame('FakeSegment|a', $segment->serialize(new Encoding()));
+    }
+
+    public function testParseSegmentsRejectsAnOffsetPastTheEndOfTheStream(): void
+    {
+        // A caller pointing past the stream's end is a logic error; failing loudly beats
+        // silently parsing nothing and corrupting the caller's position bookkeeping.
+        $segment = new FakeSegment();
+
+        $this->expectException(OutOfBoundsException::class);
+
+        $segment->parseSegments(new Encoding(), [], [], 0);
+    }
+
+    public function testSerializeLinesWrapsTheSerializedSegmentInAList(): void
+    {
+        // Groups splice their children's lines together; a segment contributes exactly one line,
+        // letting groups serialize children uniformly without type-switching.
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a');
+
+        $this->assertSame(['FakeSegment|a'], $segment->serializeLines(new Encoding()));
     }
 }
