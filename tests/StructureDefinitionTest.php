@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Segment\MSH;
 use RoundingWell\HL7\Segment\NK1;
 use RoundingWell\HL7\StructureDefinition;
+use RoundingWell\HL7\Tests\Fixtures\FakeStructure;
 
 #[CoversClass(StructureDefinition::class)]
 final class StructureDefinitionTest extends TestCase
@@ -45,13 +46,24 @@ final class StructureDefinitionTest extends TestCase
         $this->assertInstanceOf(MSH::class, $instance);
     }
 
-    public function testRejectsATypeThatDoesNotImplementStructure(): void
+    public function testRejectsATypeThatIsNotAStructure(): void
     {
-        // A definition later instantiates its type as part of a message, so a non-Structure class
+        // A definition later instantiates its type as part of a message, so an unparseable class
         // must be refused at definition time rather than blowing up during assembly.
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/does not implement Structure/');
+        $this->expectExceptionMessageMatches('/must be a Segment or extend AbstractGroup/');
 
         new StructureDefinition(\stdClass::class);
+    }
+
+    public function testRejectsAStructureThatIsNeitherASegmentNorAGroup(): void
+    {
+        // Parsing dispatches on exactly two cases: a Segment consumes a line, an AbstractGroup
+        // recurses. A bare Structure could be registered but never parsed, so it must be refused
+        // up front instead of failing in the middle of a message.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/must be a Segment or extend AbstractGroup/');
+
+        new StructureDefinition(FakeStructure::class);
     }
 }

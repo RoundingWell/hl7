@@ -8,10 +8,10 @@ use Override;
 use RoundingWell\HL7\Structure;
 
 /**
- * A minimal, no-argument {@see Structure} used to exercise GenericGroup.
+ * A minimal {@see Structure} that is neither a Segment nor an AbstractGroup.
  *
- * GenericGroup instantiates registered structures with `new $model()`, and no production
- * Structure has a no-argument constructor, so tests supply this stand-in.
+ * Parsing can only dispatch segments and groups, so StructureDefinition must reject this
+ * class; tests use it to exercise that rejection.
  */
 final class FakeStructure implements Structure
 {
