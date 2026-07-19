@@ -102,7 +102,9 @@ final class AbstractMessageTest extends TestCase
 
         $procedures = $message->getAll('PROCEDURE');
         $this->assertCount(1, $procedures);
-        $this->assertCount(1, $procedures[0]->getAll('ROL'));
+        $procedure = $procedures[0];
+        $this->assertInstanceOf(Group::class, $procedure);
+        $this->assertCount(1, $procedure->getAll('ROL'));
     }
 
     public function testSerializeExpandsNestedGroupMembersInOrder(): void
@@ -138,8 +140,11 @@ final class AbstractMessageTest extends TestCase
         // ZFA ended the group's scope and landed on the message...
         $this->assertCount(1, $message->getAll('ZFA'));
         // ...while the single PROCEDURE group still kept its own PR1 member.
-        $this->assertCount(1, $message->getAll('PROCEDURE'));
-        $this->assertCount(1, $message->getAll('PROCEDURE')[0]->getAll('PR1'));
+        $procedures = $message->getAll('PROCEDURE');
+        $this->assertCount(1, $procedures);
+        $procedure = $procedures[0];
+        $this->assertInstanceOf(Group::class, $procedure);
+        $this->assertCount(1, $procedure->getAll('PR1'));
     }
 
     public function testGetRepetitionRejectsRepetitionAboveZeroForNonRepeatingStructure(): void
