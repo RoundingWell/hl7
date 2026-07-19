@@ -153,6 +153,17 @@ final class AbstractMessageTest extends TestCase
         $message->getRepetition('PV2', 1);
     }
 
+    public function testGetSegmentRejectsAGroupStructure(): void
+    {
+        // getSegment() promises a Segment; asking it for a group must fail loudly with a
+        // meaningful exception rather than a TypeError from the engine.
+        $message = new FakeGroupMessage();
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $message->getSegment('PROCEDURE', 0);
+    }
+
     public function testAddRejectsADuplicateStructureKey(): void
     {
         // Positional retention relies on every structure key being unique; re-registering a key

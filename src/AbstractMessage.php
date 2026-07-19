@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use InvalidArgumentException;
 use Override;
 use Psr\Clock\ClockInterface;
 use RoundingWell\HL7\Message\ACK;
@@ -39,7 +40,11 @@ abstract class AbstractMessage extends AbstractGroup implements Message
 
     public function getSegment(string $name, int $repetition): Segment
     {
-        return $this->getRepetition($name, $repetition);
+        $structure = $this->getRepetition($name, $repetition);
+
+        return $structure instanceof Segment
+            ? $structure
+            : throw new InvalidArgumentException("Cannot get segment {$this->getName()}.{$name}, it is a group");
     }
 
     #[Override]
