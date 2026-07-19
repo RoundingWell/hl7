@@ -153,6 +153,16 @@ final class AbstractMessageTest extends TestCase
         $message->getRepetition('PV2', 1);
     }
 
+    public function testIsGroupDistinguishesNestedGroupsFromSegments(): void
+    {
+        // Generic consumers walk a message by name; isGroup() is how they decide whether to
+        // recurse into a structure or read it as a segment.
+        $message = new FakeGroupMessage();
+
+        $this->assertTrue($message->isGroup('PROCEDURE'));
+        $this->assertFalse($message->isGroup('MSH'));
+    }
+
     public function testGetSegmentRejectsAGroupStructure(): void
     {
         // getSegment() promises a Segment; asking it for a group must fail loudly with a
