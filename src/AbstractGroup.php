@@ -10,13 +10,11 @@ use Override;
 use ReflectionObject;
 
 // @mago-expect lint:too-many-methods
-// @mago-expect lint:cyclomatic-complexity
-// @mago-expect lint:kan-defect
 abstract class AbstractGroup implements Group
 {
     use CanAssertNumbers;
 
-    /** @var array<string, list<Structure>> */
+    /** @var array<string, list<Segment|AbstractGroup>> */
     private array $structures = [];
 
     /** @var array<string, StructureDefinition> */
@@ -48,6 +46,9 @@ abstract class AbstractGroup implements Group
         return new ReflectionObject($this)->getShortName();
     }
 
+    /**
+     * @return list<Segment|AbstractGroup>
+     */
     #[Override]
     public function getAll(string $name): array
     {
@@ -55,13 +56,13 @@ abstract class AbstractGroup implements Group
     }
 
     #[Override]
-    public function get(string $name): Structure
+    public function get(string $name): Segment|AbstractGroup
     {
         return $this->getRepetition($name, 0);
     }
 
     #[Override]
-    public function getRepetition(string $name, int $repetition): Structure
+    public function getRepetition(string $name, int $repetition): Segment|AbstractGroup
     {
         $this->assertNaturalNumber($repetition);
 
@@ -107,14 +108,15 @@ abstract class AbstractGroup implements Group
      */
     protected function parseStructures(SegmentCursor $cursor, Encoding $encoding, array $followNames = []): void
     {
-        $names = $this->getNames();
-        $pointer = 0;
+        // Structures that may still match, in definition order. HL7 structures are positional:
+        // a match discards the candidates before it, and a non-repeating match is itself spent.
+        $candidates = $this->getNames();
 
         while ($cursor->valid()) {
             $segment = $cursor->peek()->name;
-            $index = $this->matchStructure($names, $pointer, $segment);
+            $match = $this->matchStructure($candidates, $segment);
 
-            if ($index === null) {
+            if ($match === null) {
                 // Not part of this group's remaining structure.
                 if (in_array($segment, $followNames, true)) {
                     // An enclosing scope (or a new repetition of an ancestor) will claim it.
@@ -127,26 +129,17 @@ abstract class AbstractGroup implements Group
                 continue;
             }
 
-            $pointer = $index;
-
-            // @mago-expect analysis:possibly-undefined-int-array-index
-            $name = $names[$index];
-
-            assert(is_string($name), 'Matched index must reference a defined structure name');
+            [$name, $after] = $match;
 
             $structure = $this->getRepetition($name, count($this->getAll($name)));
 
             if ($structure instanceof self) {
-                $structure->parseStructures($cursor, $encoding, $this->followNamesFor($index, $followNames));
+                $structure->parseStructures($cursor, $encoding, $this->followNamesFor($name, $after, $followNames));
             } else {
-                assert($structure instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
-
                 $structure->parse($encoding, $cursor->next()->raw);
             }
 
-            if (!$this->isRepeating($name)) {
-                $pointer++;
-            }
+            $candidates = $this->isRepeating($name) ? [$name, ...$after] : $after;
         }
     }
 
@@ -166,13 +159,9 @@ abstract class AbstractGroup implements Group
             foreach ($this->getAll($name) as $structure) {
                 if ($structure instanceof self) {
                     $lines = [...$lines, ...$structure->serializeStructures($encoding)];
-
-                    continue;
+                } else {
+                    $lines[] = $structure->serialize($encoding);
                 }
-
-                assert($structure instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
-
-                $lines[] = $structure->serialize($encoding);
             }
         }
 
@@ -180,34 +169,20 @@ abstract class AbstractGroup implements Group
     }
 
     /**
-     * Segment names that can legally follow the structure at $index within this group.
+     * Segment names that can legally follow the given structure within this group.
      *
+     * @param list<string> $after structure names declared after it, in order
      * @param list<string> $followNames
      *
      * @return list<string>
      */
-    private function followNamesFor(int $index, array $followNames): array
+    private function followNamesFor(string $name, array $after, array $followNames): array
     {
-        $names = $this->getNames();
-        $follow = [];
-
-        // @mago-expect analysis:possibly-undefined-int-array-index
-        $name = $names[$index];
-
-        assert(is_string($name), 'Matched index must reference a defined structure name');
-
         // A repeating child can begin another repetition of itself.
-        if ($this->isRepeating($name)) {
-            $follow = [...$follow, ...$this->firstNamesOf($name)];
-        }
+        $follow = $this->isRepeating($name) ? $this->firstNamesOf($name) : [];
 
         // Structures after the child within this group, up to and including the first required one.
-        for ($i = $index + 1; $i < count($names); $i++) {
-            // @mago-expect analysis:possibly-undefined-int-array-index
-            $next = $names[$i];
-
-            assert(is_string($next), 'Iterated index must reference a defined structure name');
-
+        foreach ($after as $next) {
             $follow = [...$follow, ...$this->firstNamesOf($next)];
 
             if ($this->isRequired($next)) {
@@ -220,18 +195,17 @@ abstract class AbstractGroup implements Group
     }
 
     /**
-     * @param list<string> $names
+     * Finds the first candidate structure the given segment can begin.
+     *
+     * @param list<string> $candidates
+     *
+     * @return array{string, list<string>}|null the matched name and the candidates after it
      */
-    private function matchStructure(array $names, int $from, string $segment): ?int
+    private function matchStructure(array $candidates, string $segment): ?array
     {
-        for ($index = $from; $index < count($names); $index++) {
-            // @mago-expect analysis:possibly-undefined-int-array-index
-            $name = $names[$index];
-
-            assert(is_string($name), 'Matched index must reference a defined structure name');
-
+        foreach ($candidates as $index => $name) {
             if (in_array($segment, $this->firstNamesOf($name), true)) {
-                return $index;
+                return [$name, array_slice($candidates, $index + 1)];
             }
         }
 
@@ -245,15 +219,9 @@ abstract class AbstractGroup implements Group
      */
     private function firstNamesOf(string $name): array
     {
-        if (!$this->isGroup($name)) {
-            return [$this->getDefinition($name)->newInstance()->getName()];
-        }
+        $structure = $this->getDefinition($name)->newInstance();
 
-        $probe = $this->getDefinition($name)->newInstance();
-
-        assert($probe instanceof self, "Group {$this->getName()}.{$name} must extend AbstractGroup");
-
-        return $probe->firstNames();
+        return $structure instanceof self ? $structure->firstNames() : [$structure->getName()];
     }
 
     /**
