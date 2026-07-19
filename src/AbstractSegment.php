@@ -49,7 +49,6 @@ abstract class AbstractSegment implements Segment
         return $this->fields[$number - 1] ?? [];
     }
 
-    // @mago-expect lint:halstead
     #[Override]
     public function getFieldRepetition(int $number, int $repetition): Type
     {
@@ -63,8 +62,8 @@ abstract class AbstractSegment implements Segment
             return $this->fields[$idx][$repetition];
         }
 
-        // Add any fields that have not been defined, up to the requested number.
-        for ($m = max($number - $this->getFieldCount(), 0); $m > 0; $m--) {
+        // Define any fields that are missing, up to the requested number.
+        while ($this->getFieldCount() < $number) {
             $this->add(new TypeDefinition());
         }
 
@@ -84,11 +83,7 @@ abstract class AbstractSegment implements Segment
             );
         }
 
-        $definition = $this->definitions[$number - 1] ?? throw new InvalidArgumentException(
-            "Cannot create field {$this->getName()}.{$number}, it has not been added",
-        );
-
-        return $this->fields[$idx][$repetition] = $definition->newInstance();
+        return $this->fields[$idx][$repetition] = $this->getDefinition($number)->newInstance();
     }
 
     #[Override]
