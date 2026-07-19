@@ -49,6 +49,7 @@ abstract class AbstractSegment implements Segment
         return $this->fields[$number - 1] ?? [];
     }
 
+    // @mago-expect lint:halstead
     #[Override]
     public function getFieldRepetition(int $number, int $repetition): Type
     {

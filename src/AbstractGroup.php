@@ -10,6 +10,8 @@ use Override;
 use ReflectionObject;
 
 // @mago-expect lint:too-many-methods
+// @mago-expect lint:cyclomatic-complexity
+// @mago-expect lint:kan-defect
 abstract class AbstractGroup implements Group
 {
     use CanAssertNumbers;
@@ -159,9 +161,11 @@ abstract class AbstractGroup implements Group
             foreach ($this->getAll($name) as $structure) {
                 if ($structure instanceof self) {
                     $lines = [...$lines, ...$structure->serializeStructures($encoding)];
-                } else {
-                    $lines[] = $structure->serialize($encoding);
+
+                    continue;
                 }
+
+                $lines[] = $structure->serialize($encoding);
             }
         }
 
