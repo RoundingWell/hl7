@@ -28,13 +28,13 @@ abstract class AbstractMessage extends AbstractGroup implements Message
             $segments[] = new SegmentElement($name, $line);
         }
 
-        $this->parseStructures(new SegmentCursor(...$segments), $encoding);
+        $this->parseSegments($encoding, $segments, [], 0);
     }
 
     #[Override]
     public function serialize(Encoding $encoding): string
     {
-        return implode($encoding->lineEnding, $this->serializeStructures($encoding));
+        return implode($encoding->lineEnding, $this->serializeLines($encoding));
     }
 
     public function getSegment(string $name, int $repetition): Segment

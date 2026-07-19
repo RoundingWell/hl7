@@ -17,6 +17,7 @@ use RoundingWell\HL7\Group;
 use RoundingWell\HL7\IdGenerator;
 use RoundingWell\HL7\Message\ACK;
 use RoundingWell\HL7\Segment\MSH;
+use RoundingWell\HL7\SegmentElement;
 use RoundingWell\HL7\StructureDefinition;
 use RoundingWell\HL7\Tests\Fixtures\FakeGroupMessage;
 use RoundingWell\HL7\Tests\Fixtures\FakeProcedure;
@@ -24,6 +25,7 @@ use Symfony\Component\Clock\MockClock;
 
 #[CoversClass(AbstractMessage::class)]
 #[CoversClass(AbstractGroup::class)]
+#[CoversClass(SegmentElement::class)]
 final class AbstractMessageTest extends TestCase
 {
     private Encoding $encoding;
@@ -109,7 +111,7 @@ final class AbstractMessageTest extends TestCase
 
     public function testSerializeExpandsNestedGroupMembersInOrder(): void
     {
-        // serializeStructures() must recurse into a nested group (PROCEDURE) and splice its
+        // serializeLines() must recurse into a nested group (PROCEDURE) and splice its
         // members' lines into the walk; otherwise a group's segments would be silently dropped
         // from the serialized output instead of round-tripping.
         // The trailing "|" after the encoding characters is intentional and load-bearing: MSH::serialize

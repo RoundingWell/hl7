@@ -50,9 +50,4 @@ interface Group extends Structure
      * Returns whether or not the given structure is repeating
      */
     public function isRepeating(string $name): bool;
-
-    /**
-     * Returns whether or not the given structure is a group
-     */
-    public function isGroup(string $name): bool;
 }
