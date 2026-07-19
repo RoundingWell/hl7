@@ -66,6 +66,7 @@
             "@coverage-check"
         ],
         "verify": [
+            "@format-check",
             "@lint",
             "@analyze",
             "@test"
