@@ -105,3 +105,5 @@ To run a specific test by name, use:
 
 ### Releasing
 Always use [semantic versioning](https://semver.org/) when tagging a release.
+Always update `CHANGELOG.md` when releasing a new version.
+Always add new comparison links to the bottom of `CHANGELOG.md`.
