@@ -48,7 +48,7 @@ use RoundingWell\HL7\StructureDefinition;
  * 24. UB1 (Uniform Billing) (optional)
  * 25. UB2 (Uniform Billing Data) (optional)
  */
-final class A06 extends AbstractMessage
+class A06 extends AbstractMessage
 {
     public function __construct()
     {

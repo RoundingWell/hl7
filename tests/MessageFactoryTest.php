@@ -12,8 +12,11 @@ use RoundingWell\HL7\Exception\InvalidMessage;
 use RoundingWell\HL7\GenericMessage;
 use RoundingWell\HL7\Message\ADT\A01;
 use RoundingWell\HL7\Message\ADT\A03;
+use RoundingWell\HL7\Message\ADT\A04;
 use RoundingWell\HL7\Message\ADT\A06;
+use RoundingWell\HL7\Message\ADT\A07;
 use RoundingWell\HL7\Message\ADT\A08;
+use RoundingWell\HL7\Message\ADT\A13;
 use RoundingWell\HL7\MessageFactory;
 
 #[CoversClass(MessageFactory::class)]
@@ -43,6 +46,13 @@ final class MessageFactoryTest extends TestCase
         $this->assertInstanceOf(A03::class, $message);
     }
 
+    public function testShouldParseA04File(): void
+    {
+        $message = $this->messageFactory->parseFile($this->messagePath('adt-a04'));
+
+        $this->assertInstanceOf(A04::class, $message);
+    }
+
     public function testShouldParseA06File(): void
     {
         $message = $this->messageFactory->parseFile($this->messagePath('adt-a06'));
@@ -50,11 +60,25 @@ final class MessageFactoryTest extends TestCase
         $this->assertInstanceOf(A06::class, $message);
     }
 
+    public function testShouldParseA07File(): void
+    {
+        $message = $this->messageFactory->parseFile($this->messagePath('adt-a07'));
+
+        $this->assertInstanceOf(A07::class, $message);
+    }
+
     public function testShouldParseA08File(): void
     {
         $message = $this->messageFactory->parseFile($this->messagePath('adt-a08'));
 
         $this->assertInstanceOf(A08::class, $message);
+    }
+
+    public function testShouldParseA13File(): void
+    {
+        $message = $this->messageFactory->parseFile($this->messagePath('adt-a13'));
+
+        $this->assertInstanceOf(A13::class, $message);
     }
 
     public function testShouldParseAdditionalEncodingCharacters(): void

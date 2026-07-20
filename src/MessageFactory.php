@@ -101,8 +101,11 @@ final readonly class MessageFactory
             return match ($event) {
                 'A01' => new Message\ADT\A01(),
                 'A03' => new Message\ADT\A03(),
+                'A04' => new Message\ADT\A04(),
                 'A06' => new Message\ADT\A06(),
+                'A07' => new Message\ADT\A07(),
                 'A08' => new Message\ADT\A08(),
+                'A13' => new Message\ADT\A13(),
                 default => new GenericMessage("{$type}_{$event}", $version),
             };
         }
