@@ -171,7 +171,7 @@ Other unrecognized segments (names not beginning with `Z`) are skipped during pa
 
 ## Supported types
 
-**Messages:** `A01`, `A03`, `A06`, `A08`, `ACK`
+**Messages:** `A01`, `A03`, `A04`, `A06`, `A07`, `A08`, `A13`, `ACK`
 
 **Segments:** `DG1`, `DRG`, `EVN`, `MSA`, `MSH`, `NK1`, `OBX`, `PID`, `PV1`, `PV2`
 

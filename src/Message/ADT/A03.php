@@ -46,7 +46,7 @@ use RoundingWell\HL7\StructureDefinition;
  * 22. ACC (Accident) (optional)
  * 23. PDA (Patient Death and Autopsy) (optional)
  */
-final class A03 extends AbstractMessage
+class A03 extends AbstractMessage
 {
     public function __construct()
     {

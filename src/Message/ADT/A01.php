@@ -48,7 +48,7 @@ use RoundingWell\HL7\StructureDefinition;
  * 24. UB2 (Uniform Billing Data) (optional)
  * 25. PDA (Patient Death and Autopsy) (optional)
  */
-final class A01 extends AbstractMessage
+class A01 extends AbstractMessage
 {
     public function __construct()
     {
