@@ -86,6 +86,20 @@ abstract class AbstractGroup implements Group
         return $this->structures[$name][$repetition] = $this->getDefinition($name)->newInstance();
     }
 
+    /**
+     * Define the specific repetition of a structure
+     *
+     * _This method does not validate the repetition index or structure type!_
+     *
+     * @param int $repetition zero or greater
+     */
+    protected function setRepetition(string $name, int $repetition, Structure $structure): void
+    {
+        $this->assertNaturalNumber($repetition);
+
+        $this->structures[$name][$repetition] = $structure;
+    }
+
     #[Override]
     public function getNames(): array
     {

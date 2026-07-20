@@ -14,6 +14,7 @@ use RoundingWell\HL7\AbstractMessage;
 use RoundingWell\HL7\AcknowledgmentCode;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\GenericComposite;
+use RoundingWell\HL7\GenericPrimitive;
 use RoundingWell\HL7\GenericSegment;
 use RoundingWell\HL7\Group;
 use RoundingWell\HL7\IdGenerator;
@@ -136,7 +137,9 @@ final class AbstractMessageTest extends TestCase
         $this->assertInstanceOf(GenericSegment::class, $segment);
         $field = $segment->getFieldRepetition(1, 0);
         $this->assertInstanceOf(GenericComposite::class, $field);
-        $this->assertSame('custom', $field->getExtraComponents()->getComponent(0)->getData()->getValue());
+        $type = $field->getExtraComponents()->getComponent(0)->getData();
+        $this->assertInstanceOf(GenericPrimitive::class, $type);
+        $this->assertSame('custom', $type->getValue());
     }
 
     public function testZSegmentInsideGroupIsRetainedOnThatGroup(): void

@@ -8,7 +8,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\GenericMessage;
+use RoundingWell\HL7\GenericSegment;
 use RoundingWell\HL7\Segment\MSH;
+use RoundingWell\HL7\Segment\OBX;
 
 #[CoversClass(GenericMessage::class)]
 final class GenericMessageTest extends TestCase
@@ -59,6 +61,18 @@ final class GenericMessageTest extends TestCase
 
         $this->assertCount(2, $message->getAll('OBX'));
         $this->assertCount(1, $message->getAll('NTE'));
+    }
+
+    public function testParseCreatesTypedSegmentsForKnownNames(): void
+    {
+        // Parsing delegates to SegmentFactory, so a known name like OBX must become its concrete
+        // typed segment (giving callers the typed accessors), while an unknown name like NTE must
+        // still fall back to GenericSegment so nothing is lost.
+        $message = new GenericMessage('ORU_R01', '2.8.1');
+        $message->parse(new Encoding("\r"), "MSH|^~\\&\rOBX|1\rNTE|1");
+
+        $this->assertInstanceOf(OBX::class, $message->getAll('OBX')[0]);
+        $this->assertInstanceOf(GenericSegment::class, $message->getAll('NTE')[0]);
     }
 
     public function testSerializePreservesOriginalSegmentOrder(): void
