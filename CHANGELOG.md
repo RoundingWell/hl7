@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-20
+
+### Added
+
+- Retain undeclared Z-segments in typed message parsing
+
 ## [0.1.0] - 2026-07-19
 
 ### Added
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/RoundingWell/hl7/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/RoundingWell/hl7/releases/tag/0.1.0
