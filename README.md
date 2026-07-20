@@ -156,18 +156,21 @@ Component structure is retained: an undefined field `a^b^c` keeps three componen
 component per `^`), and a component carrying subcomponents (`a&b`) keeps `b` as a subcomponent
 of that component rather than promoting it to its own component.
 
-### Z-segments
+### Unmatched segments
 
-Typed messages tolerate site-defined Z-segments (any segment name beginning with `Z` that the
-message's schema does not declare). Each one is parsed as a `GenericSegment`, exposed through
-`get()` / `getAll()` on the group where it appeared, and serialized back in its original
-position, so parse → serialize round trips do not lose vendor data:
+Typed messages never silently drop a segment. Any segment the schema cannot place — a
+site-defined Z-segment, any other name the schema does not declare, or a declared segment that
+reappears after its slot in the message has already been consumed — is parsed as a
+`GenericSegment` and serialized back in its original position, so parse → serialize round trips
+do not lose data:
 
 ```php
 $zds = $message->get('ZDS'); // a GenericSegment, readable like any untyped segment
 ```
 
-Other unrecognized segments (names not beginning with `Z`) are skipped during parsing.
+A retained segment is exposed through `get()` / `getAll()` on the group where it appeared only
+when its name is not one the schema declares there. A declared segment retained out of position
+is kept for serialization only, so it is not double-counted through `getAll()`.
 
 ## Supported types
 
