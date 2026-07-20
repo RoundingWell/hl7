@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-20
+
+### Changed
+
+- `GenericMessage` now parses typed segments via `SegmentFactory` instead of always producing `GenericSegment` instances
+
 ## [0.3.0] - 2026-07-20
 
 ### Added
@@ -29,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/RoundingWell/hl7/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/RoundingWell/hl7/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/RoundingWell/hl7/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/RoundingWell/hl7/releases/tag/0.1.0
