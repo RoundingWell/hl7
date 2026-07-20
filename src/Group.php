@@ -31,6 +31,8 @@ interface Group extends Structure
      * Returns the specific repetition of a structure
      *
      * If the structure does not already exist, it will be created.
+     *
+     * @param int $repetition zero or greater
      */
     public function getRepetition(string $name, int $repetition): Structure;
 

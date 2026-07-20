@@ -9,6 +9,8 @@ use RoundingWell\HL7\Segment\MSH;
 
 class GenericMessage extends AbstractMessage
 {
+    use CanJoinElements;
+
     private string $name;
     private string $version;
 
@@ -56,6 +58,9 @@ class GenericMessage extends AbstractMessage
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
+        $segmentFactory = new SegmentFactory($encoding);
+
+        // Any existing segments must be cleared and replaced.
         $this->ordered = [];
 
         foreach (explode($encoding->lineEnding, $data) as $line) {
@@ -63,17 +68,13 @@ class GenericMessage extends AbstractMessage
                 continue;
             }
 
-            [$name] = explode($encoding->fieldSeparator, $line, 2);
+            $segment = $segmentFactory->parse($line);
 
-            if (!in_array($name, $this->getNames(), true)) {
-                $this->add($name, new StructureDefinition(GenericSegment::class, [$name], isRepeating: true));
-            }
+            // Determine the repetition number for this segment.
+            $repetition = count($this->getAll($segment->getName()));
 
-            $segment = $this->getRepetition($name, count($this->getAll($name)));
-
-            assert($segment instanceof Segment, "Expected {$this->getName()}.{$name} to be a Segment");
-
-            $segment->parse($encoding, $line);
+            // Insert the segment into the message at the determined repetition number.
+            $this->setRepetition($segment->getName(), $repetition, $segment);
 
             $this->ordered[] = $segment;
         }
@@ -87,8 +88,8 @@ class GenericMessage extends AbstractMessage
             return parent::serialize($encoding);
         }
 
-        return implode($encoding->lineEnding, array_map(static fn(Segment $segment): string => $segment->serialize(
-            $encoding,
-        ), $this->ordered));
+        $segments = array_map(static fn(Segment $segment) => $segment->serialize($encoding), $this->ordered);
+
+        return $this->joinTrimmed($segments, $encoding->lineEnding);
     }
 }
