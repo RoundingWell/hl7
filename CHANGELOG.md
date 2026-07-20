@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-20
+
 ### Added
 
 - ADT `A04`, `A07`, and `A13` message types, reusing the HAPI structures they map to (`A04`/`A13` reuse `A01`, `A07` reuses `A06`)
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/RoundingWell/hl7/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/RoundingWell/hl7/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/RoundingWell/hl7/releases/tag/0.1.0
