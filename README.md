@@ -5,6 +5,12 @@ An ADT/HL7 parser for PHP that turns raw HL7 messages into strongly-typed, struc
 Instead of hand-splitting pipe-delimited strings, you parse a message once and read its
 segments, fields, and data-type components through named accessors.
 
+#### AI Note
+
+This project contains code written by both humans and agentic tools. The core functionality
+was developed entirely by humans. Agentic tools have been used to expand the functionality
+and test coverage of the project. All code is reviewed by a human before being merged.
+
 ## Requirements
 
 - PHP 8.4 or newer
