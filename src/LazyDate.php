@@ -12,7 +12,10 @@ final class LazyDate
     use CanCheckDateTimeErrors;
 
     // HL7 date format YYYY[MM[DD]]
-    private const string REGEX = '/^(\d{4})(\d{2})?(\d{2})?$/';
+    // Each component is nested inside the previous one so a lower-precision component can
+    // never appear without every higher-precision component before it (a day requires a
+    // month), mirroring LazyDateTime.
+    private const string REGEX = '/^(\d{4})(?:(\d{2})(\d{2})?)?$/';
 
     private ?string $format = null;
     private ?DateTimeImmutable $dateTime = null;
