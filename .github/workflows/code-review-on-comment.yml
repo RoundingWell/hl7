@@ -1,0 +1,10 @@
+name: Trigger Review
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    uses: roundingwell/workflows/.github/workflows/review-on-comment.yml@41b7a87362af597a8e371122424036500bc0cb63 # 2.1.1
+    secrets: inherit
