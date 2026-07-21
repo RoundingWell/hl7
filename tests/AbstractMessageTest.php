@@ -88,28 +88,48 @@ final class AbstractMessageTest extends TestCase
         $this->assertCount(2, $message->getAll('PROCEDURE'));
     }
 
-    public function testParseSkipsUnmatchedSegments(): void
+    public function testRetainsUnmatchedForeignSegmentInPlace(): void
     {
-        // An unexpected/out-of-place non-Z segment is tolerated by dropping it (decision 4A),
-        // never fatal — retention is reserved for site-defined Z-segments.
+        // A foreign segment the schema has no model for must not be silently dropped:
+        // it is retained where it appeared so the round trip preserves input order, and
+        // stays readable via getAll() the same way an undeclared Z-segment does.
+        $data = "MSH|^~\\&\rQQQ|junk\rNK1|1";
+
         $message = new FakeGroupMessage();
-        $message->parse($this->encoding, "MSH|^~\\&\rQQQ|junk\rNK1|1");
+        $message->parse($this->encoding, $data);
 
         $this->assertCount(1, $message->getAll('NK1'));
-        $this->assertSame([], $message->getAll('QQQ'));
-        $this->assertSame("MSH|^~\\&\rNK1|1", $message->serialize($this->encoding));
+        $this->assertCount(1, $message->getAll('QQQ'));
+        $this->assertSame($data, $message->serialize($this->encoding));
     }
 
-    public function testOutOfPositionDeclaredZSegmentIsDroppedNotRetained(): void
+    public function testRetainsOutOfPositionDeclaredSegmentForSerializationOnly(): void
     {
-        // Dynamic retention is reserved for names the schema does not declare. A second
-        // occurrence of the declared, non-repeating ZFA must be skipped (decision 4A);
-        // retaining it would also double-emit it through the schema-order walk.
+        // A second occurrence of the declared, non-repeating ZFA cannot match after its slot
+        // closes. It must still round-trip in received order, but it is kept for serialization
+        // only: injecting it as a typed repetition would corrupt the slot and double-emit it
+        // through the schema-order walk, so getAll('ZFA') stays at one.
+        $data = "MSH|^~\\&\rZFA|1\rZFA|2";
+
         $message = new FakeGroupMessage();
-        $message->parse($this->encoding, "MSH|^~\\&\rZFA|1\rZFA|2");
+        $message->parse($this->encoding, $data);
 
         $this->assertCount(1, $message->getAll('ZFA'));
-        $this->assertSame("MSH|^~\\&\rZFA|1", $message->serialize($this->encoding));
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testRetainsDeclaredSegmentReappearingAfterItsSlot(): void
+    {
+        // A declared, non-repeating segment (PV2) reappearing after a later slot (ZFA) has
+        // been consumed lands where the forward-only matcher can no longer place it. It must
+        // round-trip in received order rather than be dropped, again serialization-only.
+        $data = "MSH|^~\\&\rPV2|1\rZFA|1\rPV2|2";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertCount(1, $message->getAll('PV2'));
+        $this->assertSame($data, $message->serialize($this->encoding));
     }
 
     public function testParseRetainsUndeclaredZSegmentInPlace(): void

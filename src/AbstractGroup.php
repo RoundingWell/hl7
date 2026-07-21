@@ -23,8 +23,8 @@ abstract class AbstractGroup implements Group
     private array $definitions = [];
 
     /**
-     * Retained Z-segments keyed by anchor: the "name.repetition" of the direct child each
-     * one followed during parsing, or '' when it preceded every child.
+     * Retained unmatched segments keyed by anchor: the "name.repetition" of the direct child
+     * each one followed during parsing, or '' when it preceded every child.
      *
      * @var array<string, list<Segment>>
      */
@@ -133,7 +133,7 @@ abstract class AbstractGroup implements Group
         $names = $this->getNames();
         $pointer = 0;
 
-        // Where a retained Z-segment splices back in on serialization: after the most
+        // Where a retained unmatched segment splices back in on serialization: after the most
         // recently parsed direct child, or before every child when none has parsed yet.
         $anchor = '';
 
@@ -154,16 +154,10 @@ abstract class AbstractGroup implements Group
                     return $offset;
                 }
 
-                if (str_starts_with($element->name, 'Z') && !in_array($element->name, $names, true)) {
-                    // An undeclared Z-segment carries site-defined data: retain it in place.
-                    $this->retainSegment($encoding, $element, $anchor);
+                // Unmatched here and unclaimed by any enclosing scope: retain it in place so the
+                // parser never silently drops data and the round trip preserves input order.
+                $this->retainSegment($encoding, $element, $anchor);
 
-                    $offset++;
-
-                    continue;
-                }
-
-                // Truly foreign: tolerate by skipping (decision 4A), keep parsing this group.
                 $offset++;
 
                 continue;
@@ -191,19 +185,22 @@ abstract class AbstractGroup implements Group
     }
 
     /**
-     * Retains an undeclared Z-segment so it survives round-trip serialization.
+     * Retains an unmatched segment so it survives round-trip serialization in place.
      *
-     * The segment is stored twice: in $structures so get()/getAll() expose it, and in
-     * $anchored so serializeLines() can splice it back after the child it followed.
-     * Retained names are never added to $definitions, so they cannot participate in
-     * structure matching or be double-emitted by the schema-order walk.
+     * The segment always joins $anchored so serializeLines() can splice it back after the child
+     * it followed. It also joins $structures — so get()/getAll() expose it — only when its name is
+     * not a declared structure of this group; injecting a GenericSegment into a declared typed slot
+     * would corrupt that slot and double-emit it through the schema-order walk.
      */
     private function retainSegment(Encoding $encoding, SegmentElement $element, string $anchor): void
     {
         $segment = new GenericSegment($element->name);
         $segment->parse($encoding, $element->raw);
 
-        $this->structures[$element->name][] = $segment;
+        if (!isset($this->definitions[$element->name])) { // @mago-expect lint:no-isset
+            $this->structures[$element->name][] = $segment;
+        }
+
         $this->anchored[$anchor][] = $segment;
     }
 
@@ -211,13 +208,13 @@ abstract class AbstractGroup implements Group
      * Serializes every structure in definition order, recursing into nested groups.
      *
      * The mirror of {@see parseSegments()}: segments serialize to their line, groups expand to
-     * their contained lines, preserving the schema's structure order. Z-segments retained during
-     * parsing are spliced back in after the child they followed.
+     * their contained lines, preserving the schema's structure order. Unmatched segments retained
+     * during parsing are spliced back in after the child they followed.
      */
     #[Override]
     public function serializeLines(Encoding $encoding): array
     {
-        // Z-segments retained before any schema child serialize first.
+        // Unmatched segments retained before any schema child serialize first.
         $lines = $this->anchoredLines($encoding, '');
 
         foreach ($this->getNames() as $name) {
@@ -234,7 +231,7 @@ abstract class AbstractGroup implements Group
     }
 
     /**
-     * Lines of the Z-segments retained at the given anchor position.
+     * Lines of the unmatched segments retained at the given anchor position.
      *
      * @return list<string>
      */
