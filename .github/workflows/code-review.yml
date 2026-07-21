@@ -1,0 +1,12 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  review:
+    uses: roundingwell/workflows/.github/workflows/code-review.yml@41b7a87362af597a8e371122424036500bc0cb63 # 2.1.1
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    secrets: inherit
