@@ -59,7 +59,7 @@ Bump PATCH when you make backwards compatible bug fixes:
 
 ## Pre-1.0 Versioning
 
-For versions < 1.0.0 (like this project):
+For versions < 1.0.0:
 - MINOR can include breaking changes
 - PATCH is for bug fixes and small features
 - More flexibility before reaching stability
@@ -74,6 +74,8 @@ For versions < 1.0.0 (like this project):
 3. If breaking changes exist -> MAJOR bump
 4. If new features exist -> MINOR bump
 5. If only fixes/refactoring -> PATCH bump
+
+When asked to tag the release, always use signed tags.
 
 ## Version Update Locations
 
