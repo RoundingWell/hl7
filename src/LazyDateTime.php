@@ -12,7 +12,23 @@ final class LazyDateTime
     use CanCheckDateTimeErrors;
 
     // HL7 timestamp format YYYY[MM[DD[HH[MM[SS[.S{1,4}]]]]]][+/-ZZZZ]
-    private const string REGEX = '/^(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?(?:\.(\d{1,4}))?([+-]\d{4})?$/';
+    // Each component is nested inside the previous one so a lower-precision component can
+    // never appear without every higher-precision component before it (e.g. a fractional
+    // second requires seconds, seconds require minutes). This rejects gapped values that PHP
+    // would otherwise reinterpret as a different, valid instant.
+    private const string REGEX = <<<'PATTERN'
+        /^
+        (\d{4})                 # year
+        (?: (\d{2})             # month
+        (?: (\d{2})             # day
+        (?: (\d{2})             # hour
+        (?: (\d{2})             # minute
+        (?: (\d{2})             # second
+        (?: \. (\d{1,4}) )?     # fractional second
+        )?)?)?)?)?
+        ([+-]\d{4})?            # UTC offset
+        $/x
+        PATTERN;
 
     private ?string $format = null;
     private ?DateTimeImmutable $dateTime = null;

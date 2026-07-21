@@ -105,6 +105,34 @@ final class LazyDateTimeTest extends TestCase
         $this->assertSame('2026-07-17 12:00:00 +00:00', $dateTime->getDateTime()->format('Y-m-d H:i:s P'));
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function fractionWithoutSeconds(): array
+    {
+        // A fractional component is only legal immediately after seconds. Each value places a
+        // fraction where seconds are absent, so it must not match the character pattern — PHP
+        // would otherwise reinterpret it as a different valid instant (e.g. a minute followed
+        // by ".5" would become half a second on a zero-second timestamp).
+        return [
+            'fraction after year' => ['2024.5'],
+            'fraction after day' => ['20240315.5'],
+            'fraction after hour' => ['2024031512.5'],
+            'fraction after minute' => ['202403151230.5'],
+        ];
+    }
+
+    #[DataProvider('fractionWithoutSeconds')]
+    public function testFractionWithoutSecondsIsRejected(string $value): void
+    {
+        $dateTime = new LazyDateTime($value);
+
+        $this->expectException(InvalidDateTime::class);
+        $this->expectExceptionMessage('HL7 expected date/time');
+
+        $dateTime->getFormat();
+    }
+
     public function testRepeatedReadsAreMemoized(): void
     {
         // Detection and construction are cached on first read so a value is parsed once; a
