@@ -103,32 +103,31 @@ final class AbstractMessageTest extends TestCase
         $this->assertSame($data, $message->serialize($this->encoding));
     }
 
-    public function testRetainsOutOfPositionDeclaredSegmentForSerializationOnly(): void
+    public function testRecoversRepeatedNonRepeatingSegmentAsReadableOccurrence(): void
     {
-        // A second occurrence of the declared, non-repeating ZFA cannot match after its slot
-        // closes. It must still round-trip in received order, but it is kept for serialization
-        // only: injecting it as a typed repetition would corrupt the slot and double-emit it
-        // through the schema-order walk, so getAll('ZFA') stays at one.
+        // A second ZFA cannot match after its non-repeating slot closes. Rather than drop it or
+        // hide it, parse preserves every occurrence: both round-trip and both are readable via
+        // getAll. The non-repeating cap applies only to hand-building, not to received data.
         $data = "MSH|^~\\&\rZFA|1\rZFA|2";
 
         $message = new FakeGroupMessage();
         $message->parse($this->encoding, $data);
 
-        $this->assertCount(1, $message->getAll('ZFA'));
+        $this->assertCount(2, $message->getAll('ZFA'));
         $this->assertSame($data, $message->serialize($this->encoding));
     }
 
-    public function testRetainsDeclaredSegmentReappearingAfterItsSlot(): void
+    public function testRecoversDeclaredSegmentReappearingAfterItsSlot(): void
     {
-        // A declared, non-repeating segment (PV2) reappearing after a later slot (ZFA) has
-        // been consumed lands where the forward-only matcher can no longer place it. It must
-        // round-trip in received order rather than be dropped, again serialization-only.
+        // PV2 reappearing after a later slot (ZFA) closed lands where the forward matcher cannot
+        // place it. It is recovered as a second readable occurrence and round-trips in received
+        // order rather than being hidden.
         $data = "MSH|^~\\&\rPV2|1\rZFA|1\rPV2|2";
 
         $message = new FakeGroupMessage();
         $message->parse($this->encoding, $data);
 
-        $this->assertCount(1, $message->getAll('PV2'));
+        $this->assertCount(2, $message->getAll('PV2'));
         $this->assertSame($data, $message->serialize($this->encoding));
     }
 
@@ -207,16 +206,16 @@ final class AbstractMessageTest extends TestCase
         $this->assertSame("MSH|^~\\&\rNK1|1\rZAA|1\rNK1|2", $message->serialize($this->encoding));
     }
 
-    public function testHandBuiltMessageSerializesInSchemaOrder(): void
+    public function testHandBuiltMessageSerializesInCreationOrder(): void
     {
-        // A never-parsed message has no retained Z-segments; serialization must remain a
-        // pure schema-order walk, not creation order: PV2 is built first here, but NK1
-        // serializes ahead of it because the schema declares NK1 first.
+        // A never-parsed message has no wire order, so serialization follows creation order: PV2 is
+        // built before NK1 here and therefore serializes first. Building in the desired output
+        // order is the caller's responsibility.
         $message = new FakeGroupMessage();
         $message->getSegment('PV2', 0)->parse($this->encoding, 'PV2|1');
         $message->getSegment('NK1', 0)->parse($this->encoding, 'NK1|1');
 
-        $this->assertSame("NK1|1\rPV2|1", $message->serialize($this->encoding));
+        $this->assertSame("PV2|1\rNK1|1", $message->serialize($this->encoding));
     }
 
     public function testSerializeExpandsNestedGroupMembersInOrder(): void
@@ -403,5 +402,69 @@ final class AbstractMessageTest extends TestCase
 
         $this->assertInstanceOf(ACK::class, $ack);
         $this->assertSame($expected, $ack->getMSA()->getAcknowledgmentCode()->getValue());
+    }
+
+    public function testRecoversOutOfOrderDeclaredSegmentAsReadableRepetition(): void
+    {
+        // NK1 is declared before the required ZFA. Arriving after ZFA it can no longer match the
+        // forward pointer, but as a declared repeating segment it must be recovered into its own slot
+        // so getAll('NK1') sees it, and it must round-trip in received order.
+        $data = "MSH|^~\\&\rZFA|1\rNK1|1";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertCount(1, $message->getAll('NK1'));
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testOutOfOrderGroupLeadFallsBackToGenericSegment(): void
+    {
+        // PR1 leads the PROCEDURE group. Arriving out of order (after ZFA) it is NOT re-run as a group
+        // — group consumption out of place is unsafe — but it must still round-trip, kept as a generic
+        // segment readable under its own name rather than as a PROCEDURE.
+        $data = "MSH|^~\\&\rZFA|1\rPR1|1";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertSame([], $message->getAll('PROCEDURE'));
+        $this->assertCount(1, $message->getAll('PR1'));
+        $this->assertInstanceOf(GenericSegment::class, $message->getAll('PR1')[0]);
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testOutOfOrderSecondMshIsRecoveredTypedAndRoundTripsByteIdentical(): void
+    {
+        // MSH is non-repeating and declared first, so a second MSH arriving after ZFA can no
+        // longer match the forward pointer and must be recovered. It must come back as a typed
+        // MSH (via recoverSegment's typed-recovery path), not a GenericSegment: MSH.parse/serialize
+        // treat MSH.2 (the encoding characters, e.g. "^~\&") as a verbatim value, while
+        // GenericSegment would run it through the generic field parser, splitting it on its own
+        // component/subcomponent separators and re-escaping its lone backslash — corrupting the
+        // byte-for-byte round trip this test guards against.
+        $data = "MSH|^~\\&|App1\rZFA|1\rMSH|^~\\&|App2";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $mshSegments = $message->getAll('MSH');
+
+        $this->assertCount(2, $mshSegments);
+        $this->assertInstanceOf(MSH::class, $mshSegments[0]);
+        $this->assertInstanceOf(MSH::class, $mshSegments[1]);
+        $this->assertSame($data, $message->serialize($this->encoding));
+    }
+
+    public function testGetRepetitionRejectsNonContiguousRepetitionForRepeatingStructure(): void
+    {
+        // NK1 is repeating but has zero occurrences here; asking for repetition #3 must fail
+        // loudly rather than silently fabricating a phantom gap-filling repetition that parse()
+        // never populated and that would sit at the wrong index relative to any later NK1s.
+        $message = new FakeGroupMessage();
+
+        $this->expectException(OutOfBoundsException::class);
+
+        $message->getRepetition('NK1', 3);
     }
 }

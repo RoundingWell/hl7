@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Segments that appear out of their schema position now parse into their declared, typed slot
+  and are readable via `getAll()`/typed accessors, instead of being retained for serialization
+  only. All occurrences of a declared segment are preserved, so `getAll()` may return more than
+  one even for a non-repeating definition; the non-repeating cap now applies only to hand-built
+  messages.
+- Hand-built (never-parsed) messages now serialize their segments in creation order rather than
+  schema order.
+- `AbstractGroup::setRepetition()` (protected) is replaced by `AbstractGroup::append()`; a group's
+  children are now stored as one ordered list.
+- `AbstractGroup::getRepetition()` now throws `OutOfBoundsException` when asked for a repetition
+  more than one past the existing count (e.g. repetition `#3` with zero occurrences so far),
+  instead of silently creating a phantom repetition at that index.
+
 ## [0.5.0] - 2026-07-21
 
 ### Changed

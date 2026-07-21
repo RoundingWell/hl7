@@ -16,19 +16,21 @@ abstract class AbstractGroup implements Group
 {
     use CanAssertNumbers;
 
-    /** @var array<string, list<Structure>> */
+    /**
+     * Ordered children in appearance/creation order: typed segments, nested groups, undeclared
+     * vendor segments, and declared segments recovered out of order all live here as one list.
+     *
+     * Each entry pairs the structure with the definition key it was stored under (or, for an
+     * undeclared segment, its own name). The key is kept alongside the structure because a group's
+     * definition key (e.g. "PROCEDURE") differs from its class name, so {@see getAll()} cannot
+     * recover it from the structure itself.
+     *
+     * @var list<array{name: string, structure: Structure}>
+     */
     private array $structures = [];
 
     /** @var array<string, StructureDefinition> */
     private array $definitions = [];
-
-    /**
-     * Retained unmatched segments keyed by anchor: the "name.repetition" of the direct child
-     * each one followed during parsing, or '' when it preceded every child.
-     *
-     * @var array<string, list<Segment>>
-     */
-    private array $anchored = [];
 
     public function add(string $name, StructureDefinition $definition): void
     {
@@ -50,6 +52,14 @@ abstract class AbstractGroup implements Group
         );
     }
 
+    /**
+     * Appends a child under the given key, preserving appearance/creation order.
+     */
+    protected function append(string $name, Structure $structure): void
+    {
+        $this->structures[] = ['name' => $name, 'structure' => $structure];
+    }
+
     #[Override]
     public function getName(): string
     {
@@ -59,7 +69,17 @@ abstract class AbstractGroup implements Group
     #[Override]
     public function getAll(string $name): array
     {
-        return $this->structures[$name] ?? [];
+        $matches = [];
+
+        foreach ($this->structures as $entry) {
+            if ($entry['name'] !== $name) {
+                continue;
+            }
+
+            $matches[] = $entry['structure'];
+        }
+
+        return $matches;
     }
 
     #[Override]
@@ -73,8 +93,10 @@ abstract class AbstractGroup implements Group
     {
         $this->assertNaturalNumber($repetition);
 
-        if ($this->structures[$name][$repetition] ?? null) {
-            return $this->structures[$name][$repetition];
+        $matches = $this->getAll($name);
+
+        if (($match = $matches[$repetition] ?? null) !== null) {
+            return $match;
         }
 
         if (!$this->isRepeating($name) && $repetition > 0) {
@@ -83,21 +105,18 @@ abstract class AbstractGroup implements Group
             );
         }
 
-        return $this->structures[$name][$repetition] = $this->getDefinition($name)->newInstance();
-    }
+        if ($repetition > count($matches)) {
+            throw new OutOfBoundsException(
+                "Cannot create repetition #{$repetition} of {$this->getName()}.{$name}, only "
+                . count($matches)
+                . ' exist',
+            );
+        }
 
-    /**
-     * Define the specific repetition of a structure
-     *
-     * _This method does not validate the repetition index or structure type!_
-     *
-     * @param int $repetition zero or greater
-     */
-    protected function setRepetition(string $name, int $repetition, Structure $structure): void
-    {
-        $this->assertNaturalNumber($repetition);
+        $structure = $this->getDefinition($name)->newInstance();
+        $this->append($name, $structure);
 
-        $this->structures[$name][$repetition] = $structure;
+        return $structure;
     }
 
     #[Override]
@@ -133,10 +152,6 @@ abstract class AbstractGroup implements Group
         $names = $this->getNames();
         $pointer = 0;
 
-        // Where a retained unmatched segment splices back in on serialization: after the most
-        // recently parsed direct child, or before every child when none has parsed yet.
-        $anchor = '';
-
         while (true) {
             $element = $segments[$offset] ?? null;
 
@@ -154,9 +169,9 @@ abstract class AbstractGroup implements Group
                     return $offset;
                 }
 
-                // Unmatched here and unclaimed by any enclosing scope: retain it in place so the
-                // parser never silently drops data and the round trip preserves input order.
-                $this->retainSegment($encoding, $element, $anchor);
+                // Unmatched here and unclaimed by any enclosing scope: recover it in place so the
+                // parser never drops data and the round trip preserves input order.
+                $this->recoverSegment($encoding, $element);
 
                 $offset++;
 
@@ -165,9 +180,8 @@ abstract class AbstractGroup implements Group
 
             [$pointer, $name] = $match;
 
-            $repetition = count($this->getAll($name));
-
-            $structure = $this->getRepetition($name, $repetition);
+            $structure = $this->getDefinition($name)->newInstance();
+            $this->append($name, $structure);
 
             $offset = $structure->parseSegments(
                 $encoding,
@@ -176,8 +190,6 @@ abstract class AbstractGroup implements Group
                 $offset,
             );
 
-            $anchor = "{$name}.{$repetition}";
-
             if (!$this->isRepeating($name)) {
                 $pointer++;
             }
@@ -185,62 +197,51 @@ abstract class AbstractGroup implements Group
     }
 
     /**
-     * Retains an unmatched segment so it survives round-trip serialization in place.
+     * Recovers a segment that matched no structure at the current position and that no enclosing
+     * scope claimed.
      *
-     * The segment always joins $anchored so serializeLines() can splice it back after the child
-     * it followed. It also joins $structures — so get()/getAll() expose it — only when its name is
-     * not a declared structure of this group; injecting a GenericSegment into a declared typed slot
-     * would corrupt that slot and double-emit it through the schema-order walk.
+     * A declared segment arriving out of order is re-materialized as its own declared type so it
+     * stays readable and correctly typed. Anything else — an undeclared vendor segment, or a group
+     * lead out of order (re-running group consumption out of place is unsafe) — is kept as a
+     * {@see GenericSegment}. Either way it is appended in encounter order so serialization
+     * reproduces the received sequence.
      */
-    private function retainSegment(Encoding $encoding, SegmentElement $element, string $anchor): void
+    private function recoverSegment(Encoding $encoding, SegmentElement $element): void
     {
-        $segment = new GenericSegment($element->name);
-        $segment->parse($encoding, $element->raw);
+        $match = $this->matchStructure($this->getNames(), 0, $element->name);
 
-        if (!isset($this->definitions[$element->name])) { // @mago-expect lint:no-isset
-            $this->structures[$element->name][] = $segment;
+        if ($match !== null) {
+            [, $name] = $match;
+            $definition = $this->getDefinition($name);
+
+            if (!$definition->isGroup()) {
+                $segment = $definition->newInstance();
+                assert($segment instanceof Segment, "Expected {$name} definition to build a segment");
+                $segment->parse($encoding, $element->raw);
+                $this->append($name, $segment);
+
+                return;
+            }
         }
 
-        $this->anchored[$anchor][] = $segment;
+        $segment = new GenericSegment($element->name);
+        $segment->parse($encoding, $element->raw);
+        $this->append($element->name, $segment);
     }
 
     /**
-     * Serializes every structure in definition order, recursing into nested groups.
+     * Serializes every child in appearance/creation order, recursing into nested groups.
      *
-     * The mirror of {@see parseSegments()}: segments serialize to their line, groups expand to
-     * their contained lines, preserving the schema's structure order. Unmatched segments retained
-     * during parsing are spliced back in after the child they followed.
+     * The mirror of {@see parseSegments()}: segments serialize to their line and groups expand to
+     * their contained lines, reproducing the order in which children were parsed or created.
      */
     #[Override]
     public function serializeLines(Encoding $encoding): array
     {
-        // Unmatched segments retained before any schema child serialize first.
-        $lines = $this->anchoredLines($encoding, '');
-
-        foreach ($this->getNames() as $name) {
-            foreach ($this->getAll($name) as $repetition => $structure) {
-                $lines = [
-                    ...$lines,
-                    ...$structure->serializeLines($encoding),
-                    ...$this->anchoredLines($encoding, "{$name}.{$repetition}"),
-                ];
-            }
-        }
-
-        return $lines;
-    }
-
-    /**
-     * Lines of the unmatched segments retained at the given anchor position.
-     *
-     * @return list<string>
-     */
-    private function anchoredLines(Encoding $encoding, string $anchor): array
-    {
         $lines = [];
 
-        foreach ($this->anchored[$anchor] ?? [] as $segment) {
-            $lines = [...$lines, ...$segment->serializeLines($encoding)];
+        foreach ($this->structures as $entry) {
+            $lines = [...$lines, ...$entry['structure']->serializeLines($encoding)];
         }
 
         return $lines;

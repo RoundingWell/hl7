@@ -164,19 +164,17 @@ of that component rather than promoting it to its own component.
 
 ### Unmatched segments
 
-Typed messages never silently drop a segment. Any segment the schema cannot place — a
-site-defined Z-segment, any other name the schema does not declare, or a declared segment that
-reappears after its slot in the message has already been consumed — is parsed as a
-`GenericSegment` and serialized back in its original position, so parse → serialize round trips
-do not lose data:
+Typed messages never silently drop a segment. Any segment the schema cannot place, wherever it
+appears in the message, is recovered rather than dropped, so parse → serialize round trips do
+not lose data. A segment name the schema declares is parsed into its declared, typed slot even
+when it reappears after its slot has already been consumed, so it stays readable through `get()`
+/ `getAll()` there like any other occurrence — `getAll()` may then return more than one match
+even for a non-repeating definition. Anything the schema does not declare at all — a site-defined
+Z-segment, or any other unrecognized name — is parsed as a `GenericSegment`:
 
 ```php
 $zds = $message->get('ZDS'); // a GenericSegment, readable like any untyped segment
 ```
-
-A retained segment is exposed through `get()` / `getAll()` on the group where it appeared only
-when its name is not one the schema declares there. A declared segment retained out of position
-is kept for serialization only, so it is not double-counted through `getAll()`.
 
 ## Supported types
 
