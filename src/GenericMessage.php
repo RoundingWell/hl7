@@ -70,11 +70,9 @@ class GenericMessage extends AbstractMessage
 
             $segment = $segmentFactory->parse($line);
 
-            // Determine the repetition number for this segment.
-            $repetition = count($this->getAll($segment->getName()));
-
-            // Insert the segment into the message at the determined repetition number.
-            $this->setRepetition($segment->getName(), $repetition, $segment);
+            // Record the segment in appearance order; unknown names have no definition and simply
+            // accumulate under their own name.
+            $this->append($segment->getName(), $segment);
 
             $this->ordered[] = $segment;
         }

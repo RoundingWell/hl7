@@ -134,6 +134,31 @@ final class A01Test extends TestCase
         $this->assertSame([], $this->parse()->listDG1());
     }
 
+    public function testRecoversDiagnosisArrivingAfterGuarantor(): void
+    {
+        // tests/data/adt-a01-2.txt places GT1 (schema position 20) before DG1 (position 17).
+        // The forward-only matcher passes DG1's slot, but the diagnosis must still parse into its
+        // typed DG1 slot (readable) and serialize back in its received position (after GT1), so a
+        // real-world schema-violating feed loses no clinical data.
+        $raw = str_replace(["\r\n", "\n"], "\r", (string) file_get_contents(__DIR__ . '/../../data/adt-a01-2.txt'));
+        $raw = rtrim($raw, "\r");
+
+        $message = new A01();
+        $message->parse($this->encoding, $raw);
+
+        $dg1 = $message->listDG1();
+        $this->assertCount(1, $dg1);
+        $this->assertContainsOnlyInstancesOf(DG1::class, $dg1);
+
+        $lines = explode("\r", $message->serialize($this->encoding));
+        $names = array_map(static fn(string $line): string => substr($line, 0, 3), $lines);
+        $gt1 = array_search('GT1', $names, true);
+        $dg1Line = array_search('DG1', $names, true);
+        $this->assertNotFalse($gt1);
+        $this->assertNotFalse($dg1Line);
+        $this->assertGreaterThan($gt1, $dg1Line, 'DG1 must serialize after GT1, in received order');
+    }
+
     public function testRolIsRetainedAtBothStructuralPositions(): void
     {
         // HAPI lists ROL both before PV1 (pos 8) and after PV2 (pos 13). Each occurrence must be
