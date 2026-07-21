@@ -55,29 +55,82 @@ final class DTMTest extends TestCase
         $this->assertSame('!YmdHis.uO', $dtm->getFormat());
     }
 
-    public function testInvalidValueIsRejected(): void
+    public function testSetValueDefersValidationAndNeverThrows(): void
     {
+        // Parsing a message must not abort on a malformed date field: setValue stores the raw
+        // value verbatim and defers all detection, so a downstream consumer can read the raw
+        // value and validate it however it sees fit.
         $dtm = new DTM();
+        $dtm->setValue('not-a-date');
+
+        $this->assertSame('not-a-date', $dtm->getValue());
+    }
+
+    public function testGetFormatThrowsWhenCharacterPatternDoesNotMatch(): void
+    {
+        // getFormat runs the deferred character match; a value that cannot match the pattern
+        // has no derivable format and must be rejected here.
+        $dtm = new DTM();
+        $dtm->setValue('not-a-date');
 
         $this->expectException(InvalidDateTime::class);
         $this->expectExceptionMessage('HL7 expected date/time');
 
-        $dtm->setValue('not-a-date');
+        $dtm->getFormat();
     }
 
-    public function testPatternMatchButUnbuildableTimestampIsRejected(): void
+    public function testGetDateTimeThrowsWhenCharacterPatternDoesNotMatch(): void
+    {
+        // getDateTime resolves the format first, so a pattern mismatch surfaces here too.
+        $dtm = new DTM();
+        $dtm->setValue('not-a-date');
+
+        $this->expectException(InvalidDateTime::class);
+        $this->expectExceptionMessage('HL7 expected date/time');
+
+        $dtm->getDateTime();
+    }
+
+    public function testClearDiscardsPreviouslyDetectedFormat(): void
+    {
+        // Detection is cached on first read; clearing the value must invalidate that cache so a
+        // stale format derived from the old value is never reported for the now-empty primitive.
+        $dtm = new DTM();
+        $dtm->setValue('20240315123045');
+        $this->assertSame('!YmdHis', $dtm->getFormat()); // prime the cached detection
+
+        $dtm->clear();
+
+        $this->assertSame('', $dtm->getValue());
+        $this->assertNull($dtm->getFormat());
+        $this->assertNull($dtm->getDateTime());
+    }
+
+    public function testGetFormatAcceptsPatternMatchThatCannotBuildAnInstant(): void
     {
         // The character pattern is deliberately permissive: it allows a trailing UTC offset
         // even when the intervening time components are absent (e.g. a year with an offset but
-        // no month/day/time). Such a value is not a real instant and cannot be built into a
-        // date, so it must be rejected rather than silently mis-parsed. This exercises the
-        // second validation stage (createFromFormat failure), distinct from a pattern mismatch.
+        // no month/day/time).
+        // getFormat only validates the character pattern, so it must succeed here and return
+        // that format — the impossibility of the instant is left for getDateTime to detect.
         $dtm = new DTM();
+        $dtm->setValue('2024+0500');
+
+        $this->assertSame('!YO', $dtm->getFormat());
+    }
+
+    public function testGetDateTimeRejectsPatternMatchThatCannotBuildAnInstant(): void
+    {
+        // A date with an invalid month/day/time is not a real instant and cannot build a
+        // date. This exercises the createFromFormat-failure branch, distinct from a pattern
+        // mismatch, and must be rejected by getDateTime.
+        $dtm = new DTM();
+        $dtm->setValue('20241301');
 
         $this->expectException(InvalidDateTime::class);
         $this->expectExceptionMessage('HL7 expected date/time');
 
-        $dtm->setValue('2024+0500');
+        $dtm->getDateTime();
     }
 
     public function testSetValueParsesOffsetWithoutFractionalSeconds(): void
@@ -116,14 +169,20 @@ final class DTMTest extends TestCase
     }
 
     #[DataProvider('outOfRangeComponents')]
-    public function testOutOfRangeComponentIsRejected(string $value): void
+    public function testOutOfRangeComponentIsRejectedByGetDateTime(string $value): void
     {
         $dtm = new DTM();
+        $dtm->setValue($value);
+
+        // getFormat validates only the character pattern, which these values satisfy, so it
+        // must not throw — the out-of-range component is a construction failure, not a match
+        // failure.
+        $this->assertIsString($dtm->getFormat());
 
         $this->expectException(InvalidDateTime::class);
         $this->expectExceptionMessage('HL7 expected date/time');
 
-        $dtm->setValue($value);
+        $dtm->getDateTime();
     }
 
     public function testSetDateTimeFormatsToHl7TimestampWithOffset(): void

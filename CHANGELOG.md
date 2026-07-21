@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Typed message parsing now retains every unmatched segment in place instead of dropping unexpected or out-of-order segments, so parse → serialize preserves the received segment order (generalizes the previous Z-segment-only retention)
+- `DT` and `DTM` now store the raw value without validating it during parsing; the character match runs lazily on the first `getFormat()`/`getDateTime()` call. `getFormat()` throws only when the value cannot match the character pattern, and `getDateTime()` throws when it cannot build a valid instant. This keeps message parsing from aborting on a malformed date field and defers validation to consumers.
 
 ## [0.4.0] - 2026-07-20
 

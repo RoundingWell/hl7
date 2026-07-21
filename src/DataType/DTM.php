@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Override;
 use RoundingWell\HL7\AbstractPrimitive;
-use RoundingWell\HL7\Exception\InvalidDateTime;
+use RoundingWell\HL7\LazyDateTime;
 
 /**
  * Date/Time
@@ -17,19 +17,29 @@ use RoundingWell\HL7\Exception\InvalidDateTime;
  */
 final class DTM extends AbstractPrimitive
 {
-    private const string PATTERN = '/^(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?(?:\.(\d{1,4}))?([+-]\d{4})?$/';
+    private ?LazyDateTime $dt = null;
 
-    private ?DateTimeImmutable $dateTime = null;
-    private ?string $format = null;
-
-    public function getDateTime(): ?DateTimeImmutable
+    private function prepare(): void
     {
-        return $this->dateTime;
+        if ($this->dt || $this->getValue() === '') {
+            return;
+        }
+
+        $this->dt = new LazyDateTime($this->getValue());
     }
 
     public function getFormat(): ?string
     {
-        return $this->format;
+        $this->prepare();
+
+        return $this->dt?->getFormat();
+    }
+
+    public function getDateTime(): ?DateTimeImmutable
+    {
+        $this->prepare();
+
+        return $this->dt?->getDateTime();
     }
 
     public function setDateTime(DateTimeInterface $value): void
@@ -42,65 +52,16 @@ final class DTM extends AbstractPrimitive
     #[Override]
     public function setValue(string $value): void
     {
+        $this->dt = null;
+
         parent::setValue($value);
-
-        if ($value === '') {
-            $this->dateTime = null;
-            $this->format = null;
-
-            return;
-        }
-
-        $matches = [];
-
-        if (!preg_match(self::PATTERN, $value, $matches)) {
-            throw InvalidDateTime::invalidValue($value);
-        }
-
-        // Prefix the format with ! to force all elements to start at zero.
-        $format = '!Y';
-        if (isset($matches[2])) { // @mago-expect lint:no-isset
-            $format .= 'm';
-        }
-        if (isset($matches[3])) { // @mago-expect lint:no-isset
-            $format .= 'd';
-        }
-        if (isset($matches[4])) { // @mago-expect lint:no-isset
-            $format .= 'H';
-        }
-        if (isset($matches[5])) { // @mago-expect lint:no-isset
-            $format .= 'i';
-        }
-        if (isset($matches[6])) { // @mago-expect lint:no-isset
-            $format .= 's';
-        }
-        if (isset($matches[7]) && $matches[7] !== '') { // @mago-expect lint:no-isset
-            $format .= '.u';
-        }
-        if (isset($matches[8])) { // @mago-expect lint:no-isset
-            $format .= 'O';
-        }
-
-        $dt = DateTimeImmutable::createFromFormat($format, $value);
-
-        if (!$dt || $this->hasDateTimeErrors()) {
-            throw InvalidDateTime::invalidValue($value);
-        }
-
-        $this->dateTime = $dt;
-        $this->format = $format;
     }
 
-    private function hasDateTimeErrors(): bool
+    #[Override]
+    public function clear(): void
     {
-        $errors = DateTimeImmutable::getLastErrors();
+        $this->dt = null;
 
-        // DateTimeImmutable::createFromFormat silently rolls over out-of-range components
-        // (e.g. month 13 becomes January of the next year, Feb 30 becomes March 2),
-        // reporting them only as warnings while still returning a date.
-        // DateTimeImmutable::getLastErrors() returns false when the parse was clean.
-        // Reject any warning so a component outside its calendar range is
-        // never accepted as a different, valid instant.
-        return $errors !== false && $errors['warning_count'] > 0;
+        parent::clear();
     }
 }
