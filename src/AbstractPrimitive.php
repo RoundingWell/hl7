@@ -10,6 +10,7 @@ use ReflectionObject;
 abstract class AbstractPrimitive implements Primitive
 {
     use CanJoinElements;
+    use CanHoldField;
 
     private string $value = '';
 

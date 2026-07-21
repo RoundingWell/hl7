@@ -23,6 +23,25 @@ final class AbstractCompositeTest extends TestCase
         $this->assertSame('FakeComposite', new FakeComposite()->getName());
     }
 
+    public function testFieldNameDefaultsToUndefinedUntilAssigned(): void
+    {
+        // getName() reports the shared data-type (class) name; the field name is the distinct
+        // schema field a value fills and is only assigned when materialized from a definition.
+        // Until then it reports a sentinel, not '', so an unassigned field is distinguishable
+        // from one legitimately named the empty string.
+        $this->assertSame('<undefined>', new FakeComposite()->getField());
+    }
+
+    public function testSetFieldRecordsTheFieldNameForLaterRetrieval(): void
+    {
+        // The definition stamps its field name onto every value it materializes; getField must
+        // report exactly what was set so the value can say which schema field it belongs to.
+        $composite = new FakeComposite();
+        $composite->setField('Patient Name');
+
+        $this->assertSame('Patient Name', $composite->getField());
+    }
+
     public function testGetComponentReturnsTheSameInstanceOnRepeatedAccess(): void
     {
         // Component access is idempotent: a second read must not discard parsed state.

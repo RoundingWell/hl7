@@ -36,6 +36,26 @@ final class VariesTest extends TestCase
         $this->assertSame($varies->getData()->getName(), $varies->getName());
     }
 
+    public function testSetFieldDelegatesToTheUnderlyingData(): void
+    {
+        // Varies is a pass-through wrapper: the field name must land on the wrapped data, so a
+        // later setData() swap reads it off the same place and the wrapper keeps no name of its own.
+        $varies = new Varies();
+        $varies->setField('Patient Name');
+
+        $this->assertSame('Patient Name', $varies->getData()->getField());
+    }
+
+    public function testGetFieldReadsThroughToTheUnderlyingData(): void
+    {
+        // Reading the field mirrors the wrapper's other delegations: it reports whatever the
+        // wrapped data holds, never a field name held by the wrapper itself.
+        $varies = new Varies();
+        $varies->getData()->setField('Patient Name');
+
+        $this->assertSame('Patient Name', $varies->getField());
+    }
+
     public function testParseDelegatesToTheUnderlyingData(): void
     {
         // Parsing must feed the wrapped type so the decoded value lands on the data,
@@ -103,6 +123,20 @@ final class VariesTest extends TestCase
         $varies = new Varies();
 
         $nonPrimitive = new class implements Type {
+            private string $field = '<undefined>';
+
+            #[\Override]
+            public function setField(string $name): void
+            {
+                $this->field = $name;
+            }
+
+            #[\Override]
+            public function getField(): string
+            {
+                return $this->field;
+            }
+
             #[\Override]
             public function getName(): string
             {

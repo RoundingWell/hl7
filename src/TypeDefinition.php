@@ -50,10 +50,13 @@ final readonly class TypeDefinition
 
     public function newInstance(): Type
     {
-        return (
-            new ReflectionClass($this->type)->newInstanceArgs($this->args) ?? throw new RuntimeException(
-                "Unable to create instance of {$this->type}",
-            )
+        $instance = new ReflectionClass($this->type)->newInstanceArgs($this->args) ?? throw new RuntimeException(
+            "Unable to create instance of {$this->type}",
         );
+
+        // Pass the field name into the instance for debugging.
+        $instance->setField($this->name);
+
+        return $instance;
     }
 }
