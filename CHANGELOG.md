@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `Message::debug()` now renders untyped content that lives in extra components, so undeclared
+  (Z) segments and any values a sender placed beyond a field's declared schema appear in the dump
+  instead of being silently dropped. Such elements render without a schema name; a lone untyped
+  value collapses onto its field line while multiple parts expand into numbered children.
+
 ## [0.7.0] - 2026-07-22
 
 ### Added

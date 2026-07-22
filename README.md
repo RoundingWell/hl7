@@ -149,8 +149,22 @@ echo $message->debug();
 ```
 
 Empty fields are omitted, and a repeating field is indexed (`PID.3[0]`, `PID.3[1]`) only when it
-has more than one repetition. Only schema-typed content is shown: values held by an untyped segment
-or field (see [Untyped fields](#untyped-fields)) live in extra components, which the dump skips.
+has more than one repetition. Untyped content is shown too: values held by an untyped segment or
+field (see [Untyped fields](#untyped-fields)) live in extra components, which the dump renders with
+no schema name. A lone untyped value collapses onto its field line, while multiple parts expand:
+
+```php
+echo $message->debug();
+// ADT_A01
+//   MSH
+//     MSH.1 (Field Separator): |
+//     MSH.2 (Encoding Characters): ^~\&
+//   ZPD
+//     ZPD.1: foo
+//     ZPD.2
+//       ZPD.2.1: bar
+//       ZPD.2.2: baz
+```
 
 ## Concepts
 
