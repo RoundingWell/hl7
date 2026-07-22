@@ -125,13 +125,40 @@ byte-for-byte round-trip: trailing empty fields, components, and subcomponents a
 treats trailing delimiters as optional), and segments are joined by the line ending rather than
 terminated by it (no trailing line ending is appended).
 
+### Debugging message structure
+
+When you need to see where a value sits in a parsed message, `debug()` returns an indented dump of
+its populated structure. Each element is labelled with its access path and schema name, descending
+through composites to their subcomponents:
+
+```php
+echo $message->debug();
+// ADT_A01
+//   MSH
+//     MSH.1 (Field Separator): |
+//     MSH.2 (Encoding Characters): ^~\&
+//     MSH.9 (Message Type)
+//       MSH.9.1 (Message Type): ADT
+//       MSH.9.2 (Trigger Event): A01
+//   PID
+//     PID.1 (Set ID): 1
+//     PID.5 (Patient Name)
+//       PID.5.1 (Family Name)
+//         PID.5.1.1 (Surname): SMITH
+//       PID.5.2 (Given Name): JOHN
+```
+
+Empty fields are omitted, and a repeating field is indexed (`PID.3[0]`, `PID.3[1]`) only when it
+has more than one repetition. Only schema-typed content is shown: values held by an untyped segment
+or field (see [Untyped fields](#untyped-fields)) live in extra components, which the dump skips.
+
 ## Concepts
 
 | Type            | Responsibility                                                                                                          |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `MessageFactory`  | Parses raw HL7 into a `Message`, resolving encoding and message type.                                                   |
-| `Message`         | Interface for a whole message: a `Group` plus `getMSH()`, `getVersion()`, `parse()`, and `serialize()`.                 |
-| `Group`           | Interface for a named collection of `Structure`s (segments and nested groups) with lookup helpers (`get`, `getAll`, `getRepetition`, `getNames`, `isRequired`, `isRepeating`). |
+| `Message`         | Interface for a whole message: a `Group` plus `getMSH()`, `getVersion()`, `parse()`, `serialize()`, and `debug()`.       |
+| `Group`           | Interface for a named collection of `Structure`s (segments and nested groups) with lookup helpers (`get`, `getAll`, `getRepetition`, `getStructures`, `getNames`, `isRequired`, `isRepeating`). |
 | `Message\ADT\Axx` | Specific ADT message subclasses (e.g. `A01`) add named accessors for message-specific segments.                         |
 | `Segment`         | Interface for a collection of numbered fields (each a `Type`), read with `getField()` / `getFieldRepetition()`. Typed subclasses (e.g. `PID`, `MSH`) add named accessors. |
 | `Type`            | An HL7 data type — a `Primitive` scalar (`ST`, `NM`, `DTM`, …), a `Composite` of other types, or a `Varies` placeholder for undefined fields. |

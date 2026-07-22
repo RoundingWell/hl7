@@ -44,6 +44,16 @@ interface Group extends Structure
     public function getNames(): array;
 
     /**
+     * Returns every materialized child structure in appearance/creation order
+     *
+     * Unlike {@see getAll()}, this spans all keys at once and preserves the order children were
+     * parsed or created, including any segments recovered out of order.
+     *
+     * @return list<Structure>
+     */
+    public function getStructures(): array;
+
+    /**
      * Returns whether or not the given structure is required
      */
     public function isRequired(string $name): bool;

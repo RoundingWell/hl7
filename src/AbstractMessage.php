@@ -43,6 +43,12 @@ abstract class AbstractMessage extends AbstractGroup implements Message
     }
 
     #[Override]
+    public function debug(): string
+    {
+        return new MessageDebugger()->describe($this);
+    }
+
+    #[Override]
     public function getMSH(): MSH
     {
         return $this->getSegment('MSH', 0);

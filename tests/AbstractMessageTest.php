@@ -467,4 +467,31 @@ final class AbstractMessageTest extends TestCase
 
         $message->getRepetition('NK1', 3);
     }
+
+    public function testGetStructuresReturnsMaterializedChildrenInAppearanceOrder(): void
+    {
+        // getStructures exposes the ordered materialized children the by-name accessors cannot:
+        // a debugger (or any consumer) needs to walk the message as it was received, so the two
+        // NK1 repetitions must come back after MSH, in the order they were parsed.
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, "MSH|^~\\&\rNK1|1\rNK1|2");
+
+        $names = array_map(static fn($structure): string => $structure->getName(), $message->getStructures());
+
+        $this->assertSame(['MSH', 'NK1', 'NK1'], $names);
+    }
+
+    public function testDebugRendersTheMessageStructureAsAnIndentedString(): void
+    {
+        // debug() is the message-level entry point to the structure dump; it must delegate to the
+        // renderer and return the indented tree so callers can print it without wiring up the
+        // debugger themselves.
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, 'MSH|^~\\&');
+
+        $this->assertSame(
+            "FakeGroupMessage\n  MSH\n    MSH.1 (Field Separator): |\n    MSH.2 (Encoding Characters): ^~\\&",
+            $message->debug(),
+        );
+    }
 }
