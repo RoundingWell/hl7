@@ -40,7 +40,7 @@ final class MessageDebugger
         $children = [];
 
         foreach ($group->getStructures() as $structure) {
-            $children = [...$children, ...$this->structure($structure, $depth + 1)];
+            array_push($children, ...$this->structure($structure, $depth + 1));
         }
 
         return $this->withHeader($group->getName(), $children, $depth);
@@ -57,7 +57,7 @@ final class MessageDebugger
 
             foreach ($repetitions as $repetition => $field) {
                 $path = $segment->getName() . '.' . $number . ($indexed ? "[{$repetition}]" : '');
-                $children = [...$children, ...$this->field($field, $path, $depth + 1)];
+                array_push($children, ...$this->field($field, $path, $depth + 1));
             }
         }
 
@@ -78,7 +78,7 @@ final class MessageDebugger
             $children = [];
 
             foreach ($field->getComponents() as $index => $component) {
-                $children = [...$children, ...$this->field($component, $path . '.' . ($index + 1), $depth + 1)];
+                array_push($children, ...$this->field($component, $path . '.' . ($index + 1), $depth + 1));
             }
 
             return $this->withHeader($label, $children, $depth);

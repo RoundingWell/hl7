@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Message::debug()` returns an indented dump of a message's populated structure for debugging,
+  labelling each element with its access path and schema name (e.g. `PID.5.1 (Family Name)`) and
+  omitting empty elements.
+- `Group::getStructures()` returns a group's materialized child structures in appearance order.
+- `Field` interface (`getField()`/`setField()`), extended by `Type`, so a materialized value
+  carries the schema field name it fills.
+
+### Changed
+
+- **BREAKING:** The `Message`, `Group`, and `Type` interfaces gained methods (`Message::debug()`,
+  `Group::getStructures()`, and `Type`'s `getField()`/`setField()` via `Field`). Classes that
+  implement these interfaces directly rather than extending the provided abstract bases
+  (`AbstractMessage`, `AbstractGroup`, `AbstractPrimitive`, `AbstractComposite`) must add the new
+  methods. Permitted under 0.x versioning.
+
 ## [0.6.0] - 2026-07-21
 
 ### Changed
