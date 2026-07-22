@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-22
+
 ### Added
 
 - `Message::debug()` returns an indented dump of a message's populated structure for debugging,
@@ -76,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/RoundingWell/hl7/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/RoundingWell/hl7/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/RoundingWell/hl7/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/RoundingWell/hl7/compare/0.3.0...0.4.0
