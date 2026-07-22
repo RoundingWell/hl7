@@ -13,9 +13,13 @@ namespace RoundingWell\HL7;
  * name, e.g. "PID.5.1 (Family Name)". Elements with an empty value are omitted, so the output shows
  * only what the message actually carries.
  */
+// @mago-expect lint:cyclomatic-complexity
 final class MessageDebugger
 {
     private const string INDENT = '  ';
+
+    // The placeholder {@see CanHoldField} uses for an element that was never given a schema name.
+    private const string NO_NAME = '<undefined>';
 
     public function describe(Message $message): string
     {
@@ -72,23 +76,80 @@ final class MessageDebugger
             return $this->field($field->getData(), $path, $depth);
         }
 
-        $label = "{$path} ({$field->getField()})";
+        // An undeclared (generic) element has no schema name, so its "(name)" suffix is dropped.
+        $name = $field->getField();
+        $label = $name === '' || $name === self::NO_NAME ? $path : "{$path} ({$name})";
 
         if ($field instanceof Composite) {
-            $children = [];
-
-            foreach ($field->getComponents() as $index => $component) {
-                array_push($children, ...$this->field($component, $path . '.' . ($index + 1), $depth + 1));
-            }
-
-            return $this->withHeader($label, $children, $depth);
+            return $this->composite($field, $path, $label, $depth);
         }
 
         assert($field instanceof Primitive, 'A non-Varies type is either a composite or a primitive');
 
-        $value = $field->getValue();
+        return $this->primitive($field, $path, $label, $depth);
+    }
 
-        return $value === '' ? [] : [$this->indent($depth) . $label . ': ' . $value];
+    /** @return list<string> */
+    private function composite(Composite $field, string $path, string $label, int $depth): array
+    {
+        $components = $field->getComponents();
+        $extras = $field->getExtraComponents()->getComponents();
+
+        // A generic field carries no declared components, so its data lives entirely in extras. A
+        // single anonymous scalar component is effectively the field's value, so collapse it onto
+        // the field line rather than emitting a lone ".1" child.
+        if ($components === [] && count($extras) === 1 && $this->isScalar($extras[0])) {
+            return $this->field($extras[0], $path, $depth);
+        }
+
+        // Declared components are numbered first; undeclared (extra) components continue after them,
+        // so data a sender put beyond the schema is retained rather than dropped.
+        $children = [];
+        $number = 0;
+
+        foreach ([...$components, ...$extras] as $component) {
+            $number++;
+            array_push($children, ...$this->field($component, "{$path}.{$number}", $depth + 1));
+        }
+
+        return $this->withHeader($label, $children, $depth);
+    }
+
+    /** @return list<string> */
+    private function primitive(Primitive $field, string $path, string $label, int $depth): array
+    {
+        $value = $field->getValue();
+        $extras = $field->getExtraComponents()->getComponents();
+
+        // A plain primitive is a leaf: its value on the field line, dropped when empty.
+        if ($extras === []) {
+            return $value === '' ? [] : [$this->indent($depth) . $label . ': ' . $value];
+        }
+
+        // With extra subcomponents the value becomes subcomponent .1 and each extra follows, so the
+        // empty slot of a leading "&d" is preserved and the surviving part keeps its true position.
+        $children = $value === '' ? [] : [$this->indent($depth + 1) . "{$path}.1: {$value}"];
+        $number = 1;
+
+        foreach ($extras as $extra) {
+            $number++;
+            array_push($children, ...$this->field($extra, "{$path}.{$number}", $depth + 1));
+        }
+
+        return $this->withHeader($label, $children, $depth);
+    }
+
+    /**
+     * A scalar is a bare value with no components or subcomponents beneath it -- the only shape that
+     * can be safely flattened onto its parent's line without hiding nested data.
+     */
+    private function isScalar(Type $field): bool
+    {
+        if ($field instanceof Varies) {
+            return $this->isScalar($field->getData());
+        }
+
+        return $field instanceof Primitive && $field->getExtraComponents()->getComponents() === [];
     }
 
     /**

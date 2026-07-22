@@ -115,6 +115,70 @@ final class MessageDebuggerTest extends TestCase
         $this->assertStringContainsString("\n      PID.1 (Set ID): 1", $output);
     }
 
+    public function testRendersUndeclaredZSegmentFieldsWithoutASchema(): void
+    {
+        // An undeclared vendor (Z) segment is retained as a GenericSegment whose fields have no
+        // schema, so all of their data lands in extra components. The dump must still surface it:
+        // a lone anonymous component collapses onto the field line (ZPD.1), a multi-component field
+        // expands into numbered components (ZPD.2), and repetitions are indexed (ZPD.3). No schema
+        // name exists, so the "(name)" suffix is dropped rather than printed as empty parentheses.
+        $message = new GenericMessage('ADT_A01', '2.4');
+        $message->parse($this->encoding, "MSH|^~\\&\rZPD|foo|bar^baz|A~B");
+
+        $this->assertSame(
+            implode("\n", [
+                'ADT_A01',
+                '  MSH',
+                '    MSH.1 (Field Separator): |',
+                '    MSH.2 (Encoding Characters): ^~\\&',
+                '  ZPD',
+                '    ZPD.1: foo',
+                '    ZPD.2',
+                '      ZPD.2.1: bar',
+                '      ZPD.2.2: baz',
+                '    ZPD.3[0]: A',
+                '    ZPD.3[1]: B',
+            ]),
+            new MessageDebugger()->describe($message),
+        );
+    }
+
+    public function testDescendsIntoSubcomponentsOfUndeclaredFields(): void
+    {
+        // A generic field's parts can themselves carry subcomponents ("a&b"), so a single component
+        // is only collapsed when it is a plain scalar; one that holds subcomponents keeps its own
+        // level and expands beneath it. The value sits at subcomponent .1 with each following
+        // subcomponent after it, and a leading empty subcomponent ("&d") is skipped so the surviving
+        // part keeps its true position (.2) rather than silently shifting up.
+        $message = new GenericMessage('ADT_A01', '2.4');
+        $message->parse($this->encoding, "MSH|^~\\&\rZID|a&b|&d");
+
+        $output = new MessageDebugger()->describe($message);
+
+        $this->assertStringContainsString("\n    ZID.1\n", $output);
+        $this->assertStringContainsString("\n      ZID.1.1\n", $output);
+        $this->assertStringContainsString("\n        ZID.1.1.1: a\n", $output);
+        $this->assertStringContainsString("\n        ZID.1.1.2: b\n", $output);
+        $this->assertStringContainsString("\n        ZID.2.1.2: d", $output);
+        $this->assertStringNotContainsString('ZID.2.1.1', $output);
+    }
+
+    public function testSurfacesExtraComponentsBeyondADeclaredFieldsSchema(): void
+    {
+        // Extra components exist to retain data a sender put beyond a field's declared schema. A dump
+        // that dropped them would hide real message content, so they render as numbered children
+        // after the declared value: PID.1 (a primitive) carries "1" plus an out-of-schema
+        // subcomponent "x", which surface as PID.1.1 and PID.1.2.
+        $message = new GenericMessage('ADT_A01', '2.4');
+        $message->parse($this->encoding, "MSH|^~\\&\rPID|1&x");
+
+        $output = new MessageDebugger()->describe($message);
+
+        $this->assertStringContainsString("\n    PID.1 (Set ID)\n", $output);
+        $this->assertStringContainsString("\n      PID.1.1: 1\n", $output);
+        $this->assertStringContainsString("\n      PID.1.2: x", $output);
+    }
+
     public function testOmitsAGroupAndSegmentThatHoldNoPopulatedFields(): void
     {
         // A structure that carries no populated fields contributes no lines, so its header is
