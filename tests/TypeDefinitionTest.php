@@ -65,6 +65,16 @@ final class TypeDefinitionTest extends TestCase
         $this->assertInstanceOf(ST::class, $definition->newInstance());
     }
 
+    public function testNewInstanceStampsTheDefinitionNameOntoTheInstanceAsItsFieldName(): void
+    {
+        // getName() only reports the data type, which every field of that type shares. The
+        // definition's name is what identifies the specific field, so newInstance must carry it
+        // onto each materialized value -- otherwise a field cannot report which schema slot it fills.
+        $definition = new TypeDefinition('Patient Name', ST::class);
+
+        $this->assertSame('Patient Name', $definition->newInstance()->getField());
+    }
+
     public function testNewInstanceForwardsConstructorArguments(): void
     {
         // Constructor args (e.g. an HL7 table number) must reach the created instance so typed

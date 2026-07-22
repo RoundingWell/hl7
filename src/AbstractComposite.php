@@ -11,6 +11,7 @@ use ReflectionObject;
 abstract class AbstractComposite implements Composite
 {
     use CanAssertNumbers;
+    use CanHoldField;
     use CanJoinElements;
 
     /** @var list<Type> */

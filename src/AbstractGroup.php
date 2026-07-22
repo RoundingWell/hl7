@@ -126,6 +126,18 @@ abstract class AbstractGroup implements Group
     }
 
     #[Override]
+    public function getStructures(): array
+    {
+        $structures = [];
+
+        foreach ($this->structures as $entry) {
+            $structures[] = $entry['structure'];
+        }
+
+        return $structures;
+    }
+
+    #[Override]
     public function isRequired(string $name): bool
     {
         return $this->getDefinition($name)->isRequired();

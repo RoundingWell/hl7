@@ -10,7 +10,7 @@ namespace RoundingWell\HL7;
  * @see Composite
  * @see Primitive
  */
-interface Type
+interface Type extends Field
 {
     public function getName(): string;
 

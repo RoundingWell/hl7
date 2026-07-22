@@ -17,6 +17,18 @@ final class Varies implements Variable
     }
 
     #[Override]
+    public function setField(string $name): void
+    {
+        $this->data->setField($name);
+    }
+
+    #[Override]
+    public function getField(): string
+    {
+        return $this->data->getField();
+    }
+
+    #[Override]
     public function getName(): string
     {
         return $this->getData()->getName();
