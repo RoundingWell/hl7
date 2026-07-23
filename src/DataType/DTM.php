@@ -6,6 +6,7 @@ namespace RoundingWell\HL7\DataType;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use Override;
 use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\LazyDateTime;
@@ -35,11 +36,11 @@ final class DTM extends AbstractPrimitive
         return $this->dt?->getFormat();
     }
 
-    public function getDateTime(): ?DateTimeImmutable
+    public function getDateTime(?DateTimeZone $timezone = null): ?DateTimeImmutable
     {
         $this->prepare();
 
-        return $this->dt?->getDateTime();
+        return $this->dt?->getDateTime($timezone);
     }
 
     public function setDateTime(DateTimeInterface $value): void

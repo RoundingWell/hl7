@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `DTM::getDateTime()` accepts an optional `DateTimeZone` that is applied when parsing a
+  timestamp without an explicit UTC offset, making the result deterministic across hosts instead
+  of adopting the environment default. The parsed instant is no longer memoized so a different
+  timezone is honored on each call. `DT` is unchanged: a date has no time-of-day for a timezone
+  to apply to.
+
 ## [0.8.0] - 2026-07-22
 
 ### Changed
