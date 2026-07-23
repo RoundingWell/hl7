@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests;
 
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -133,17 +134,29 @@ final class LazyDateTimeTest extends TestCase
         $dateTime->getFormat();
     }
 
-    public function testRepeatedReadsAreMemoized(): void
+    public function testFormatIsMemoizedButDateTimeIsRederivedEachRead(): void
     {
-        // Detection and construction are cached on first read so a value is parsed once; a
-        // second read must return the identical cached result rather than re-deriving it.
+        // The format is cached on first read so the value is detected once. The instant is
+        // NOT cached: it must be rebuilt on every read so that a caller-supplied timezone is
+        // always honored rather than being ignored in favor of a stale first result.
         $dateTime = new LazyDateTime('20240315123045');
 
         $format = $dateTime->getFormat();
         $this->assertSame($format, $dateTime->getFormat());
 
-        $instant = $dateTime->getDateTime();
-        $this->assertSame($instant, $dateTime->getDateTime());
+        $this->assertNotSame($dateTime->getDateTime(), $dateTime->getDateTime());
+    }
+
+    public function testGivenTimezoneIsAppliedToValueWithoutOffset(): void
+    {
+        // A value without an explicit UTC offset must adopt the caller-supplied timezone
+        // rather than the environment default, so parsing is deterministic across hosts.
+        $dateTime = new LazyDateTime('20240315123045');
+
+        $instant = $dateTime->getDateTime(new DateTimeZone('America/Chicago'));
+
+        $this->assertSame('America/Chicago', $instant->getTimezone()->getName());
+        $this->assertSame('2024-03-15 12:30:45', $instant->format('Y-m-d H:i:s'));
     }
 
     /**

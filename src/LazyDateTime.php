@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RoundingWell\HL7;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use RoundingWell\HL7\Exception\InvalidDateTime;
 
 final class LazyDateTime
@@ -31,7 +32,6 @@ final class LazyDateTime
         PATTERN;
 
     private ?string $format = null;
-    private ?DateTimeImmutable $dateTime = null;
 
     public function __construct(
         private readonly string $value,
@@ -63,18 +63,14 @@ final class LazyDateTime
         return $this->format = $format;
     }
 
-    public function getDateTime(): DateTimeImmutable
+    public function getDateTime(?DateTimeZone $timezone = null): DateTimeImmutable
     {
-        if ($this->dateTime) {
-            return $this->dateTime;
-        }
-
-        $dt = DateTimeImmutable::createFromFormat($this->getFormat(), $this->value);
+        $dt = DateTimeImmutable::createFromFormat($this->getFormat(), $this->value, $timezone);
 
         if (!$dt || self::hasDateTimeErrors()) {
             throw InvalidDateTime::invalidValue($this->value);
         }
 
-        return $this->dateTime = $dt;
+        return $dt;
     }
 }
