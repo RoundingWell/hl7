@@ -71,12 +71,17 @@ final class NK1 extends AbstractSegment
         $this->add(new TypeDefinition("Contact Person's Telecommunication Information", XTN::class, maxReps: 1));
     }
 
+    /**
+     * NK1.1 Set ID
+     */
     public function getIdentity(): SI
     {
         return $this->getFieldRepetition(1, 0);
     }
 
     /**
+     * NK1.2 Name
+     *
      * @return list<XPN>
      */
     public function getNextOfKinName(): array
@@ -84,12 +89,17 @@ final class NK1 extends AbstractSegment
         return $this->getField(2);
     }
 
+    /**
+     * NK1.3 Relationship
+     */
     public function getRelationship(): CWE
     {
         return $this->getFieldRepetition(3, 0);
     }
 
     /**
+     * NK1.4 Address
+     *
      * @return list<XAD>
      */
     public function getAddress(): array
@@ -98,6 +108,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.5 Phone Number
+     *
      * @return list<XTN>
      */
     public function getPhoneNumber(): array
@@ -106,6 +118,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.6 Business Phone Number
+     *
      * @return list<XTN>
      */
     public function getBusinessPhoneNumber(): array
@@ -113,37 +127,57 @@ final class NK1 extends AbstractSegment
         return $this->getField(6);
     }
 
+    /**
+     * NK1.7 Contact Role
+     */
     public function getContactRole(): CWE
     {
         return $this->getFieldRepetition(7, 0);
     }
 
+    /**
+     * NK1.8 Start Date
+     */
     public function getStartDate(): DT
     {
         return $this->getFieldRepetition(8, 0);
     }
 
+    /**
+     * NK1.9 End Date
+     */
     public function getEndDate(): DT
     {
         return $this->getFieldRepetition(9, 0);
     }
 
+    /**
+     * NK1.10 Job Title
+     */
     public function getJobTitle(): ST
     {
         return $this->getFieldRepetition(10, 0);
     }
 
+    /**
+     * NK1.11 Job Code/Class
+     */
     public function getJobCode(): JCC
     {
         return $this->getFieldRepetition(11, 0);
     }
 
+    /**
+     * NK1.12 Employee Number
+     */
     public function getEmployeeNumber(): CX
     {
         return $this->getFieldRepetition(12, 0);
     }
 
     /**
+     * NK1.13 Organization Name
+     *
      * @return list<XON>
      */
     public function getOrganizationName(): array
@@ -151,22 +185,33 @@ final class NK1 extends AbstractSegment
         return $this->getField(13);
     }
 
+    /**
+     * NK1.14 Marital Status
+     */
     public function getMaritalStatus(): CWE
     {
         return $this->getFieldRepetition(14, 0);
     }
 
+    /**
+     * NK1.15 Administrative Sex
+     */
     public function getAdministrativeSex(): CWE
     {
         return $this->getFieldRepetition(15, 0);
     }
 
+    /**
+     * NK1.16 Date/Time of Birth
+     */
     public function getDateOfBirth(): DTM
     {
         return $this->getFieldRepetition(16, 0);
     }
 
     /**
+     * NK1.17 Living Dependency
+     *
      * @return list<CWE>
      */
     public function getLivingDependency(): array
@@ -175,6 +220,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.18 Ambulatory Status
+     *
      * @return list<CWE>
      */
     public function getAmbulatoryStatus(): array
@@ -183,6 +230,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.19 Citizenship
+     *
      * @return list<CWE>
      */
     public function getCitizenship(): array
@@ -190,37 +239,57 @@ final class NK1 extends AbstractSegment
         return $this->getField(19);
     }
 
+    /**
+     * NK1.20 Primary Language
+     */
     public function getPrimaryLanguage(): CWE
     {
         return $this->getFieldRepetition(20, 0);
     }
 
+    /**
+     * NK1.21 Living Arrangement
+     */
     public function getLivingArrangement(): CWE
     {
         return $this->getFieldRepetition(21, 0);
     }
 
+    /**
+     * NK1.22 Publicity Code
+     */
     public function getPublicityCode(): CWE
     {
         return $this->getFieldRepetition(22, 0);
     }
 
+    /**
+     * NK1.23 Protection Indicator
+     */
     public function getProtectionIndicator(): ID
     {
         return $this->getFieldRepetition(23, 0);
     }
 
+    /**
+     * NK1.24 Student Indicator
+     */
     public function getStudentIndicator(): CWE
     {
         return $this->getFieldRepetition(24, 0);
     }
 
+    /**
+     * NK1.25 Religion
+     */
     public function getReligion(): CWE
     {
         return $this->getFieldRepetition(25, 0);
     }
 
     /**
+     * NK1.26 Mother's Maiden Name
+     *
      * @return list<XPN>
      */
     public function getMotherMaidenName(): array
@@ -228,12 +297,17 @@ final class NK1 extends AbstractSegment
         return $this->getField(26);
     }
 
+    /**
+     * NK1.27 Nationality
+     */
     public function getNationality(): CWE
     {
         return $this->getFieldRepetition(27, 0);
     }
 
     /**
+     * NK1.28 Ethnic Group
+     *
      * @return list<CWE>
      */
     public function getEthnicGroup(): array
@@ -242,6 +316,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.29 Contact Reason
+     *
      * @return list<CWE>
      */
     public function getContactReason(): array
@@ -250,6 +326,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.30 Contact Person's Name
+     *
      * @return list<XPN>
      */
     public function getContactPersonName(): array
@@ -258,6 +336,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.31 Contact Person's Telephone Number
+     *
      * @return list<XTN>
      */
     public function getContactPersonPhoneNumber(): array
@@ -266,6 +346,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.32 Contact Person's Address
+     *
      * @return list<XAD>
      */
     public function getContactPersonAddress(): array
@@ -274,6 +356,8 @@ final class NK1 extends AbstractSegment
     }
 
     /**
+     * NK1.33 Associated Party's Identifiers
+     *
      * @return list<CX>
      */
     public function getAssociatedPartyIdentifiers(): array
@@ -281,12 +365,17 @@ final class NK1 extends AbstractSegment
         return $this->getField(33);
     }
 
+    /**
+     * NK1.34 Job Status
+     */
     public function getJobStatus(): CWE
     {
         return $this->getFieldRepetition(34, 0);
     }
 
     /**
+     * NK1.35 Race
+     *
      * @return list<CWE>
      */
     public function getRace(): array
@@ -294,31 +383,49 @@ final class NK1 extends AbstractSegment
         return $this->getField(35);
     }
 
+    /**
+     * NK1.36 Handicap
+     */
     public function getHandicap(): CWE
     {
         return $this->getFieldRepetition(36, 0);
     }
 
+    /**
+     * NK1.37 Contact Person Social Security Number
+     */
     public function getContactPersonSsnNumber(): ST
     {
         return $this->getFieldRepetition(37, 0);
     }
 
+    /**
+     * NK1.38 Next of Kin Birth Place
+     */
     public function getBirthPlace(): ST
     {
         return $this->getFieldRepetition(38, 0);
     }
 
+    /**
+     * NK1.39 VIP Indicator
+     */
     public function getVipIndicator(): CWE
     {
         return $this->getFieldRepetition(39, 0);
     }
 
+    /**
+     * NK1.40 Next of Kin Telecommunication Information
+     */
     public function getTelecommunicationInformation(): XTN
     {
         return $this->getFieldRepetition(40, 0);
     }
 
+    /**
+     * NK1.41 Contact Person's Telecommunication Information
+     */
     public function getContactPersonTelecommunicationInformation(): XTN
     {
         return $this->getFieldRepetition(41, 0);

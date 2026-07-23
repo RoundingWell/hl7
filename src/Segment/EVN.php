@@ -28,27 +28,41 @@ final class EVN extends AbstractSegment
         $this->add(new TypeDefinition('Event Facility', HD::class, maxReps: 1));
     }
 
+    /**
+     * EVN.1 Event Type Code
+     */
     public function getTypeCode(): ST
     {
         return $this->getFieldRepetition(1, 0);
     }
 
+    /**
+     * EVN.2 Recorded Date/Time
+     */
     public function getRecordedDateTime(): DTM
     {
         return $this->getFieldRepetition(2, 0);
     }
 
+    /**
+     * EVN.3 Date/Time Planned Event
+     */
     public function getPlannedDateTime(): DTM
     {
         return $this->getFieldRepetition(3, 0);
     }
 
+    /**
+     * EVN.4 Event Reason Code
+     */
     public function getEventReasonCode(): CWE
     {
         return $this->getFieldRepetition(4, 0);
     }
 
     /**
+     * EVN.5 Operator ID
+     *
      * @return list<XCN>
      */
     public function getOperatorId(): array
@@ -56,11 +70,17 @@ final class EVN extends AbstractSegment
         return $this->getField(5);
     }
 
+    /**
+     * EVN.6 Event Occurred
+     */
     public function getOccurredDateTime(): DTM
     {
         return $this->getFieldRepetition(6, 0);
     }
 
+    /**
+     * EVN.7 Event Facility
+     */
     public function getEventFacility(): HD
     {
         return $this->getFieldRepetition(7, 0);

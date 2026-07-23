@@ -128,92 +128,145 @@ final class MSH extends AbstractSegment
         return trim($header . $this->serializeFields($encoding, 3), $encoding->fieldSeparator);
     }
 
+    /**
+     * MSH.1 Field Separator
+     */
     public function getFieldSeparator(): ST
     {
         return $this->getFieldRepetition(1, 0);
     }
 
+    /**
+     * MSH.2 Encoding Characters
+     */
     public function getEncodingCharacters(): ST
     {
         return $this->getFieldRepetition(2, 0);
     }
 
+    /**
+     * MSH.3 Sending Application
+     */
     public function getSendingApplication(): HD
     {
         return $this->getFieldRepetition(3, 0);
     }
 
+    /**
+     * MSH.4 Sending Facility
+     */
     public function getSendingFacility(): HD
     {
         return $this->getFieldRepetition(4, 0);
     }
 
+    /**
+     * MSH.5 Receiving Application
+     */
     public function getReceivingApplication(): HD
     {
         return $this->getFieldRepetition(5, 0);
     }
 
+    /**
+     * MSH.6 Receiving Facility
+     */
     public function getReceivingFacility(): HD
     {
         return $this->getFieldRepetition(6, 0);
     }
 
+    /**
+     * MSH.7 Date/Time of Message
+     */
     public function getDateTimeOfMessage(): DTM
     {
         return $this->getFieldRepetition(7, 0);
     }
 
+    /**
+     * MSH.8 Security
+     */
     public function getSecurity(): ST
     {
         return $this->getFieldRepetition(8, 0);
     }
 
+    /**
+     * MSH.9 Message Type
+     */
     public function getMessageType(): MSG
     {
         return $this->getFieldRepetition(9, 0);
     }
 
+    /**
+     * MSH.10 Message Control ID
+     */
     public function getMessageControlId(): ST
     {
         return $this->getFieldRepetition(10, 0);
     }
 
+    /**
+     * MSH.11 Processing ID
+     */
     public function getProcessingId(): PT
     {
         return $this->getFieldRepetition(11, 0);
     }
 
+    /**
+     * MSH.12 Version ID
+     */
     public function getVersionId(): VID
     {
         return $this->getFieldRepetition(12, 0);
     }
 
+    /**
+     * MSH.13 Sequence Number
+     */
     public function getSequenceNumber(): NM
     {
         return $this->getFieldRepetition(13, 0);
     }
 
+    /**
+     * MSH.14 Continuation Pointer
+     */
     public function getContinuationPointer(): ST
     {
         return $this->getFieldRepetition(14, 0);
     }
 
+    /**
+     * MSH.15 Accept Acknowledgement Type
+     */
     public function getAcceptAcknowledgementType(): ID
     {
         return $this->getFieldRepetition(15, 0);
     }
 
+    /**
+     * MSH.16 Application Acknowledgement Type
+     */
     public function getApplicationAcknowledgementType(): ID
     {
         return $this->getFieldRepetition(16, 0);
     }
 
+    /**
+     * MSH.17 Country Code
+     */
     public function getCountryCode(): ID
     {
         return $this->getFieldRepetition(17, 0);
     }
 
     /**
+     * MSH.18 Character Set
+     *
      * @return list<ID>
      */
     public function getCharacterSet(): array
@@ -221,17 +274,25 @@ final class MSH extends AbstractSegment
         return $this->getField(18);
     }
 
+    /**
+     * MSH.19 Principal Language of Message
+     */
     public function getPrincipalLanguageOfMessage(): CWE
     {
         return $this->getFieldRepetition(19, 0);
     }
 
+    /**
+     * MSH.20 Alternate Character Set Handling Scheme
+     */
     public function getAlternateCharacterSetHandlingScheme(): ID
     {
         return $this->getFieldRepetition(20, 0);
     }
 
     /**
+     * MSH.21 Message Profile Identifier
+     *
      * @return list<EI>
      */
     public function getMessageProfileIdentifier(): array
@@ -239,21 +300,33 @@ final class MSH extends AbstractSegment
         return $this->getField(21);
     }
 
+    /**
+     * MSH.22 Sending Responsible Organization
+     */
     public function getSendingResponsibleOrganization(): XON
     {
         return $this->getFieldRepetition(22, 0);
     }
 
+    /**
+     * MSH.23 Receiving Responsible Organization
+     */
     public function getReceivingResponsibleOrganization(): XON
     {
         return $this->getFieldRepetition(23, 0);
     }
 
+    /**
+     * MSH.24 Sending Network Address
+     */
     public function getSendingNetworkAddress(): HD
     {
         return $this->getFieldRepetition(24, 0);
     }
 
+    /**
+     * MSH.25 Receiving Network Address
+     */
     public function getReceivingNetworkAddress(): HD
     {
         return $this->getFieldRepetition(25, 0);

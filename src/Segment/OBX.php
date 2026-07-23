@@ -68,27 +68,41 @@ final class OBX extends AbstractSegment
         $this->add(new TypeDefinition('Local Process Control', CWE::class));
     }
 
+    /**
+     * OBX.1 Set ID
+     */
     public function getIdentity(): SI
     {
         return $this->getFieldRepetition(1, 0);
     }
 
+    /**
+     * OBX.2 Value Type
+     */
     public function getValueType(): ID
     {
         return $this->getFieldRepetition(2, 0);
     }
 
+    /**
+     * OBX.3 Observation Identifier
+     */
     public function getObservationIdentifier(): CWE
     {
         return $this->getFieldRepetition(3, 0);
     }
 
+    /**
+     * OBX.4 Observation Sub-ID
+     */
     public function getObservationSubId(): ST
     {
         return $this->getFieldRepetition(4, 0);
     }
 
     /**
+     * OBX.5 Observation Value
+     *
      * @return list<Varies>
      */
     public function getObservationValue(): array
@@ -96,17 +110,25 @@ final class OBX extends AbstractSegment
         return $this->getField(5);
     }
 
+    /**
+     * OBX.6 Units
+     */
     public function getUnits(): CWE
     {
         return $this->getFieldRepetition(6, 0);
     }
 
+    /**
+     * OBX.7 References Range
+     */
     public function getReferencesRange(): ST
     {
         return $this->getFieldRepetition(7, 0);
     }
 
     /**
+     * OBX.8 Interpretation Codes
+     *
      * @return list<CWE>
      */
     public function getInterpretationCodes(): array
@@ -114,12 +136,17 @@ final class OBX extends AbstractSegment
         return $this->getField(8);
     }
 
+    /**
+     * OBX.9 Probability
+     */
     public function getProbability(): NM
     {
         return $this->getFieldRepetition(9, 0);
     }
 
     /**
+     * OBX.10 Nature of Abnormal Test
+     *
      * @return list<ID>
      */
     public function getNatureOfAbnormalTest(): array
@@ -127,32 +154,49 @@ final class OBX extends AbstractSegment
         return $this->getField(10);
     }
 
+    /**
+     * OBX.11 Observation Result Status
+     */
     public function getObservationResultStatus(): ID
     {
         return $this->getFieldRepetition(11, 0);
     }
 
+    /**
+     * OBX.12 Effective Date of Reference Range
+     */
     public function getEffectiveDateOfReferenceRange(): DTM
     {
         return $this->getFieldRepetition(12, 0);
     }
 
+    /**
+     * OBX.13 User Defined Access Checks
+     */
     public function getUserDefinedAccessChecks(): ST
     {
         return $this->getFieldRepetition(13, 0);
     }
 
+    /**
+     * OBX.14 Date/Time of the Observation
+     */
     public function getObservationDateTime(): DTM
     {
         return $this->getFieldRepetition(14, 0);
     }
 
+    /**
+     * OBX.15 Producer's ID
+     */
     public function getProducerId(): CWE
     {
         return $this->getFieldRepetition(15, 0);
     }
 
     /**
+     * OBX.16 Responsible Observer
+     *
      * @return list<XCN>
      */
     public function getResponsibleObserver(): array
@@ -161,6 +205,8 @@ final class OBX extends AbstractSegment
     }
 
     /**
+     * OBX.17 Observation Method
+     *
      * @return list<CWE>
      */
     public function getObservationMethod(): array
@@ -169,6 +215,8 @@ final class OBX extends AbstractSegment
     }
 
     /**
+     * OBX.18 Equipment Instance Identifier
+     *
      * @return list<EI>
      */
     public function getEquipmentInstanceIdentifier(): array
@@ -176,12 +224,17 @@ final class OBX extends AbstractSegment
         return $this->getField(18);
     }
 
+    /**
+     * OBX.19 Date/Time of the Analysis
+     */
     public function getAnalysisDateTime(): DTM
     {
         return $this->getFieldRepetition(19, 0);
     }
 
     /**
+     * OBX.20 Observation Site
+     *
      * @return list<CWE>
      */
     public function getObservationSite(): array
@@ -189,42 +242,65 @@ final class OBX extends AbstractSegment
         return $this->getField(20);
     }
 
+    /**
+     * OBX.21 Observation Instance Identifier
+     */
     public function getObservationInstanceIdentifier(): EI
     {
         return $this->getFieldRepetition(21, 0);
     }
 
+    /**
+     * OBX.22 Mood Code
+     */
     public function getMoodCode(): CNE
     {
         return $this->getFieldRepetition(22, 0);
     }
 
+    /**
+     * OBX.23 Performing Organization Name
+     */
     public function getPerformingOrganizationName(): XON
     {
         return $this->getFieldRepetition(23, 0);
     }
 
+    /**
+     * OBX.24 Performing Organization Address
+     */
     public function getPerformingOrganizationAddress(): XAD
     {
         return $this->getFieldRepetition(24, 0);
     }
 
+    /**
+     * OBX.25 Performing Organization Medical Director
+     */
     public function getPerformingOrganizationMedicalDirector(): XCN
     {
         return $this->getFieldRepetition(25, 0);
     }
 
+    /**
+     * OBX.26 Patient Results Release Category
+     */
     public function getPatientResultsReleaseCategory(): ID
     {
         return $this->getFieldRepetition(26, 0);
     }
 
+    /**
+     * OBX.27 Root Cause
+     */
     public function getRootCause(): CWE
     {
         return $this->getFieldRepetition(27, 0);
     }
 
     /**
+     * OBX.28 Local Process Control
+     *
      * @return list<CWE>
      */
     public function getLocalProcessControl(): array
