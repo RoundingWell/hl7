@@ -25,21 +25,33 @@ final class MSA extends AbstractSegment
         $this->add(new TypeDefinition('Expected Sequence Number', NM::class, maxReps: 1));
     }
 
+    /**
+     * MSA.1 Acknowledgment Code
+     */
     public function getAcknowledgmentCode(): ID
     {
         return $this->getFieldRepetition(1, 0);
     }
 
+    /**
+     * MSA.2 Message Control ID
+     */
     public function getMessageControlId(): ST
     {
         return $this->getFieldRepetition(2, 0);
     }
 
+    /**
+     * MSA.3 Text Message
+     */
     public function getTextMessage(): ST
     {
         return $this->getFieldRepetition(3, 0);
     }
 
+    /**
+     * MSA.4 Expected Sequence Number
+     */
     public function getExpectedSequenceNumber(): NM
     {
         return $this->getFieldRepetition(4, 0);
