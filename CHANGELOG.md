@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- All segment accessors `get*()` now have docblocks that contain the segment name and HL7 path
+
 ### Changed
 
 - `DTM::getDateTime()` accepts an optional `DateTimeZone` that is applied when parsing a
