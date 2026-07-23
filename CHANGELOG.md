@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-23
+
 ### Added
 
 - All segment accessors `get*()` now have docblocks that contain the segment name and HL7 path
@@ -99,7 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.8.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.9.0...HEAD
+[0.9.0]: https://github.com/RoundingWell/hl7/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/RoundingWell/hl7/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/RoundingWell/hl7/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/RoundingWell/hl7/compare/0.5.0...0.6.0
