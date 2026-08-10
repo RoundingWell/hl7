@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `Message` now declares `getSegment()` and `generateACK()`. Both were already implemented by
+  `AbstractMessage` and documented as public API, but were invisible to code holding the
+  interface — such as the `Message` returned by `MessageFactory::parse()`. Implementations that
+  do not extend `AbstractMessage` must now provide both methods.
+
 ## [0.9.0] - 2026-07-23
 
 ### Added

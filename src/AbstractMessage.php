@@ -37,6 +37,7 @@ abstract class AbstractMessage extends AbstractGroup implements Message
         return implode($encoding->lineEnding, $this->serializeLines($encoding));
     }
 
+    #[Override]
     public function getSegment(string $name, int $repetition): Segment
     {
         return $this->getRepetition($name, $repetition);
@@ -54,6 +55,7 @@ abstract class AbstractMessage extends AbstractGroup implements Message
         return $this->getSegment('MSH', 0);
     }
 
+    #[Override]
     public function generateACK(AcknowledgmentCode $code, ClockInterface $clock, IdGenerator $idGenerator): Message
     {
         $ack = new ACK();
