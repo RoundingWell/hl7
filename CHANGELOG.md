@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-08-10
+
 ### Changed
 
 - `Message` now declares `getSegment()` and `generateACK()`. Both were already implemented by
@@ -108,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.10.0...HEAD
+[0.10.0]: https://github.com/RoundingWell/hl7/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/RoundingWell/hl7/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/RoundingWell/hl7/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/RoundingWell/hl7/compare/0.6.0...0.7.0
