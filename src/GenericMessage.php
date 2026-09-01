@@ -7,6 +7,8 @@ namespace RoundingWell\HL7;
 use Override;
 use RoundingWell\HL7\Segment\MSH;
 
+use function Psl\Type\instance_of;
+
 class GenericMessage extends AbstractMessage
 {
     use CanJoinElements;
@@ -42,9 +44,7 @@ class GenericMessage extends AbstractMessage
     {
         $msh = $this->getRepetition('MSH', 0);
 
-        assert($msh instanceof MSH, "Expected {$this->getName()}.MSH to be an MSH segment");
-
-        return $msh;
+        return instance_of(MSH::class)->assert($msh);
     }
 
     /**

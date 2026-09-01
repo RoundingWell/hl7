@@ -11,16 +11,17 @@
     ],
     "require": {
         "php": "^8.4",
+        "php-standard-library/type": "^6.2",
         "psr/clock": "^1.0"
     },
     "require-dev": {
-        "carthage-software/mago": "^1.29",
+        "carthage-software/mago": "^1.47",
         "ergebnis/composer-normalize": "^2.52",
-        "phpunit/phpunit": "^12.5",
+        "phpunit/phpunit": "^13.3",
         "rregeer/phpunit-coverage-check": "^0.3.1",
-        "symfony/clock": "^8.0",
-        "symfony/uid": "^8.0",
-        "symfony/var-dumper": "^8.0"
+        "symfony/clock": "^8.1",
+        "symfony/uid": "^8.1",
+        "symfony/var-dumper": "^8.1"
     },
     "suggest": {
         "symfony/clock": "Provides a PSR-20 clock (e.g. NativeClock) to pass to AbstractMessage::generateACK()",
