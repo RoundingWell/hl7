@@ -21,10 +21,7 @@ integrations = ["phpunit"]
 
 [linter.rules]
 assertion-style = { style = "this" }
-ambiguous-function-call = { enabled = false }
-literal-named-argument = { enabled = false }
-halstead = { effort-threshold = 7000 }
-too-many-methods = { exclude = ["**/*Test.php"] }
+too-many-methods = { exclude = ["tests/**/*Test.php"] }
 
 [analyzer]
 plugins = []

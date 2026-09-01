@@ -140,8 +140,12 @@ final class A01Test extends TestCase
         // The forward-only matcher passes DG1's slot, but the diagnosis must still parse into its
         // typed DG1 slot (readable) and serialize back in its received position (after GT1), so a
         // real-world schema-violating feed loses no clinical data.
-        $raw = str_replace(["\r\n", "\n"], "\r", (string) file_get_contents(__DIR__ . '/../../data/adt-a01-2.txt'));
-        $raw = rtrim($raw, "\r");
+        $raw = str_replace(
+            ["\r\n", "\n"],
+            replace: "\r",
+            subject: (string) file_get_contents(__DIR__ . '/../../data/adt-a01-2.txt'),
+        );
+        $raw = rtrim($raw, characters: "\r");
 
         $message = new A01();
         $message->parse($this->encoding, $raw);
@@ -151,9 +155,9 @@ final class A01Test extends TestCase
         $this->assertContainsOnlyInstancesOf(DG1::class, $dg1);
 
         $lines = explode("\r", $message->serialize($this->encoding));
-        $names = array_map(static fn(string $line): string => substr($line, 0, 3), $lines);
-        $gt1 = array_search('GT1', $names, true);
-        $dg1Line = array_search('DG1', $names, true);
+        $names = array_map(static fn(string $line): string => substr($line, offset: 0, length: 3), $lines);
+        $gt1 = array_search('GT1', $names, strict: true);
+        $dg1Line = array_search('DG1', $names, strict: true);
         $this->assertNotFalse($gt1);
         $this->assertNotFalse($dg1Line);
         $this->assertGreaterThan($gt1, $dg1Line, 'DG1 must serialize after GT1, in received order');

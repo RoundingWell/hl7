@@ -108,13 +108,13 @@ final class MessageFactoryTest extends TestCase
     public function testParseFileThrowsWhenTheFileCannotBeRead(): void
     {
         // An existing but unreadable file must surface as a read failure, not "missing".
-        $path = tempnam(sys_get_temp_dir(), 'hl7');
+        $path = tempnam(sys_get_temp_dir(), prefix: 'hl7');
         $this->assertIsString($path);
-        chmod($path, 0o000);
+        chmod($path, permissions: 0o000);
 
         if (is_readable($path)) {
             // Permissions are not enforced for this user (e.g. running as root); surface the skip.
-            chmod($path, 0o644);
+            chmod($path, permissions: 0o644);
             unlink($path);
             $this->markTestSkipped('Filesystem permissions are not enforced for the current user.');
         }
@@ -129,7 +129,7 @@ final class MessageFactoryTest extends TestCase
             $this->messageFactory->parseFile($path);
         } finally {
             restore_error_handler();
-            chmod($path, 0o644);
+            chmod($path, permissions: 0o644);
             unlink($path);
         }
     }

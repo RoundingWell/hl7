@@ -13,7 +13,7 @@ final readonly class SegmentFactory
     public function parse(string $data): Segment
     {
         // The first value MUST be the segment identifier.
-        [$id] = explode($this->encoding->fieldSeparator, $data, 2);
+        [$id] = explode($this->encoding->fieldSeparator, $data, limit: 2);
 
         $segment = $this->create($id);
 

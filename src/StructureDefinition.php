@@ -20,7 +20,7 @@ final readonly class StructureDefinition
         private bool $isRequired = false,
         private bool $isRepeating = false,
     ) {
-        if (!is_subclass_of($this->type, Structure::class, true)) {
+        if (!is_subclass_of($this->type, Structure::class, allow_string: true)) {
             throw new InvalidArgumentException("Cannot define {$this->type}, it does not implement Structure");
         }
     }
@@ -37,7 +37,7 @@ final readonly class StructureDefinition
 
     public function isGroup(): bool
     {
-        return is_subclass_of($this->type, Group::class, true);
+        return is_subclass_of($this->type, Group::class, allow_string: true);
     }
 
     public function newInstance(): Structure

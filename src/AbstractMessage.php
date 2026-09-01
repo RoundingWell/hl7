@@ -23,7 +23,7 @@ abstract class AbstractMessage extends AbstractGroup implements Message
         $segments = [];
 
         foreach (array_filter(explode($encoding->lineEnding, $data)) as $line) {
-            [$name] = explode($encoding->fieldSeparator, $line, 2);
+            [$name] = explode($encoding->fieldSeparator, $line, limit: 2);
 
             $segments[] = new SegmentElement($name, $line);
         }
@@ -118,7 +118,10 @@ abstract class AbstractMessage extends AbstractGroup implements Message
                 // @mago-expect analysis:possibly-undefined-int-array-index
                 $toComponent = $toComponents[$index];
 
-                assert($toComponent instanceof Type, 'Matched component index must exist in both composites');
+                assert(
+                    $toComponent instanceof Type,
+                    description: 'Matched component index must exist in both composites',
+                );
 
                 $this->copyType($component, $toComponent);
             }

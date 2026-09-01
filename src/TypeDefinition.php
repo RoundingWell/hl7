@@ -26,7 +26,7 @@ final readonly class TypeDefinition
         private bool $isRequired = false,
         private int $maxReps = 0,
     ) {
-        if (!is_subclass_of($this->type, Type::class, true)) {
+        if (!is_subclass_of($this->type, Type::class, allow_string: true)) {
             throw new InvalidArgumentException("Cannot define {$this->type}, it does not implement Type");
         }
 
