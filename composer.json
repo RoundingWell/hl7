@@ -50,16 +50,17 @@
         "sort-packages": true
     },
     "scripts": {
-        "analyze": "mago analyze",
         "coverage-check": "coverage-check tmp/phpunit/clover.xml 100",
         "coverage-open": "open tmp/phpunit/coverage/index.html",
         "fix": [
             "mago lint --fix",
+            "mago analyze --fix",
             "mago format"
         ],
         "format": "mago format",
         "format-check": "mago format --check",
         "lint": "mago lint",
+        "analyze": "mago analyze",
         "phpunit": "phpunit -d memory_limit=4G",
         "test": [
             "@phpunit",
