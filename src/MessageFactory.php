@@ -30,7 +30,7 @@ final readonly class MessageFactory
         // Encoding MUST be detected before parsing segments.
         $encoding = $this->detectEncoding($data);
 
-        [$mshLine] = explode($encoding->lineEnding, $data, 2);
+        [$mshLine] = explode($encoding->lineEnding, $data, limit: 2);
 
         $msh = new MSH();
         $msh->parse($encoding, $mshLine);
@@ -55,7 +55,7 @@ final readonly class MessageFactory
         };
 
         // Field separator MUST ALWAYS be the 4th character in a message, immediately after "MSH".
-        $fieldSeparator = substr($data, 3, 1);
+        $fieldSeparator = substr($data, offset: 3, length: 1);
 
         if ($fieldSeparator === '') {
             throw InvalidMessage::missingFieldSeparator();
@@ -78,7 +78,7 @@ final readonly class MessageFactory
 
         do {
             // Read the next character from the string.
-            $char = substr($data, $offset++, 1);
+            $char = substr($data, $offset++, length: 1);
 
             // Stop reading when the next character is the field separator or the string ends.
             if ($char === $fieldSeparator || $char === '') {

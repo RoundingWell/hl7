@@ -30,7 +30,7 @@ final class AccessorDocblockTest extends TestCase
     {
         $discovered = [];
         foreach (array_keys(self::accessorProvider()) as $case) {
-            $discovered[strstr($case, '::', true)] = true;
+            $discovered[strstr($case, needle: '::', before_needle: true)] = true;
         }
 
         $this->assertSame(
@@ -76,7 +76,7 @@ final class AccessorDocblockTest extends TestCase
         }
 
         foreach ($files as $file) {
-            $short = basename($file, '.php');
+            $short = basename($file, suffix: '.php');
             /** @var class-string<AbstractSegment> $class */
             $class = 'RoundingWell\\HL7\\Segment\\' . $short;
 
@@ -121,7 +121,7 @@ final class AccessorDocblockTest extends TestCase
         }
 
         foreach (explode("\n", $doc) as $line) {
-            $line = trim(trim($line), '/*');
+            $line = trim(trim($line), characters: '/*');
             $line = trim($line);
             if ($line !== '') {
                 return $line;

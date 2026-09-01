@@ -33,7 +33,7 @@ final class MessageDebugger
             return $this->group($structure, $depth);
         }
 
-        assert($structure instanceof Segment, 'A structure is either a group or a segment');
+        assert($structure instanceof Segment, description: 'A structure is either a group or a segment');
 
         return $this->segment($structure, $depth);
     }
@@ -84,7 +84,7 @@ final class MessageDebugger
             return $this->composite($field, $path, $label, $depth);
         }
 
-        assert($field instanceof Primitive, 'A non-Varies type is either a composite or a primitive');
+        assert($field instanceof Primitive, description: 'A non-Varies type is either a composite or a primitive');
 
         return $this->primitive($field, $path, $label, $depth);
     }

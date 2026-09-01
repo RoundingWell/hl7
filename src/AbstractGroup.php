@@ -176,7 +176,7 @@ abstract class AbstractGroup implements Group
 
             if ($match === null) {
                 // Not part of this group's remaining structure.
-                if (in_array($element->name, $additionalNames, true)) {
+                if (in_array($element->name, $additionalNames, strict: true)) {
                     // An enclosing scope (or a new repetition of an ancestor) will claim it.
                     return $offset;
                 }
@@ -298,7 +298,7 @@ abstract class AbstractGroup implements Group
     private function matchStructure(array $names, int $from, string $segment): ?array
     {
         foreach (array_slice($names, $from, preserve_keys: true) as $index => $name) {
-            if (in_array($segment, $this->firstNamesOf($name), true)) {
+            if (in_array($segment, $this->firstNamesOf($name), strict: true)) {
                 return [$index, $name];
             }
         }
