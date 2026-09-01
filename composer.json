@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^8.4",
+        "php-standard-library/type": "^6.2",
         "psr/clock": "^1.0"
     },
     "require-dev": {

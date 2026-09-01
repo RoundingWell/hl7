@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use function Psl\Type\instance_of;
+
 /**
  * Renders the populated structure of a message as an indented, human-readable tree
  *
@@ -33,7 +35,8 @@ final class MessageDebugger
             return $this->group($structure, $depth);
         }
 
-        assert($structure instanceof Segment, description: 'A structure is either a group or a segment');
+        // A structure MUST be either a Group or Segment.
+        instance_of(Segment::class)->assert($structure);
 
         return $this->segment($structure, $depth);
     }
@@ -71,8 +74,8 @@ final class MessageDebugger
     /** @return list<string> */
     private function field(Type $field, string $path, int $depth): array
     {
-        // Varies is a wrapper standing in for an undetermined type; describe the value it holds.
-        if ($field instanceof Varies) {
+        // Variable is a wrapper standing in for an undetermined type; describe the value it holds.
+        if ($field instanceof Variable) {
             return $this->field($field->getData(), $path, $depth);
         }
 
@@ -84,7 +87,8 @@ final class MessageDebugger
             return $this->composite($field, $path, $label, $depth);
         }
 
-        assert($field instanceof Primitive, description: 'A non-Varies type is either a composite or a primitive');
+        // A type MUST be a Variable, Composite, or Primitive.
+        instance_of(Primitive::class)->assert($field);
 
         return $this->primitive($field, $path, $label, $depth);
     }
@@ -145,7 +149,7 @@ final class MessageDebugger
      */
     private function isScalar(Type $field): bool
     {
-        if ($field instanceof Varies) {
+        if ($field instanceof Variable) {
             return $this->isScalar($field->getData());
         }
 

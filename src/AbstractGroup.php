@@ -224,13 +224,12 @@ abstract class AbstractGroup implements Group
 
         if ($match !== null) {
             [, $name] = $match;
-            $definition = $this->getDefinition($name);
+            $structure = $this->getDefinition($name)->newInstance();
 
-            if (!$definition->isGroup()) {
-                $segment = $definition->newInstance();
-                assert($segment instanceof Segment, "Expected {$name} definition to build a segment");
-                $segment->parse($encoding, $element->raw);
-                $this->append($name, $segment);
+            // A group lead out of order is unsafe to re-consume, so only segments recover typed.
+            if ($structure instanceof Segment) {
+                $structure->parse($encoding, $element->raw);
+                $this->append($name, $structure);
 
                 return;
             }

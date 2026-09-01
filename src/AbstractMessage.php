@@ -112,18 +112,8 @@ abstract class AbstractMessage extends AbstractGroup implements Message
         }
 
         if ($from instanceof Composite && $to instanceof Composite) {
-            $toComponents = $to->getComponents();
-
             foreach ($from->getComponents() as $index => $component) {
-                // @mago-expect analysis:possibly-undefined-int-array-index
-                $toComponent = $toComponents[$index];
-
-                assert(
-                    $toComponent instanceof Type,
-                    description: 'Matched component index must exist in both composites',
-                );
-
-                $this->copyType($component, $toComponent);
+                $this->copyType($component, $to->getComponent($index));
             }
         }
     }
