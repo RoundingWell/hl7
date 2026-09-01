@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\OBX;
 
+use function implode;
+
 #[CoversClass(OBX::class)]
 final class OBXTest extends TestCase
 {

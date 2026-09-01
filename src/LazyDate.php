@@ -7,6 +7,8 @@ namespace RoundingWell\HL7;
 use DateTimeImmutable;
 use RoundingWell\HL7\Exception\InvalidDate;
 
+use function preg_match;
+
 final class LazyDate
 {
     use CanCheckDateTimeErrors;

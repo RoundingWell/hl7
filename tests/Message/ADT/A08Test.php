@@ -17,6 +17,8 @@ use RoundingWell\HL7\Segment\PID;
 use RoundingWell\HL7\Segment\PV1;
 use RoundingWell\HL7\Segment\PV2;
 
+use function implode;
+
 #[CoversClass(A08::class)]
 final class A08Test extends TestCase
 {

@@ -1,5 +1,7 @@
-/docs/superpowers/
-/vendor/
+build/
+docs/superpowers/
+vendor/
 
 # As a package, we SHOULD NOT include composer.lock!
 composer.lock
+composer.phar

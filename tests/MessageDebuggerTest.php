@@ -11,6 +11,8 @@ use RoundingWell\HL7\GenericMessage;
 use RoundingWell\HL7\MessageDebugger;
 use RoundingWell\HL7\Tests\Fixtures\FakeTypedGroupMessage;
 
+use function implode;
+
 #[CoversClass(MessageDebugger::class)]
 final class MessageDebuggerTest extends TestCase
 {

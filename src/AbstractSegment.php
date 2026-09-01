@@ -9,6 +9,12 @@ use OutOfBoundsException;
 use Override;
 use ReflectionObject;
 
+use function array_map;
+use function array_shift;
+use function count;
+use function explode;
+use function max;
+
 // @mago-expect lint:too-many-methods
 abstract class AbstractSegment implements Segment
 {

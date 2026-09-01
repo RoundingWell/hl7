@@ -11,6 +11,8 @@ use RoundingWell\HL7\ExtraComponents;
 use RoundingWell\HL7\GenericPrimitive;
 use RoundingWell\HL7\Primitive;
 
+use function count;
+
 #[CoversClass(GenericPrimitive::class)]
 final class GenericPrimitiveTest extends TestCase
 {

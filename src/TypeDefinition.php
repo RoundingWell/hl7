@@ -8,6 +8,8 @@ use InvalidArgumentException;
 use ReflectionClass;
 use RuntimeException;
 
+use function is_subclass_of;
+
 final readonly class TypeDefinition
 {
     use CanAssertNumbers;

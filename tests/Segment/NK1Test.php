@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\NK1;
 
+use function implode;
+
 #[CoversClass(NK1::class)]
 final class NK1Test extends TestCase
 {

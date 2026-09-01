@@ -7,6 +7,11 @@ namespace RoundingWell\HL7;
 use Override;
 use ReflectionObject;
 
+use function array_shift;
+use function count;
+use function explode;
+use function str_contains;
+
 abstract class AbstractPrimitive implements Primitive
 {
     use CanJoinElements;

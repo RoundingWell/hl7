@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\DG1;
 
+use function implode;
+
 #[CoversClass(DG1::class)]
 final class DG1Test extends TestCase
 {

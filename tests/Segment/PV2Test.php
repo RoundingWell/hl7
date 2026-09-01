@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\PV2;
 
+use function implode;
+
 #[CoversClass(PV2::class)]
 final class PV2Test extends TestCase
 {

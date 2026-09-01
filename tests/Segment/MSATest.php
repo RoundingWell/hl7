@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\MSA;
 
+use function implode;
+
 #[CoversClass(MSA::class)]
 final class MSATest extends TestCase
 {

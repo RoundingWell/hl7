@@ -16,7 +16,6 @@
     },
     "require-dev": {
         "carthage-software/mago": "^1.47",
-        "ergebnis/composer-normalize": "^2.52",
         "phpunit/phpunit": "^13.3",
         "rregeer/phpunit-coverage-check": "^0.3.1",
         "symfony/clock": "^8.1",
@@ -42,33 +41,26 @@
         }
     },
     "config": {
-        "allow-plugins": {
-            "ergebnis/composer-normalize": true
-        },
-        "platform": {
-            "php": "8.5"
-        },
         "sort-packages": true
     },
     "scripts": {
-        "coverage-check": "coverage-check tmp/phpunit/clover.xml 100",
-        "coverage-open": "open tmp/phpunit/coverage/index.html",
+        "analyze": "mago analyze",
+        "check": "mago format --check",
+        "coverage": "coverage-check build/phpunit/clover.xml 100",
         "fix": [
             "mago lint --fix",
             "mago analyze --fix",
             "mago format"
         ],
         "format": "mago format",
-        "format-check": "mago format --check",
         "lint": "mago lint",
-        "analyze": "mago analyze",
         "phpunit": "phpunit -d memory_limit=4G",
         "test": [
             "@phpunit",
-            "@coverage-check"
+            "@coverage"
         ],
         "verify": [
-            "@format-check",
+            "@check",
             "@lint",
             "@analyze",
             "@test"

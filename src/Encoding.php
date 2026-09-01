@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use function array_flip;
+use function array_key_exists;
+use function str_contains;
+use function strlen;
+use function strpos;
+use function substr;
+
 final readonly class Encoding
 {
     // @mago-expect lint:excessive-parameter-list

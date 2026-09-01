@@ -11,6 +11,8 @@ use RoundingWell\HL7\ExtraComponents;
 use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\Primitive;
 
+use function count;
+
 #[CoversClass(GenericComposite::class)]
 final class GenericCompositeTest extends TestCase
 {

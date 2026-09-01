@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use function explode;
+
 final readonly class SegmentFactory
 {
     public function __construct(

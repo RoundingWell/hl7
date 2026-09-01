@@ -1,109 +1,11 @@
 # AGENTS.md
-
-These rules apply to every task in this project unless explicitly overridden.
-Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
-
-## Rule 1 — Think Before Coding
-State assumptions explicitly. If uncertain, ask rather than guess.
-Present multiple interpretations when ambiguity exists.
-Push back when a simpler approach exists.
-Stop when confused. Name what's unclear.
-
-## Rule 2 — Simplicity First
-Minimum code that solves the problem. Nothing speculative.
-No features beyond what was asked. No abstractions for single-use code.
-Test: would a senior engineer say this is overcomplicated? If yes, simplify.
-
-## Rule 3 — Surgical Changes
-Touch only what you must. Clean up only your own mess.
-Don't "improve" adjacent code, comments, or formatting.
-Don't refactor what isn't broken. Match existing style.
-
-## Rule 4 — Goal-Driven Execution
-Define success criteria. Loop until verified.
-Don't follow steps. Define success and iterate.
-Strong success criteria let you loop independently.
-
-## Rule 5 — Use the model only for judgment calls
-Use me for: classification, drafting, summarization, extraction.
-Do NOT use me for: routing, retries, deterministic transforms.
-If code can answer, code answers.
-
-## Rule 6 — Token budgets are not advisory
-Per-task: 4,000 tokens. Per-session: 30,000 tokens.
-If approaching budget, summarize and start fresh.
-Surface the breach. Do not silently overrun.
-
-## Rule 7 — Surface conflicts, don't average them
-If two patterns contradict, pick one (more recent / more tested).
-Explain why. Flag the other for cleanup.
-Don't blend conflicting patterns.
-
-## Rule 8 — Read before you write
-Before adding code, read exports, immediate callers, shared utilities.
-"Looks orthogonal" is dangerous. If unsure why code is structured a way, ask.
-
-## Rule 9 — Tests verify intent, not just behavior
-Tests must encode WHY behavior matters, not just WHAT it does.
-A test that can't fail when business logic changes is wrong.
-
-## Rule 10 — Checkpoint after every significant step
-Summarize what was done, what's verified, what's left.
-Don't continue from a state you can't describe back.
-If you lose track, stop and restate.
-
-## Rule 11 — Match the codebase's conventions, even if you disagree
-Conformance > taste inside the codebase.
-If you genuinely think a convention is harmful, surface it. Don't fork silently.
-
-## Rule 12 — Fail loud
-"Completed" is wrong if anything was skipped silently.
-"Tests pass" is wrong if any were skipped.
-Default to surfacing uncertainty, not hiding it.
-
-### Task Validation
-1. Always run `composer lint` to check for code style violations:
-   1. If there are violations, try using `composer format` to fix them
-   2. Then re-run `composer lint`
-   3. If there are still violations, fix them manually and restart validation
-2. Always run `composer format-check` to check formatting, fix any issues, then re-run the check
-3. Always run `composer analyze` to check for static analysis errors, fix any issues, then re-run the check
-4. Always run any new or modified tests (e.g. `composer phpunit -- --no-progress --filter MyTest`) and fix any failing tests
-5. If blocked, report the failing command and reason, then ask the user for guidance on how to proceed
-
-### Final Validation
-When all tasks are complete, perform the final validation steps:
-1. Format all files using `composer format`
-2. Run the full test suite `composer test -- --no-progress` and fix any failing tests or coverage issues
-
-## Rule 13 — Development guidelines
-Prefer composition over inheritance.
-Use test-driven development (TDD) practices.
-Tasks may only be completed when tests pass.
-Keep documentation in `README.md` up-to-date with changes made.
-Use [conventional commits](https://www.conventionalcommits.org/) for commit messages.
-
-### Running Tools
-Always use these tools with these flags:
-- `composer format-check` to check formatting
-- `composer lint` to check for code style violations
-- `composer format` to fix code style violations
-- `composer analyze` to run static analysis
-- `composer phpunit -- --no-progress` to run tests
-- `composer coverage-check` to check code coverage remains at 100%
-
-To lint, format, or analyze a single file, use:
-- `composer lint -- <path>`
-- `composer format -- <path>`
-- `composer analyze -- <path>`
-
-To run a specific test file, use:
-- `composer phpunit -- --no-progress --filter <TestClassName>`
-
-To run a specific test by name, use:
-- `composer phpunit -- --no-progress --filter <TestMethodName>`
-
-### Releasing
-Always use [semantic versioning](https://semver.org/) when tagging a release.
-Always update `CHANGELOG.md` when releasing a new version.
-Always add new comparison links to the bottom of `CHANGELOG.md`.
+- Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or migrations.
+- Choose the simplest implementation that fully meets the current requirements. Avoid speculative abstractions, configuration, and indirection.
+- Grow the system in layers. Start from the smallest version that works end to end, and add each new capability on top of a product that already works. Never trade a working product for unfinished complexity.
+- Keep components modular and concerns clearly separated.
+- Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not reimplement common functionality without a clear reason.
+- Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
+- Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
+- Use conventional commits format when writing commit messages.
+- Keep a changelog of all notable changes.
+- Use semantic versioning for release tags. Never include a `v` prefix on versions. Always sign release tags.

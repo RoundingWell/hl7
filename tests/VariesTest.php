@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RoundingWell\HL7\Tests;
 
 use Exception;
+use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
@@ -100,7 +101,7 @@ final class VariesTest extends TestCase
         $varies->parse(new Encoding(), 'HELLO');
 
         $replacement = new class extends GenericPrimitive {
-            #[\Override]
+            #[Override]
             public function getName(): string
             {
                 return 'REPLACED';
@@ -125,37 +126,37 @@ final class VariesTest extends TestCase
         $nonPrimitive = new class implements Type {
             private string $field = '<undefined>';
 
-            #[\Override]
+            #[Override]
             public function setField(string $name): void
             {
                 $this->field = $name;
             }
 
-            #[\Override]
+            #[Override]
             public function getField(): string
             {
                 return $this->field;
             }
 
-            #[\Override]
+            #[Override]
             public function getName(): string
             {
                 return 'COMPOSITE';
             }
 
-            #[\Override]
+            #[Override]
             public function getExtraComponents(): ExtraComponents
             {
                 return new ExtraComponents();
             }
 
-            #[\Override]
+            #[Override]
             public function clear(): void {}
 
-            #[\Override]
+            #[Override]
             public function parse(Encoding $encoding, string $data): void {}
 
-            #[\Override]
+            #[Override]
             public function serialize(Encoding $encoding): string
             {
                 return '';

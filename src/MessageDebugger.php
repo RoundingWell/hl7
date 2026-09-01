@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use function array_push;
+use function count;
+use function implode;
+use function max;
 use function Psl\Type\instance_of;
+use function str_repeat;
 
 /**
  * Renders the populated structure of a message as an indented, human-readable tree

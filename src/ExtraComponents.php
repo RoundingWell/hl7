@@ -7,6 +7,8 @@ namespace RoundingWell\HL7;
 use Countable;
 use Override;
 
+use function count;
+
 /**
  * Extra components attached to a field
  *

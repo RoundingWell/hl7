@@ -8,6 +8,8 @@ use Override;
 use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\Exception\InvalidValue;
 
+use function ctype_digit;
+
 /**
  * Sequential Numeric
  */

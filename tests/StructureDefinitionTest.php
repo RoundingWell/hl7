@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Segment\MSH;
 use RoundingWell\HL7\Segment\NK1;
 use RoundingWell\HL7\StructureDefinition;
+use stdClass;
 
 #[CoversClass(StructureDefinition::class)]
 final class StructureDefinitionTest extends TestCase
@@ -52,6 +53,6 @@ final class StructureDefinitionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/does not implement Structure/');
 
-        new StructureDefinition(\stdClass::class);
+        new StructureDefinition(stdClass::class);
     }
 }

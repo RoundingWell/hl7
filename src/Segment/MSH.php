@@ -21,6 +21,11 @@ use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\TypeDefinition;
 
+use function array_shift;
+use function count;
+use function explode;
+use function trim;
+
 /**
  * Message Header Segment
  *

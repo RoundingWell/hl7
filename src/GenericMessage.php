@@ -7,6 +7,8 @@ namespace RoundingWell\HL7;
 use Override;
 use RoundingWell\HL7\Segment\MSH;
 
+use function array_map;
+use function explode;
 use function Psl\Type\instance_of;
 
 class GenericMessage extends AbstractMessage

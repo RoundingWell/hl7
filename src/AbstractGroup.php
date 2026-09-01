@@ -9,6 +9,11 @@ use OutOfBoundsException;
 use Override;
 use ReflectionObject;
 
+use function array_keys;
+use function array_slice;
+use function count;
+use function in_array;
+
 // @mago-expect lint:too-many-methods
 // @mago-expect lint:cyclomatic-complexity
 // @mago-expect lint:kan-defect

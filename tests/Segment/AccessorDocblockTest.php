@@ -11,6 +11,19 @@ use ReflectionClass;
 use ReflectionMethod;
 use RoundingWell\HL7\AbstractSegment;
 
+use function array_keys;
+use function array_slice;
+use function basename;
+use function explode;
+use function file;
+use function glob;
+use function implode;
+use function preg_match;
+use function sprintf;
+use function str_starts_with;
+use function strstr;
+use function trim;
+
 /**
  * Guards the field-reference docblocks on every named segment accessor.
  *

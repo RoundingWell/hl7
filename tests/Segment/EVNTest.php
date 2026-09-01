@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\EVN;
 
+use function implode;
+
 #[CoversClass(EVN::class)]
 final class EVNTest extends TestCase
 {
