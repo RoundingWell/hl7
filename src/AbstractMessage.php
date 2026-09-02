@@ -9,6 +9,10 @@ use Psr\Clock\ClockInterface;
 use RoundingWell\HL7\Message\ACK;
 use RoundingWell\HL7\Segment\MSH;
 
+use function array_filter;
+use function explode;
+use function implode;
+
 abstract class AbstractMessage extends AbstractGroup implements Message
 {
     #[Override]

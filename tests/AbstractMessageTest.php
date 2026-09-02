@@ -26,6 +26,8 @@ use RoundingWell\HL7\Tests\Fixtures\FakeGroupMessage;
 use RoundingWell\HL7\Tests\Fixtures\FakeProcedure;
 use Symfony\Component\Clock\MockClock;
 
+use function array_map;
+
 #[CoversClass(AbstractMessage::class)]
 #[CoversClass(AbstractGroup::class)]
 #[CoversClass(SegmentElement::class)]

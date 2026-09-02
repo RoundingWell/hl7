@@ -9,6 +9,8 @@ use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\CanAssertNumbers;
 use RoundingWell\HL7\Exception\InvalidValue;
 
+use function strlen;
+
 /**
  * String
  */

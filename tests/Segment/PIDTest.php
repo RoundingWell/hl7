@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Segment\PID;
 
+use function implode;
+
 #[CoversClass(PID::class)]
 final class PIDTest extends TestCase
 {

@@ -1,4 +1,4 @@
-#:schema https://mago.carthage.software/1.29.0/schema.json
+#:schema https://mago.carthage.software/1.47.0/schema.json
 # Welcome to Mago!
 # For full documentation, see https://mago.carthage.software/tools/overview
 version = "1"
@@ -21,7 +21,13 @@ integrations = ["phpunit"]
 
 [linter.rules]
 assertion-style = { style = "this" }
-too-many-methods = { exclude = ["tests/**/*Test.php"] }
+too-many-methods = { exclude = ["tests/**/*.php"] }
+ambiguous-constant-access = { enabled = true }
+ambiguous-function-call = { enabled = true }
+no-alternative-syntax = { enabled = true }
+no-fully-qualified-global-class-like = { enabled = true }
+no-fully-qualified-global-constant = { enabled = true }
+no-fully-qualified-global-function = { enabled = true }
 
 [analyzer]
 plugins = []

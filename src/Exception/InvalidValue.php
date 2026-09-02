@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Exception;
 
-final class InvalidValue extends \InvalidArgumentException implements HL7Exception
+use InvalidArgumentException;
+
+final class InvalidValue extends InvalidArgumentException implements HL7Exception
 {
     public static function minLength(string $type, int $min): self
     {

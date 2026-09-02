@@ -8,6 +8,15 @@ use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
 use RoundingWell\HL7\Segment\MSH;
 
+use function explode;
+use function file_get_contents;
+use function is_file;
+use function str_contains;
+use function str_split;
+use function str_starts_with;
+use function strlen;
+use function substr;
+
 final readonly class MessageFactory
 {
     public function parseFile(string $path): Message

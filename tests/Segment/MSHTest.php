@@ -11,6 +11,8 @@ use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\Segment\MSH;
 
+use function implode;
+
 #[CoversClass(MSH::class)]
 final class MSHTest extends TestCase
 {

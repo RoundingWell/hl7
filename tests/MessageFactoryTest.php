@@ -19,6 +19,14 @@ use RoundingWell\HL7\Message\ADT\A08;
 use RoundingWell\HL7\Message\ADT\A13;
 use RoundingWell\HL7\MessageFactory;
 
+use function chmod;
+use function is_readable;
+use function restore_error_handler;
+use function set_error_handler;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
+
 #[CoversClass(MessageFactory::class)]
 final class MessageFactoryTest extends TestCase
 {

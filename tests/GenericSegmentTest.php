@@ -12,6 +12,8 @@ use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\GenericSegment;
 use RoundingWell\HL7\Primitive;
 
+use function count;
+
 #[CoversClass(GenericSegment::class)]
 final class GenericSegmentTest extends TestCase
 {

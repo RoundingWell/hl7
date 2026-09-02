@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Exception;
 
-final class InvalidDateTime extends \InvalidArgumentException implements HL7Exception
+use InvalidArgumentException;
+
+final class InvalidDateTime extends InvalidArgumentException implements HL7Exception
 {
     public static function invalidValue(string $value): self
     {

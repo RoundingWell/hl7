@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Message\ACK;
 
+use function implode;
+
 #[CoversClass(ACK::class)]
 final class ACKTest extends TestCase
 {

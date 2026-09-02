@@ -8,6 +8,10 @@ use OutOfBoundsException;
 use Override;
 use ReflectionObject;
 
+use function array_keys;
+use function count;
+use function explode;
+
 abstract class AbstractComposite implements Composite
 {
     use CanAssertNumbers;

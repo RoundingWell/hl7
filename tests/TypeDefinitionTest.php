@@ -11,6 +11,7 @@ use RoundingWell\HL7\DataType\ID;
 use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\TypeDefinition;
+use stdClass;
 
 #[CoversClass(TypeDefinition::class)]
 final class TypeDefinitionTest extends TestCase
@@ -44,7 +45,7 @@ final class TypeDefinitionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/does not implement Type/');
 
-        new TypeDefinition(type: \stdClass::class);
+        new TypeDefinition(type: stdClass::class);
     }
 
     public function testRejectsANegativeRepetitionLimit(): void

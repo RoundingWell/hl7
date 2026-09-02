@@ -8,6 +8,11 @@ use Override;
 use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\Exception\InvalidValue;
 
+use function is_numeric;
+
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
+
 /**
  * Numeric
  */

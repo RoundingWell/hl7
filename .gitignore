@@ -1,5 +1,6 @@
-/docs/superpowers/
-/vendor/
-
-# As a package, we SHOULD NOT include composer.lock!
+.phpunit.result.cache
+build/
+docs/superpowers/
+vendor/
+composer.phar
 composer.lock

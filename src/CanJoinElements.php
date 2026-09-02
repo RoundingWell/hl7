@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7;
 
+use function array_pop;
+use function end;
+use function implode;
+
 trait CanJoinElements
 {
     /**

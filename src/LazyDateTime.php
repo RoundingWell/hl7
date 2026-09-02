@@ -8,6 +8,8 @@ use DateTimeImmutable;
 use DateTimeZone;
 use RoundingWell\HL7\Exception\InvalidDateTime;
 
+use function preg_match;
+
 final class LazyDateTime
 {
     use CanCheckDateTimeErrors;

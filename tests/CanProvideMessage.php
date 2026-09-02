@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests;
 
+use function file_get_contents;
+
 trait CanProvideMessage
 {
     protected function messagePath(string $name): string
