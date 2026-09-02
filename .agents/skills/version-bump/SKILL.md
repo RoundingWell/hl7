@@ -51,6 +51,7 @@ Bump PATCH when you make backwards compatible bug fixes:
 | Breaking API change              | MAJOR        |
 | Removed feature                  | MAJOR        |
 | New command/feature              | MINOR        |
+| New CLI flag                     | MINOR        |
 | New provider/integration         | MINOR        |
 | Bug fix                          | PATCH        |
 | Performance fix                  | PATCH        |
@@ -59,7 +60,7 @@ Bump PATCH when you make backwards compatible bug fixes:
 
 ## Pre-1.0 Versioning
 
-For versions < 1.0.0:
+For versions < 1.0.0 (like this project):
 - MINOR can include breaking changes
 - PATCH is for bug fixes and small features
 - More flexibility before reaching stability
@@ -75,12 +76,37 @@ For versions < 1.0.0:
 4. If new features exist -> MINOR bump
 5. If only fixes/refactoring -> PATCH bump
 
-When asked to tag the release, always use signed tags.
-
 ## Version Update Locations
 
-When bumping version, update:
+When bumping version, update `CHANGELOG.md`:
 
-1. **CHANGELOG.md** - Add `## [X.Y.Z] - YYYY-MM-DD` section
-2. **Version links** - Update comparison URLs at bottom of CHANGELOG.md
-3. **Unreleased link** - Update the `Unreleased` comparison URL at the bottom of CHANGELOG.md
+1. Add `## [X.Y.Z] - YYYY-MM-DD` section
+2. Update comparison URLs at bottom of CHANGELOG.md
+3. Update the `Unreleased` comparison URL at the bottom of CHANGELOG.md
+
+## Release Process
+
+After the changelog is updated and committed:
+
+1. Create a signed tag with no `v` prefix: `git tag -s X.Y.Z -m "X.Y.Z"`
+2. Push the tag: `git push origin X.Y.Z`
+3. Create the GitHub release from the changelog section for that version:
+
+   ```sh
+   awk -v ver="X.Y.Z" '
+     $0 ~ "^## \\[" ver "\\]" { inside=1; next }
+     inside && (/^## \[/ || /^\[[^]]+\]: /) { inside=0 }
+     inside { print }
+   ' CHANGELOG.md > /tmp/release-notes.md
+
+   printf '\n**Full Changelog**: %s\n' \
+     "$(grep -E '^\[X\.Y\.Z\]: ' CHANGELOG.md | sed 's/^\[X\.Y\.Z\]: //')" \
+     >> /tmp/release-notes.md
+
+   gh release create X.Y.Z --title X.Y.Z --notes-file /tmp/release-notes.md --verify-tag
+   ```
+
+4. Verify the release exists and is marked latest: `gh release list`
+
+Release notes are the changelog section verbatim, so the changelog stays the single source
+of truth. `--verify-tag` fails the command rather than creating a tag that was never pushed.
