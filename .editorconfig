@@ -1,3 +1,6 @@
+; This file is for unifying the coding style for different editors and IDEs.
+; More information at http://editorconfig.org
+
 [*]
 charset = utf-8
 indent_size = 4
@@ -8,9 +11,3 @@ trim_trailing_whitespace = true
 
 [*.{yml,yaml}]
 indent_size = 2
-
-[captainhook.json]
-indent_size = 4
-
-[composer.json]
-indent_size = 4

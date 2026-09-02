@@ -3,7 +3,8 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/13.3/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         failOnAllIssues="true">
+         failOnAllIssues="true"
+         displayDetailsOnAllIssues="true">
     <coverage>
         <report>
             <clover outputFile="build/phpunit/clover.xml"/>
