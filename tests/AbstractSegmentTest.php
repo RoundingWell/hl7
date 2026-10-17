@@ -98,12 +98,23 @@ final class AbstractSegmentTest extends TestCase
         $segment->add(new TypeDefinition('Cap', maxReps: 2));
         $segment->getFieldRepetition(1, 0);
         $segment->getFieldRepetition(1, 1);
-        $segment->getFieldRepetition(1, 2);
 
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessageMatches('/only 2 repetitions are allowed/');
+        $this->expectExceptionMessageMatches('/repetition #3 .* only 2 repetitions are allowed/');
 
-        $segment->getFieldRepetition(1, 3);
+        $segment->getFieldRepetition(1, 2);
+    }
+
+    public function testFieldWithMaxRepsOneAcceptsExactlyOneRepetition(): void
+    {
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Cap', maxReps: 1));
+        $segment->getFieldRepetition(1, 0);
+
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessageMatches('/repetition #2 .* only 1 repetition is allowed/');
+
+        $segment->getFieldRepetition(1, 1);
     }
 
     public function testRepetitionsCannotSkipPastTheOnesAlreadyCreated(): void

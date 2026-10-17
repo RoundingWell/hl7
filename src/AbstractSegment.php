@@ -85,17 +85,22 @@ abstract class AbstractSegment implements Segment
     {
         $total = $this->getLength($number);
 
+        // Repetition indexes are 0-based, but the message reports the 1-based ordinal.
+        $ordinal = $repetition + 1;
+
         if ($repetition > $total) {
             throw new OutOfBoundsException(
-                "Cannot get repetition #{$repetition} of {$this->getName()}.{$number}, there are only {$total} repetitions",
+                "Cannot get repetition #{$ordinal} of {$this->getName()}.{$number}, there are only {$total} repetitions",
             );
         }
 
         $max = $this->maxRepetitions($number);
 
-        if ($max !== 0 && $repetition > $max) {
+        if ($max !== 0 && $repetition >= $max) {
             throw new OutOfBoundsException(
-                "Cannot get repetition #{$repetition} of {$this->getName()}.{$number}, only {$max} repetitions are allowed",
+                "Cannot get repetition #{$ordinal} of {$this->getName()}.{$number}, only {$max} "
+                . ($max === 1 ? 'repetition is' : 'repetitions are')
+                . ' allowed',
             );
         }
     }
