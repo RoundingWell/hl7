@@ -9,10 +9,13 @@ use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\AbstractSegment;
+use RoundingWell\HL7\DataType\NM;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\Exception\InvalidValue;
 use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\GenericPrimitive;
 use RoundingWell\HL7\SegmentElement;
+use RoundingWell\HL7\Tests\Fixtures\FakeCountingPrimitive;
 use RoundingWell\HL7\Tests\Fixtures\FakeSegment;
 use RoundingWell\HL7\TypeDefinition;
 
@@ -168,6 +171,72 @@ final class AbstractSegmentTest extends TestCase
         $this->assertInstanceOf(GenericPrimitive::class, $data);
 
         return $data->getValue();
+    }
+
+    public function testParseInstantiatesNoFieldUntilOneIsRead(): void
+    {
+        // Parsing only keeps the line: callers who never read a field must not pay for building
+        // it, and asking about the field table is not a read.
+        FakeCountingPrimitive::reset();
+
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition(type: FakeCountingPrimitive::class));
+        $segment->add(new TypeDefinition(type: FakeCountingPrimitive::class));
+        $segment->add(new TypeDefinition(type: FakeCountingPrimitive::class));
+        $segment->parse(new Encoding(), 'FakeSegment|a|b|c');
+        $segment->getFieldCount();
+        $segment->getNames();
+
+        $this->assertSame(0, FakeCountingPrimitive::$instantiations);
+
+        $segment->getFieldRepetition(2, 0);
+
+        $this->assertSame(1, FakeCountingPrimitive::$instantiations);
+    }
+
+    public function testGetFieldCountAndNamesIncludeWireFieldsBeyondTheDefinitions(): void
+    {
+        // Fields the schema does not declare still exist on the wire, so the field table reports
+        // them (unnamed) before any of them has been read.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Set ID'));
+        $segment->parse(new Encoding(), 'FakeSegment|1|b|c');
+
+        $this->assertSame(3, $segment->getFieldCount());
+        $this->assertSame(['Set ID', '', ''], $segment->getNames());
+    }
+
+    public function testMalformedFieldThrowsOnlyWhenThatFieldIsRead(): void
+    {
+        // A malformed value must not cost the caller the rest of the segment: parsing and reading
+        // a neighbour succeed, and the bad field fails every time it is read.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Count', NM::class));
+        $segment->parse(new Encoding(), 'FakeSegment|abc|ok');
+
+        $this->assertSame('ok', $this->fieldValue($segment, 2, 0));
+
+        foreach ([1, 2] as $attempt) {
+            try {
+                $segment->getFieldRepetition(1, 0);
+                $this->fail("Read #{$attempt} of a malformed field must throw");
+            } catch (InvalidValue $e) {
+                $this->assertSame('Value of NM must be numeric, got abc', $e->getMessage());
+            }
+        }
+    }
+
+    public function testReparseReplacesThePreviousContent(): void
+    {
+        // Parsing a new line makes the segment that line; fields from the previous line must not
+        // linger beyond the new line's end.
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a|b|c');
+        $segment->getFieldRepetition(3, 0);
+        $segment->parse(new Encoding(), 'FakeSegment|x');
+
+        $this->assertSame('x', $this->fieldValue($segment, 1, 0));
+        $this->assertSame([], $segment->getField(3));
     }
 
     public function testGetFieldCountReflectsTheNumberOfDefinedFields(): void

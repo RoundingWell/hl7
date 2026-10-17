@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests;
 
+use OutOfBoundsException;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,7 @@ use RoundingWell\HL7\Message\ADT\A07;
 use RoundingWell\HL7\Message\ADT\A08;
 use RoundingWell\HL7\Message\ADT\A13;
 use RoundingWell\HL7\MessageFactory;
+use RoundingWell\HL7\Segment\PID;
 
 use function chmod;
 use function is_readable;
@@ -94,6 +96,34 @@ final class MessageFactoryTest extends TestCase
         $message = $this->messageFactory->parse('MSH|^~\&#|AccMrg\rPID|1');
 
         $this->assertSame('^~\&#', $message->getMSH()->getEncodingCharacters()->getValue());
+    }
+
+    public function testParseDefersAMalformedFieldUntilItIsRead(): void
+    {
+        // PID.1 allows a single repetition; the over-repeated value must not fail the message or
+        // a read of another PID field, only a read of PID.1 itself.
+        $message = $this->messageFactory->parse(
+            "MSH|^~\\&|App|Fac|||20050110045504||ADT^A01|1|P|2.3\rEVN|A01\rPID|1~2~3||X||DUCK^DONALD",
+        );
+        $pid = $message->getSegment('PID', 0);
+
+        $this->assertInstanceOf(PID::class, $pid);
+        $this->assertSame('DUCK', $pid->getPatientName()[0]->getFamilyName()->getSurname()->getValue());
+
+        // The type, not the message: the maxReps message is changing under SV-83.
+        $this->expectException(OutOfBoundsException::class);
+
+        $pid->getIdentity();
+    }
+
+    public function testParseDefersAMalformedHeaderFieldOtherThanTypeAndVersion(): void
+    {
+        // Only MSH.9 and MSH.12 decide the message class, so a malformed MSH.13 (Sequence Number,
+        // NM) must not fail parsing.
+        $message = $this->messageFactory->parse("MSH|^~\\&|App|Fac|||20050110045504||ADT^A01|1|P|2.3|abc\rEVN|A01");
+
+        $this->assertInstanceOf(A01::class, $message);
+        $this->assertSame('2.3', $message->getVersion());
     }
 
     public function testUnknownEventFallsBackToGenericMessage(): void

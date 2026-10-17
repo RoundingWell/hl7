@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
+use RoundingWell\HL7\Exception\InvalidValue;
 use RoundingWell\HL7\Segment\MSH;
 
 use function implode;
@@ -143,6 +144,20 @@ final class MSHTest extends TestCase
         $this->expectExceptionMessageMatches('/required fields are missing/');
 
         new MSH()->parse(new Encoding(), 'MSH');
+    }
+
+    public function testParseDefersMalformedFieldsUntilRead(): void
+    {
+        // A malformed MSH.13 (Sequence Number, NM) must not stop a caller from reading the
+        // control ID; it fails only when MSH.13 itself is read.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App|||||||599102|P|2.8|abc');
+
+        $this->assertSame('599102', $msh->getMessageControlId()->getValue());
+
+        $this->expectException(InvalidValue::class);
+
+        $msh->getSequenceNumber();
     }
 
     public function testSerializeRoundTripsAnEncodedHeader(): void

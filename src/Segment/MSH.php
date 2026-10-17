@@ -21,9 +21,7 @@ use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\TypeDefinition;
 
-use function array_shift;
-use function count;
-use function explode;
+use function str_contains;
 use function trim;
 
 /**
@@ -98,29 +96,47 @@ final class MSH extends AbstractSegment
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
-        $fields = explode($encoding->fieldSeparator, $data);
-
-        if (count($fields) < 2) {
+        // Without a field separator there are no encoding characters to parse the rest with.
+        if (!str_contains($data, $encoding->fieldSeparator)) {
             throw InvalidSegment::invalidMSH($data);
         }
 
-        // Drop the "MSH" segment identifier.
-        array_shift($fields);
+        parent::parse($encoding, $data);
+    }
 
-        // MSH.1 MUST be the field separator, and it MUST be stored verbatim.
-        $this->getFieldSeparator()->setValue($encoding->fieldSeparator);
+    /**
+     * MSH.1 is the field separator itself, so it never appears between separators: the first
+     * value after "MSH" is MSH.2, and the remaining values map to MSH.3 onward.
+     */
+    #[Override]
+    protected function splitFields(Encoding $encoding, string $data): array
+    {
+        $wire = [1 => $encoding->fieldSeparator];
 
-        // MSH.2 MUST be the encoding characters, and it MUST be stored verbatim.
-        // @mago-expect analysis:possibly-null-argument
-        $this->getEncodingCharacters()->setValue(array_shift($fields));
-
-        // The remaining values map to MSH.3 onward.
-        foreach ($fields as $idx => $field) {
-            foreach (explode($encoding->repetitionSeparator, $field) as $rep => $value) {
-                // $idx starts at 0 for MSH.3, so the field number is always 3 or greater.
-                $this->getFieldRepetition($idx + 3, $rep)->parse($encoding, $value);
-            }
+        foreach (parent::splitFields($encoding, $data) as $idx => $field) {
+            $wire[$idx + 1] = $field;
         }
+
+        return $wire;
+    }
+
+    #[Override]
+    protected function parseField(Encoding $encoding, int $number, string $data): void
+    {
+        // MSH.1 and MSH.2 are the delimiters themselves, so they MUST be stored verbatim.
+        if ($number === 1) {
+            $this->getFieldSeparator()->setValue($data);
+
+            return;
+        }
+
+        if ($number === 2) {
+            $this->getEncodingCharacters()->setValue($data);
+
+            return;
+        }
+
+        parent::parseField($encoding, $number, $data);
     }
 
     #[Override]
