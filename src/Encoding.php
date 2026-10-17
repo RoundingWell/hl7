@@ -37,6 +37,32 @@ final readonly class Encoding
     }
 
     /**
+     * Whether a line written with the other encoding is also a valid line under this one
+     *
+     * The line ending joins lines and never appears inside one, so it is the only property
+     * ignored; every other delimiter shapes the bytes of a line.
+     */
+    public function sameDelimiters(self $other): bool
+    {
+        return $this->delimiters() === $other->delimiters();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function delimiters(): array
+    {
+        return [
+            $this->fieldSeparator,
+            $this->componentSeparator,
+            $this->repetitionSeparator,
+            $this->escapeCharacter,
+            $this->subcomponentSeparator,
+            $this->truncationCharacter,
+        ];
+    }
+
+    /**
      * Decode a wire value back to its raw form
      *
      * Structural \CODE\ sequences (\F\ \S\ \T\ \R\ \E\) become the delimiters they

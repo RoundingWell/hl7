@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
+use RoundingWell\HL7\Exception\InvalidValue;
 use RoundingWell\HL7\Segment\MSH;
 
 use function implode;
@@ -145,6 +146,20 @@ final class MSHTest extends TestCase
         new MSH()->parse(new Encoding(), 'MSH');
     }
 
+    public function testParseDefersMalformedFieldsUntilRead(): void
+    {
+        // A malformed MSH.13 (Sequence Number, NM) must not stop a caller from reading the
+        // control ID; it fails only when MSH.13 itself is read.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App|||||||599102|P|2.8|abc');
+
+        $this->assertSame('599102', $msh->getMessageControlId()->getValue());
+
+        $this->expectException(InvalidValue::class);
+
+        $msh->getSequenceNumber();
+    }
+
     public function testSerializeRoundTripsAnEncodedHeader(): void
     {
         // MSH.1/MSH.2 come from the serializing encoding (not re-encoded through Type::serialize);
@@ -156,6 +171,37 @@ final class MSHTest extends TestCase
         $msh->parse(new Encoding(), $data);
 
         $this->assertSame($data, $msh->serialize(new Encoding()));
+    }
+
+    public function testSerializeReturnsTheParsedHeaderVerbatim(): void
+    {
+        // An unread header comes back exactly as received, trailing empty fields included.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App||||');
+
+        $this->assertSame('MSH|^~\\&|App||||', $msh->serialize(new Encoding()));
+    }
+
+    public function testReadingAFieldKeepsEncodingCharactersTheEncodingDoesNotDeclare(): void
+    {
+        // A received MSH.2 can carry a truncation character the parsing encoding lacks; reading a
+        // field must not rewrite the header from the encoding.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&#|App||');
+        $msh->getSendingApplication();
+
+        $this->assertSame('MSH|^~\\&#|App||', $msh->serialize(new Encoding()));
+    }
+
+    public function testSerializeReencodesOnlyTheWrittenHeaderField(): void
+    {
+        // Rewriting the control ID changes MSH.10 only; the header and every other field keep
+        // their received bytes, including the non-canonical MSH.3 and the trailing empties.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App^^|Fac|||20050110045504||ADT^A01|1|P|2.8||');
+        $msh->getMessageControlId()->setValue('2');
+
+        $this->assertSame('MSH|^~\\&|App^^|Fac|||20050110045504||ADT^A01|2|P|2.8||', $msh->serialize(new Encoding()));
     }
 
     public function testSerializeSourcesMsh1AndMsh2FromTheEncoding(): void

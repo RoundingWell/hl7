@@ -40,6 +40,9 @@ line ending (`\r`, `\n`, or `\r\n`), and returns a `Message`. When the message t
 known trigger event (for example `A01`), a message subclass is returned; otherwise a generic
 `Message` is used.
 
+Segments are parsed lazily: each field is parsed the first time it is read, so fields you never
+read cost nothing, and a malformed field only throws when you read that field.
+
 ### Reading segments and fields
 
 ```php
@@ -120,10 +123,19 @@ Any `Message` can be turned back into a wire string with `serialize()`:
 $wire = $message->serialize($encoding);
 ```
 
-`parse()` followed by `serialize()` reproduces the original message, with two deviations from a
-byte-for-byte round-trip: trailing empty fields, components, and subcomponents are trimmed (HL7
-treats trailing delimiters as optional), and segments are joined by the line ending rather than
-terminated by it (no trailing line ending is appended).
+With the delimiters the message was parsed with, `parse()` followed by `serialize()` reproduces
+every segment byte for byte, including after reading fields. Writing a field re-encodes only that
+field; the rest of its segment keeps the received bytes. Segments are joined by the line ending
+rather than terminated by it (no trailing line ending is appended), and the line ending itself
+comes from the serializing encoding.
+
+The guarantee needs an `Encoding` whose delimiters match the message's `MSH.2`: `new Encoding()`
+matches the default `^~\&`, while a v2.7+ header such as `^~\&#` also needs
+`new Encoding(truncationCharacter: '#')`. The line ending may differ.
+
+Serializing with different delimiters re-encodes every field, which reads (and so validates) all
+of them. Re-encoded fields, and segments built by hand, trim trailing empty fields, components,
+and subcomponents (HL7 treats trailing delimiters as optional).
 
 ### Debugging message structure
 
@@ -233,12 +245,14 @@ Parsing failures throw exceptions extending `RoundingWell\HL7\Exception\HL7Excep
 
 - `InvalidFile` — the file does not exist or cannot be read.
 - `InvalidMessage` — the message is missing its `MSH` segment, delimiter, or encoding characters.
-- `InvalidValue`, `InvalidDateTime` — a field value fails validation.
+- `InvalidValue`, `InvalidDateTime` — a field value fails validation. This is thrown when the
+  malformed field is read, not by `parse()`, and again on every later read of it.
 
 Looking up structures on a parsed message throws standard SPL exceptions:
 
 - `InvalidArgumentException` — requesting a segment, field, or group structure that was never registered.
 - `OutOfBoundsException` — requesting a repetition of a non-repeating structure, or a negative repetition.
+  Reading a field that carries more repetitions than its schema allows throws it too.
 
 ## Development
 

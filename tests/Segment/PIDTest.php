@@ -190,14 +190,16 @@ final class PIDTest extends TestCase
         $this->assertSame('ISO', $this->pid->getLastUpdateFacility()->getUniversalIdType()->getValue());
     }
 
-    public function testParseRejectsASecondRepetitionOfASingleRepetitionField(): void
+    public function testReadingASecondRepetitionOfASingleRepetitionFieldThrows(): void
     {
-        // PID.1 is maxReps: 1, so a repeated Set ID must not be accepted.
+        // PID.1 is maxReps: 1, so a repeated Set ID must not be accepted. Fields parse when read,
+        // so the violation surfaces on reading PID.1, not from parse().
         $pid = new PID();
+        $pid->parse(new Encoding(), 'PID|1~2||X');
 
         $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessageMatches('/repetition #2 of PID\.1, only 1 repetition is allowed/');
 
-        $pid->parse(new Encoding(), 'PID|1~2||X');
+        $pid->getIdentity();
     }
 }
