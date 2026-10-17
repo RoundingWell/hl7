@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use OutOfBoundsException;
 use Override;
 use ReflectionObject;
+use Throwable;
 
 use function array_map;
 use function array_shift;
@@ -275,9 +276,19 @@ abstract class AbstractSegment implements Segment
 
         // Drop the line before parsing so field access inside populate cannot re-enter, and so
         // the writes parse itself performs do not stick. Restoring afterwards is what makes a
-        // read keep the byte-exact line.
+        // read keep the byte-exact line. A failed parse restores it too and stays unhydrated,
+        // so a caught error does not replace the wire line with a half-built segment.
         $this->raw = null;
-        $this->populate($encoding, $raw);
+
+        try {
+            $this->populate($encoding, $raw);
+        } catch (Throwable $e) {
+            $this->raw = $raw;
+            $this->fields = [];
+
+            throw $e;
+        }
+
         $this->raw = $raw;
         $this->hydrated = true;
     }

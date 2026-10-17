@@ -7,6 +7,7 @@ namespace RoundingWell\HL7\Tests\Segment;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\Segment\MSH;
@@ -15,6 +16,7 @@ use RoundingWell\HL7\SegmentElement;
 use function implode;
 
 #[CoversClass(MSH::class)]
+#[CoversClass(AbstractSegment::class)]
 final class MSHTest extends TestCase
 {
     private MSH $msh;
@@ -201,5 +203,29 @@ final class MSHTest extends TestCase
 
         $this->assertStringStartsWith('MSH#^~\\&#', $serialized);
         $this->assertStringNotContainsString('|', $serialized);
+    }
+
+    public function testFailedHydrationKeepsTheRawLine(): void
+    {
+        // A bound MSH that cannot be parsed throws on read. Catching that must not discard the
+        // wire line, and a later read must try again instead of serving a half-built segment.
+        $data = 'MSH';
+
+        $msh = new MSH();
+        $msh->parseSegments(new Encoding(), [new SegmentElement('MSH', $data)], [], 0);
+
+        $failed = false;
+
+        try {
+            $msh->getField(1);
+        } catch (InvalidSegment) {
+            $failed = true;
+        }
+
+        $this->assertTrue($failed, 'A header without a field separator must fail hydration');
+        $this->assertSame($data, $msh->serialize(new Encoding()));
+
+        $this->expectException(InvalidSegment::class);
+        $msh->getField(1);
     }
 }
