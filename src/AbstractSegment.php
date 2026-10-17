@@ -44,9 +44,27 @@ abstract class AbstractSegment implements Segment
      */
     private ?array $wire = null;
 
+    /**
+     * How many definitions were declared before generic ones were added for fields beyond them,
+     * or null while none have been added.
+     */
+    private ?int $declared = null;
+
     public function add(TypeDefinition $definition): void
     {
         $this->definitions[] = $definition;
+    }
+
+    /**
+     * Adds generic definitions for fields beyond the declared ones, up to the given count.
+     */
+    private function addGenericDefinitions(int $count): void
+    {
+        $this->declared ??= count($this->definitions);
+
+        for ($m = max($count - count($this->definitions), 0); $m > 0; $m--) {
+            $this->add(new TypeDefinition());
+        }
     }
 
     private function getDefinition(int $number): TypeDefinition
@@ -91,9 +109,7 @@ abstract class AbstractSegment implements Segment
         }
 
         // Add any fields that have not been defined, up to the requested number.
-        for ($m = max($number - $this->getFieldCount(), 0); $m > 0; $m--) {
-            $this->add(new TypeDefinition());
-        }
+        $this->addGenericDefinitions($number);
 
         $this->assertRepetitionAllowed($number, $repetition);
 
@@ -195,6 +211,12 @@ abstract class AbstractSegment implements Segment
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
+        // Generic definitions describe the previous content's extra fields, not the new line's.
+        if ($this->declared !== null) {
+            $this->definitions = array_slice($this->definitions, offset: 0, length: $this->declared);
+            $this->declared = null;
+        }
+
         $this->fields = [];
         $this->raw = $data;
         $this->encoding = $encoding;
@@ -247,9 +269,7 @@ abstract class AbstractSegment implements Segment
         $encoding = $this->encoding;
         $wire = $raw === null || $encoding === null ? [] : $this->splitFields($encoding, $raw);
 
-        for ($m = max(count($wire) - count($this->definitions), 0); $m > 0; $m--) {
-            $this->add(new TypeDefinition());
-        }
+        $this->addGenericDefinitions(count($wire));
 
         return $this->wire = $wire;
     }

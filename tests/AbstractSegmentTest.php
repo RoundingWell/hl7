@@ -240,6 +240,20 @@ final class AbstractSegmentTest extends TestCase
         $this->assertSame([], $segment->getField(3));
     }
 
+    public function testReparseDropsFieldsAddedForThePreviousLine(): void
+    {
+        // The field table describes the current line: generic fields added for the previous
+        // line's extra wire fields, or for reading past the schema, must not outlive it.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Set ID'));
+        $segment->parse(new Encoding(), 'FakeSegment|1|b|c');
+        $segment->getFieldRepetition(5, 0);
+        $segment->parse(new Encoding(), 'FakeSegment|2');
+
+        $this->assertSame(1, $segment->getFieldCount());
+        $this->assertSame(['Set ID'], $segment->getNames());
+    }
+
     public function testGetFieldCountReflectsTheNumberOfDefinedFields(): void
     {
         // getFieldCount drives how many fields the parser and serializers iterate over.
