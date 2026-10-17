@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Segment fields are parsed the first time they are read instead of during `parse()`. An
-  111-segment `ADT_A01` with 100 `NK1` parses in 0.7 ms instead of 5.3 ms, and parse plus
-  serialize without reading drops from 28.2 ms to 0.7 ms (PHP 8.5, opcache on the CLI). Values,
-  mutability, and exception types and messages for a field you read are unchanged.
+- Parsing no longer builds throwaway structures in the parse walk: a definition's leading segment
+  names are resolved once per group instead of once per candidate probe. An 111-segment `ADT_A01`
+  with 100 `NK1` parses in 5.0 ms instead of 6.8 ms under PHP 8.5 with opcache on the CLI. Parsed
+  structures, ordering, and exception messages are unchanged.
+- Segment fields are parsed the first time they are read instead of during `parse()`. On the
+  same `ADT_A01`, parsing takes 0.7 ms instead of 5.0 ms, and parse plus serialize without reading
+  drops from 28.1 ms to 0.7 ms. Values, mutability, and exception types and messages for a field
+  you read are unchanged.
 - `parse()` no longer throws for a malformed field value (`InvalidValue`, `InvalidDateTime`, or an
   `OutOfBoundsException` for too many repetitions). The exception is thrown when that field is
   read, every time it is read, and reading other fields of the same segment still works.
@@ -23,11 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bytes unless its content changed. Writing a field re-encodes only that field. Serializing with
   different delimiters re-encodes and trims every field, as before.
 - Calling `parse()` on a segment that already holds data replaces it instead of merging into it.
-
-- Parsing no longer builds throwaway structures in the parse walk: a definition's leading segment
-  names are resolved once per group instead of once per candidate probe. An 111-segment `ADT_A01`
-  with 100 `NK1` parses in 8.8 ms instead of 11.5 ms under PHP 8.5 with opcache on the CLI; what is
-  left is field hydration. Parsed structures, ordering, and exception messages are unchanged.
 
 ### Fixed
 

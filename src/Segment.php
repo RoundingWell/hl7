@@ -18,6 +18,10 @@ interface Segment extends Structure
      *
      * A repeating field may return an empty list.
      *
+     * Reading a field parses it from the parsed line the first time, so a malformed value throws
+     * here (for example InvalidValue, InvalidDateTime, or OutOfBoundsException for too many
+     * repetitions), and again on every later read.
+     *
      * @param positive-int $number starting at 1
      *
      * @return list<Type>
@@ -31,12 +35,16 @@ interface Segment extends Structure
      *
      * If the repetition does not exist, it will be created.
      *
+     * Like {@see getField()}, this parses the field on first read and throws if it is malformed.
+     *
      * @param positive-int $number starting at 1
      */
     public function getFieldRepetition(int $number, int $repetition): Type;
 
     /**
      * Returns the number of repitions for given field
+     *
+     * Like {@see getField()}, this parses the field on first read and throws if it is malformed.
      *
      * @param positive-int $number starting at 1
      */
@@ -69,12 +77,17 @@ interface Segment extends Structure
     public function maxRepetitions(int $number): int;
 
     /**
-     * Parse the given segment data, populating the field values
+     * Parse the given segment data, replacing any previous content
+     *
+     * Fields are parsed when they are first read, so a malformed field value does not throw here.
      */
     public function parse(Encoding $encoding, string $data): void;
 
     /**
      * Serializes this segment back to an HL7 encoded line
+     *
+     * With the delimiters the segment was parsed with, fields keep their received bytes unless
+     * their content changed.
      */
     public function serialize(Encoding $encoding): string;
 }
