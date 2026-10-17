@@ -22,6 +22,8 @@ use RoundingWell\HL7\Message\ACK;
 use RoundingWell\HL7\Segment\MSH;
 use RoundingWell\HL7\SegmentElement;
 use RoundingWell\HL7\StructureDefinition;
+use RoundingWell\HL7\Tests\Fixtures\FakeCountingMessage;
+use RoundingWell\HL7\Tests\Fixtures\FakeCountingSegment;
 use RoundingWell\HL7\Tests\Fixtures\FakeGroupMessage;
 use RoundingWell\HL7\Tests\Fixtures\FakeProcedure;
 use Symfony\Component\Clock\MockClock;
@@ -495,5 +497,21 @@ final class AbstractMessageTest extends TestCase
             "FakeGroupMessage\n  MSH\n    MSH.1 (Field Separator): |\n    MSH.2 (Encoding Characters): ^~\\&",
             $message->debug(),
         );
+    }
+
+    public function testParseInstantiatesADefinitionOnceBeyondItsParsedSegments(): void
+    {
+        // Finding what a structure can begin with must not build a throwaway structure for every
+        // candidate the walk probes. Three ZK1 segments need three parsed instances, and resolving
+        // the definition's first names may add one more; a walk that probes per segment pays many
+        // more than that (ten for this message, one per segment beyond it).
+        FakeCountingSegment::reset();
+
+        $message = new FakeCountingMessage();
+        $message->parse($this->encoding, "MSH|^~\\&\rZK1|1\rZK1|2\rZK1|3");
+
+        $this->assertCount(3, $message->getAll('ZK1'));
+        $this->assertGreaterThanOrEqual(3, FakeCountingSegment::$instantiations);
+        $this->assertLessThanOrEqual(4, FakeCountingSegment::$instantiations);
     }
 }
