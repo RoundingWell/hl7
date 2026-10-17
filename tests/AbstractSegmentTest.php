@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\AbstractSegment;
 use RoundingWell\HL7\DataType\NM;
+use RoundingWell\HL7\DataType\ST;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidValue;
 use RoundingWell\HL7\GenericComposite;
@@ -325,13 +326,132 @@ final class AbstractSegmentTest extends TestCase
         $this->assertSame('FakeSegment|a~b~c', $segment->serialize(new Encoding()));
     }
 
-    public function testSerializeTrimsTrailingEmptyFields(): void
+    public function testSerializeReturnsTheParsedLineVerbatim(): void
     {
-        // Trailing empty fields collapse; an interior empty field is preserved by position.
+        // Nothing was read or written, so the received line is the segment, trailing empties and all.
         $segment = new FakeSegment();
         $segment->parse(new Encoding(), 'FakeSegment|a||c||');
 
-        $this->assertSame('FakeSegment|a||c', $segment->serialize(new Encoding()));
+        $this->assertSame('FakeSegment|a||c||', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeTrimsTrailingEmptyFieldsOfAHandBuiltSegment(): void
+    {
+        // A built segment has no received line to keep, so empty fields after the last value
+        // collapse; touching a field without setting it must not emit a dangling separator.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition(type: ST::class));
+        $this->stringField($segment, 1)->setValue('v');
+        $segment->getFieldRepetition(3, 0);
+
+        $this->assertSame('FakeSegment|v', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeKeepsTheWireBytesOfFieldsReadButNotChanged(): void
+    {
+        // Reading is not writing: a literal "^" in a string field, trailing empty components and an
+        // uninterpreted escape all come back exactly as received, even though re-encoding would
+        // normalize each of them.
+        $line = 'FakeSegment|a^b|A^B^|x\\X0D\\y||';
+
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition(type: ST::class));
+        $segment->parse(new Encoding(), $line);
+        $segment->getFieldRepetition(1, 0);
+        $segment->getFieldRepetition(2, 0);
+        $segment->getFieldRepetition(3, 0);
+
+        $this->assertSame($line, $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeReencodesOnlyTheWrittenField(): void
+    {
+        // A write changes the bytes of the written field and nothing else in the line.
+        $segment = $this->segmentWithStringField3('FakeSegment|A^B^|keep^^|c||');
+        $this->stringField($segment, 3)->setValue('NEW');
+
+        $this->assertSame('FakeSegment|A^B^|keep^^|NEW||', $segment->serialize(new Encoding()));
+    }
+
+    public function testWritingBackTheOriginalValueRestoresTheOriginalBytes(): void
+    {
+        // Change is judged by content, not by whether a setter ran: undoing a write undoes its bytes.
+        $segment = $this->segmentWithStringField3('FakeSegment|A^B^|keep^^|c||');
+        $this->stringField($segment, 3)->setValue('NEW');
+        $this->stringField($segment, 3)->setValue('c');
+
+        $this->assertSame('FakeSegment|A^B^|keep^^|c||', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeAppendsFieldsWrittenBeyondTheWire(): void
+    {
+        // A field set past the received ones is appended, with the gap kept by position.
+        $segment = $this->segmentWithStringField3('FakeSegment|a');
+        $this->stringField($segment, 3)->setValue('v');
+
+        $this->assertSame('FakeSegment|a||v', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeKeepsExtraWireFieldsWhenADeclaredFieldIsWritten(): void
+    {
+        // Vendor fields past the schema are carried as received when a declared field changes.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition(type: ST::class));
+        $segment->parse(new Encoding(), 'FakeSegment|a|x^y^|z||');
+        $this->stringField($segment, 1)->setValue('b');
+
+        $this->assertSame('FakeSegment|b|x^y^|z||', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeEmitsTheWireBytesOfAFieldThatFailedToParse(): void
+    {
+        // A field whose read threw was never parsed, so serializing carries its received bytes
+        // instead of throwing again or dropping it.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Count', NM::class));
+        $segment->add(new TypeDefinition(type: ST::class));
+        $segment->parse(new Encoding(), 'FakeSegment|abc|ok');
+
+        try {
+            $segment->getFieldRepetition(1, 0);
+            $this->fail('Reading a malformed field must throw');
+        } catch (InvalidValue $e) {
+            // The field stays unparsed.
+            $this->assertSame('Value of NM must be numeric, got abc', $e->getMessage());
+        }
+
+        $this->stringField($segment, 2)->setValue('v');
+
+        $this->assertSame('FakeSegment|abc|v', $segment->serialize(new Encoding()));
+    }
+
+    public function testSerializeWithDifferentDelimitersReencodesEveryField(): void
+    {
+        // Received bytes are only valid under the delimiters they were written with; other
+        // delimiters re-encode every field, and trailing empties are trimmed as before.
+        $segment = new FakeSegment();
+        $segment->parse(new Encoding(), 'FakeSegment|a^b||');
+
+        $this->assertSame('FakeSegment|a@b', $segment->serialize(new Encoding(componentSeparator: '@')));
+    }
+
+    private function segmentWithStringField3(string $line): FakeSegment
+    {
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition());
+        $segment->add(new TypeDefinition());
+        $segment->add(new TypeDefinition(type: ST::class));
+        $segment->parse(new Encoding(), $line);
+
+        return $segment;
+    }
+
+    private function stringField(FakeSegment $segment, int $number): ST
+    {
+        $field = $segment->getFieldRepetition($number, 0);
+        $this->assertInstanceOf(ST::class, $field);
+
+        return $field;
     }
 
     public function testSerializeOfAFieldlessSegmentIsJustItsName(): void

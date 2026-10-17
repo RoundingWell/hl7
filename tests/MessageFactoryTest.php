@@ -7,7 +7,9 @@ namespace RoundingWell\HL7\Tests;
 use OutOfBoundsException;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidFile;
 use RoundingWell\HL7\Exception\InvalidMessage;
 use RoundingWell\HL7\GenericMessage;
@@ -21,10 +23,16 @@ use RoundingWell\HL7\Message\ADT\A13;
 use RoundingWell\HL7\MessageFactory;
 use RoundingWell\HL7\Segment\PID;
 
+use function array_map;
 use function chmod;
+use function explode;
+use function implode;
 use function is_readable;
 use function restore_error_handler;
+use function rtrim;
 use function set_error_handler;
+use function str_replace;
+use function str_starts_with;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -114,6 +122,72 @@ final class MessageFactoryTest extends TestCase
         $this->expectException(OutOfBoundsException::class);
 
         $pid->getIdentity();
+    }
+
+    public function testSerializeOfAnUnreadMalformedFieldIsByteIdentical(): void
+    {
+        // A malformed field that failed its read is still forwarded exactly as received.
+        $data = "MSH|^~\\&|App|Fac|||20050110045504||ADT^A01|1|P|2.3\rEVN|A01\rPID|1~2~3||X||DUCK^DONALD";
+        $message = $this->messageFactory->parse($data);
+        $pid = $message->getSegment('PID', 0);
+        $this->assertInstanceOf(PID::class, $pid);
+        $pid->getPatientName();
+
+        try {
+            $pid->getIdentity();
+            $this->fail('Reading an over-repeated PID.1 must throw');
+        } catch (OutOfBoundsException $e) {
+            // PID.1 stays unparsed.
+            $this->assertStringContainsString('PID.1', $e->getMessage());
+        }
+
+        $this->assertSame($data, $message->serialize(new Encoding()));
+    }
+
+    #[DataProvider('fixtureNames')]
+    public function testParseThenSerializeIsByteIdenticalForEveryFixture(string $name): void
+    {
+        // The fixtures are LF-terminated; serializing with the default encoding joins with CR, and
+        // every line must come back byte for byte, before and after reading a field.
+        $data = $this->messageData($name);
+        $expected = str_replace(search: "\n", replace: "\r", subject: rtrim($data, characters: "\n"));
+        $message = $this->messageFactory->parse($data);
+
+        $this->assertSame($expected, $message->serialize(new Encoding()));
+
+        $message->getMSH()->getVersionId();
+
+        $this->assertSame($expected, $message->serialize(new Encoding()));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function fixtureNames(): iterable
+    {
+        foreach (['adt-a01', 'adt-a01-2', 'adt-a03', 'adt-a04', 'adt-a06', 'adt-a07', 'adt-a08', 'adt-a13'] as $name) {
+            yield $name => [$name];
+        }
+    }
+
+    public function testWritingOneFieldChangesOnlyThatField(): void
+    {
+        // Renaming the patient rewrites PID.5's family name and nothing else in the message.
+        $data = rtrim($this->messageData('adt-a01'), characters: "\n");
+        $message = $this->messageFactory->parse($data);
+        $pid = $message->getSegment('PID', 0);
+        $this->assertInstanceOf(PID::class, $pid);
+        $pid->getPatientName()[0]->getFamilyName()->getSurname()->setValue('MOUSE');
+
+        // The same name also appears in GT1 and IN1; only the PID line may change.
+        $expected = array_map(
+            static fn(string $line): string => str_starts_with($line, 'PID|')
+                ? str_replace(search: '|DUCK^DONALD^D|', replace: '|MOUSE^DONALD^D|', subject: $line)
+                : $line,
+            explode(separator: "\n", string: $data),
+        );
+
+        $this->assertSame(implode(separator: "\r", array: $expected), $message->serialize(new Encoding()));
     }
 
     public function testParseDefersAMalformedHeaderFieldOtherThanTypeAndVersion(): void

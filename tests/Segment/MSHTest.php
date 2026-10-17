@@ -173,6 +173,26 @@ final class MSHTest extends TestCase
         $this->assertSame($data, $msh->serialize(new Encoding()));
     }
 
+    public function testSerializeReturnsTheParsedHeaderVerbatim(): void
+    {
+        // An unread header comes back exactly as received, trailing empty fields included.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App||||');
+
+        $this->assertSame('MSH|^~\\&|App||||', $msh->serialize(new Encoding()));
+    }
+
+    public function testSerializeReencodesOnlyTheWrittenHeaderField(): void
+    {
+        // Rewriting the control ID changes MSH.10 only; the header and every other field keep
+        // their received bytes, including the non-canonical MSH.3 and the trailing empties.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&|App^^|Fac|||20050110045504||ADT^A01|1|P|2.8||');
+        $msh->getMessageControlId()->setValue('2');
+
+        $this->assertSame('MSH|^~\\&|App^^|Fac|||20050110045504||ADT^A01|2|P|2.8||', $msh->serialize(new Encoding()));
+    }
+
     public function testSerializeSourcesMsh1AndMsh2FromTheEncoding(): void
     {
         // MSH.1/MSH.2 declare the delimiters the rest of the segment is written with, so they must

@@ -41,4 +41,12 @@ final class CanJoinElementsTest extends TestCase
     {
         $this->assertSame('', new FakeJoiner()->join([], '&'));
     }
+
+    public function testJoinTrimmedKeepsTheFirstPartsEvenWhenEmpty(): void
+    {
+        // A segment keeps the field count it was received with, so the first $keep parts survive
+        // even when empty; trailing empties beyond them are still dropped.
+        $this->assertSame('a||', new FakeJoiner()->join(['a', '', '', ''], '|', 3));
+        $this->assertSame('a||b', new FakeJoiner()->join(['a', '', 'b', '', ''], '|', 2));
+    }
 }

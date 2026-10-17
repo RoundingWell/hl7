@@ -290,26 +290,93 @@ abstract class AbstractSegment implements Segment
     #[Override]
     public function serialize(Encoding $encoding): string
     {
-        // Treating the name and the serialized fields as trimmable parts means an empty fields
-        // string (no non-empty fields) is dropped instead of leaving a dangling field separator.
-        return $this->joinTrimmed([$this->getName(), $this->serializeFields($encoding, 1)], $encoding->fieldSeparator);
+        return $this->serializeLine($encoding, [$this->getName()], 1);
     }
 
-    protected function serializeFields(Encoding $encoding, int $from): string
+    /**
+     * Serializes the line from its leading parts and the fields from $from onward.
+     *
+     * Under the delimiters the line was parsed with, a segment that was never read is its
+     * received line, and each field keeps its received bytes unless its content changed. Any
+     * other delimiters re-encode every field.
+     *
+     * @param list<string> $head the parts of the line before field $from
+     * @param positive-int $from starting at 1
+     */
+    protected function serializeLine(Encoding $encoding, array $head, int $from): string
     {
-        $fields = [];
+        $raw = $this->raw;
+        $reuse = $raw !== null && $this->encoding?->sameDelimiters($encoding) === true;
 
-        for ($number = $from; $number <= $this->getFieldCount(); $number++) {
-            $repetitions = [];
-
-            // @mago-expect analysis:possibly-invalid-argument
-            foreach ($this->getField($number) as $repetition) {
-                $repetitions[] = $repetition->serialize($encoding);
-            }
-
-            $fields[] = $this->joinTrimmed($repetitions, $encoding->repetitionSeparator);
+        if ($raw !== null && $reuse && $this->fields === []) {
+            return $raw;
         }
 
-        return $this->joinTrimmed($fields, $encoding->fieldSeparator);
+        $wire = $reuse ? $this->split() : [];
+        $parts = $head;
+
+        for ($number = $from; $number <= $this->getFieldCount(); $number++) {
+            $parts[] = $this->serializeField($encoding, $number, $wire[$number] ?? null);
+        }
+
+        // Keep the field count the line was received with: only empty fields past it are trimmed,
+        // which also drops the separator of a built segment that has no fields set.
+        $keep = count($head) + max(count($wire) - $from + 1, 0);
+
+        return $this->joinTrimmed($parts, $encoding->fieldSeparator, $keep);
+    }
+
+    /**
+     * @param positive-int $number starting at 1
+     * @param string|null  $wire   the field's received bytes, when they can be reused
+     */
+    private function serializeField(Encoding $encoding, int $number, ?string $wire): string
+    {
+        if ($wire !== null && !array_key_exists($number - 1, $this->fields)) {
+            return $wire;
+        }
+
+        $encoded = $this->joinRepetitions($encoding, $this->getField($number));
+
+        // Canonical input re-encodes to its own bytes, which settles it without a comparison.
+        if ($wire === null || $encoded === $wire) {
+            return $encoded;
+        }
+
+        // A field that was read keeps its received bytes unless what it holds now encodes
+        // differently from what was received; re-encoding alone would normalize them.
+        return $encoded === $this->canonical($encoding, $number, $wire) ? $wire : $encoded;
+    }
+
+    /**
+     * Encodes what a field's received bytes parse to, for comparison with its current content.
+     *
+     * @param positive-int $number starting at 1
+     */
+    private function canonical(Encoding $encoding, int $number, string $wire): string
+    {
+        $repetitions = [];
+
+        foreach (explode($encoding->repetitionSeparator, $wire) as $value) {
+            $repetition = $this->getDefinition($number)->newInstance();
+            $repetition->parse($encoding, $value);
+            $repetitions[] = $repetition;
+        }
+
+        return $this->joinRepetitions($encoding, $repetitions);
+    }
+
+    /**
+     * @param list<Type> $repetitions
+     */
+    private function joinRepetitions(Encoding $encoding, array $repetitions): string
+    {
+        $encoded = [];
+
+        foreach ($repetitions as $repetition) {
+            $encoded[] = $repetition->serialize($encoding);
+        }
+
+        return $this->joinTrimmed($encoded, $encoding->repetitionSeparator);
     }
 }

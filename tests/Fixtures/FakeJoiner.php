@@ -17,8 +17,8 @@ final class FakeJoiner
     /**
      * @param list<string> $parts
      */
-    public function join(array $parts, string $separator): string
+    public function join(array $parts, string $separator, int $keep = 0): string
     {
-        return $this->joinTrimmed($parts, $separator);
+        return $this->joinTrimmed($parts, $separator, $keep);
     }
 }

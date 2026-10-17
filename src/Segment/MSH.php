@@ -22,7 +22,6 @@ use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\TypeDefinition;
 
 use function str_contains;
-use function trim;
 
 /**
  * Message Header Segment
@@ -144,9 +143,7 @@ final class MSH extends AbstractSegment
     {
         // The values for MSH.1 and MSH.2 MUST come from the encoding object, since all
         // subsequent fields are encoded using these characters.
-        $header = 'MSH' . $encoding->fieldSeparator . $encoding->encodingCharacters() . $encoding->fieldSeparator;
-
-        return trim($header . $this->serializeFields($encoding, 3), $encoding->fieldSeparator);
+        return $this->serializeLine($encoding, ['MSH', $encoding->encodingCharacters()], 3);
     }
 
     /**

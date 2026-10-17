@@ -143,4 +143,35 @@ final class EncodingTest extends TestCase
         yield 'lone escape mid-string' => ['a\\b', 'a\\E\\b'];
         yield 'plain text' => ['SMITH', 'SMITH'];
     }
+
+    public function testSameDelimitersIgnoresTheLineEnding(): void
+    {
+        // The line ending joins lines and never appears inside one, so a line parsed from LF input
+        // is still a valid line for a CR-joined message.
+        $this->assertTrue(new Encoding("\n")->sameDelimiters(new Encoding()));
+    }
+
+    /**
+     * @param array<string, string> $changed
+     */
+    #[DataProvider('differentDelimiters')]
+    public function testSameDelimitersDetectsEachDifferentDelimiter(array $changed): void
+    {
+        // Every other delimiter appears inside a line, so any difference means a parsed line
+        // cannot be re-emitted as-is.
+        $this->assertFalse(new Encoding(...$changed)->sameDelimiters(new Encoding()));
+    }
+
+    /**
+     * @return iterable<string, array{array<string, string>}>
+     */
+    public static function differentDelimiters(): iterable
+    {
+        yield 'field separator' => [['fieldSeparator' => '#']];
+        yield 'component separator' => [['componentSeparator' => '@']];
+        yield 'repetition separator' => [['repetitionSeparator' => '*']];
+        yield 'escape character' => [['escapeCharacter' => '/']];
+        yield 'subcomponent separator' => [['subcomponentSeparator' => '$']];
+        yield 'truncation character' => [['truncationCharacter' => '#']];
+    }
 }
