@@ -182,6 +182,17 @@ final class MSHTest extends TestCase
         $this->assertSame('MSH|^~\\&|App||||', $msh->serialize(new Encoding()));
     }
 
+    public function testReadingAFieldKeepsEncodingCharactersTheEncodingDoesNotDeclare(): void
+    {
+        // A received MSH.2 can carry a truncation character the parsing encoding lacks; reading a
+        // field must not rewrite the header from the encoding.
+        $msh = new MSH();
+        $msh->parse(new Encoding(), 'MSH|^~\\&#|App||');
+        $msh->getSendingApplication();
+
+        $this->assertSame('MSH|^~\\&#|App||', $msh->serialize(new Encoding()));
+    }
+
     public function testSerializeReencodesOnlyTheWrittenHeaderField(): void
     {
         // Rewriting the control ID changes MSH.10 only; the header and every other field keep

@@ -129,6 +129,10 @@ field; the rest of its segment keeps the received bytes. Segments are joined by 
 rather than terminated by it (no trailing line ending is appended), and the line ending itself
 comes from the serializing encoding.
 
+The guarantee needs an `Encoding` whose delimiters match the message's `MSH.2`: `new Encoding()`
+matches the default `^~\&`, while a v2.7+ header such as `^~\&#` also needs
+`new Encoding(truncationCharacter: '#')`. The line ending may differ.
+
 Serializing with different delimiters re-encodes every field, which reads (and so validates) all
 of them. Re-encoded fields, and segments built by hand, trim trailing empty fields, components,
 and subcomponents (HL7 treats trailing delimiters as optional).

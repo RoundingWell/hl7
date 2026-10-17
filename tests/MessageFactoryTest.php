@@ -144,29 +144,31 @@ final class MessageFactoryTest extends TestCase
         $this->assertSame($data, $message->serialize(new Encoding()));
     }
 
-    #[DataProvider('fixtureNames')]
-    public function testParseThenSerializeIsByteIdenticalForEveryFixture(string $name): void
+    #[DataProvider('fixtures')]
+    public function testParseThenSerializeIsByteIdenticalForEveryFixture(string $name, string $lineEnding): void
     {
-        // The fixtures are LF-terminated; serializing with the default encoding joins with CR, and
-        // every line must come back byte for byte, before and after reading a field.
+        // Serializing with the default encoding joins lines with CR, whatever the input used, and
+        // every line must come back byte for byte, before and after reading every field.
         $data = $this->messageData($name);
         $expected = str_replace(search: "\n", replace: "\r", subject: rtrim($data, characters: "\n"));
-        $message = $this->messageFactory->parse($data);
+        $message = $this->messageFactory->parse(str_replace(search: "\n", replace: $lineEnding, subject: $data));
 
         $this->assertSame($expected, $message->serialize(new Encoding()));
 
-        $message->getMSH()->getVersionId();
+        // debug() reads every field of every segment.
+        $message->debug();
 
         $this->assertSame($expected, $message->serialize(new Encoding()));
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, string}>
      */
-    public static function fixtureNames(): iterable
+    public static function fixtures(): iterable
     {
         foreach (['adt-a01', 'adt-a01-2', 'adt-a03', 'adt-a04', 'adt-a06', 'adt-a07', 'adt-a08', 'adt-a13'] as $name) {
-            yield $name => [$name];
+            yield "{$name} LF" => [$name, "\n"];
+            yield "{$name} CRLF" => [$name, "\r\n"];
         }
     }
 

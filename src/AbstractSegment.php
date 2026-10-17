@@ -12,6 +12,7 @@ use Throwable;
 
 use function array_key_exists;
 use function array_map;
+use function array_slice;
 use function count;
 use function explode;
 use function max;
@@ -300,19 +301,29 @@ abstract class AbstractSegment implements Segment
      * received line, and each field keeps its received bytes unless its content changed. Any
      * other delimiters re-encode every field.
      *
-     * @param list<string> $head the parts of the line before field $from
+     * @param list<string> $head the parts of the line before field $from, when it is not received
      * @param positive-int $from starting at 1
      */
     protected function serializeLine(Encoding $encoding, array $head, int $from): string
     {
         $raw = $this->raw;
-        $reuse = $raw !== null && $this->encoding?->sameDelimiters($encoding) === true;
+        $wire = [];
 
-        if ($raw !== null && $reuse && $this->fields === []) {
-            return $raw;
+        if ($raw !== null && $this->encoding?->sameDelimiters($encoding) === true) {
+            if ($this->fields === []) {
+                return $raw;
+            }
+
+            // A read must not change the line, so its leading parts are received bytes too: MSH.2
+            // can carry encoding characters the encoding does not declare.
+            $head = array_slice(
+                explode($encoding->fieldSeparator, $raw, count($head) + 1),
+                offset: 0,
+                length: count($head),
+            );
+            $wire = $this->split();
         }
 
-        $wire = $reuse ? $this->split() : [];
         $parts = $head;
 
         for ($number = $from; $number <= $this->getFieldCount(); $number++) {
