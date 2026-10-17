@@ -1,0 +1,4 @@
+# https://www.robinreview.dev
+agent-mode: auto
+agent-max-turns: 40
+bot-review-policy: none
