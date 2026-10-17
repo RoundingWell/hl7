@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Parsing no longer builds throwaway structures in the parse walk: a definition's leading segment
+  names are resolved once per group instead of once per candidate probe. An 111-segment `ADT_A01`
+  with 100 `NK1` parses in 8.8 ms instead of 11.5 ms under PHP 8.5 with opcache on the CLI; what is
+  left is field hydration. Parsed structures, ordering, and exception messages are unchanged.
+
 ## [0.10.0] - 2026-08-10
 
 ### Changed
