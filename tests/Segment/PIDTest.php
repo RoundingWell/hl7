@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RoundingWell\HL7\Tests\Segment;
 
+use OutOfBoundsException;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -187,5 +188,16 @@ final class PIDTest extends TestCase
     {
         $this->assertSame('FACILITY', $this->pid->getLastUpdateFacility()->getNamespaceId()->getValue());
         $this->assertSame('ISO', $this->pid->getLastUpdateFacility()->getUniversalIdType()->getValue());
+    }
+
+    public function testParseRejectsASecondRepetitionOfASingleRepetitionField(): void
+    {
+        // PID.1 is maxReps: 1, so a repeated Set ID must not be accepted.
+        $pid = new PID();
+
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessageMatches('/repetition #2 of PID\.1, only 1 repetition is allowed/');
+
+        $pid->parse(new Encoding(), 'PID|1~2||X');
     }
 }

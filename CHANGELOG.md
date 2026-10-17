@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with 100 `NK1` parses in 8.8 ms instead of 11.5 ms under PHP 8.5 with opcache on the CLI; what is
   left is field hydration. Parsed structures, ordering, and exception messages are unchanged.
 
+### Fixed
+
+- A field declared with `maxReps: N` now accepts exactly N repetitions; the (N+1)th throws
+  `OutOfBoundsException`. Previously a 0-based repetition index was compared to the maximum with
+  `>`, so every capped field accepted one repetition too many — each `maxReps: 1` field accepted
+  two. The exception message now reports the 1-based repetition number so it agrees with the
+  allowed count.
+
 ## [0.10.0] - 2026-08-10
 
 ### Changed
