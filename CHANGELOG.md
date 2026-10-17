@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-17
+
 ### Changed
 
+- The package now requires `php-standard-library/type` (^6.2) at runtime.
+- The Composer dist archive no longer ships tests or development configuration.
 - Parsing no longer builds throwaway structures in the parse walk: a definition's leading segment
   names are resolved once per group instead of once per candidate probe. An 111-segment `ADT_A01`
   with 100 `NK1` parses in 5.0 ms instead of 6.8 ms under PHP 8.5 with opcache on the CLI. Parsed
@@ -139,7 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of the tool
 
-[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.10.0...HEAD
+[Unreleased]: https://github.com/RoundingWell/hl7/compare/0.11.0...main
+[0.11.0]: https://github.com/RoundingWell/hl7/releases/tag/0.11.0
 [0.10.0]: https://github.com/RoundingWell/hl7/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/RoundingWell/hl7/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/RoundingWell/hl7/compare/0.7.0...0.8.0
