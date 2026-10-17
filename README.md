@@ -120,10 +120,13 @@ Any `Message` can be turned back into a wire string with `serialize()`:
 $wire = $message->serialize($encoding);
 ```
 
-`parse()` followed by `serialize()` reproduces the original message, with two deviations from a
-byte-for-byte round-trip: trailing empty fields, components, and subcomponents are trimmed (HL7
-treats trailing delimiters as optional), and segments are joined by the line ending rather than
-terminated by it (no trailing line ending is appended).
+`parse()` followed by `serialize()` reproduces the original message byte for byte when no field
+has been written. Reading fields does not change that. Segments are joined by the line ending
+rather than terminated by it (no trailing line ending is appended).
+
+Writing a field invalidates that segment. It is then serialized from the object model, which
+trims trailing empty fields, components, and subcomponents (HL7 treats trailing delimiters as
+optional). Segments that were not written stay byte-exact.
 
 ### Debugging message structure
 

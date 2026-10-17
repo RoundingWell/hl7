@@ -12,10 +12,11 @@ use function count;
 use function explode;
 use function str_contains;
 
-abstract class AbstractPrimitive implements Primitive
+abstract class AbstractPrimitive implements Primitive, TracksMutation
 {
     use CanJoinElements;
     use CanHoldField;
+    use CanTrackMutation;
 
     private string $value = '';
 
@@ -45,14 +46,23 @@ abstract class AbstractPrimitive implements Primitive
     }
 
     #[Override]
+    public function track(DirtyFlag $dirty): void
+    {
+        $this->dirty = $dirty;
+        $this->extra->track($dirty);
+    }
+
+    #[Override]
     public function setValue(string $value): void
     {
+        $this->markDirty();
         $this->value = $value;
     }
 
     #[Override]
     public function clear(): void
     {
+        $this->markDirty();
         $this->value = '';
         $this->extra->clear();
     }

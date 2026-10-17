@@ -8,15 +8,29 @@ use InvalidArgumentException;
 use OutOfBoundsException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingWell\HL7\AbstractComposite;
+use RoundingWell\HL7\AbstractPrimitive;
 use RoundingWell\HL7\AbstractSegment;
+use RoundingWell\HL7\DataType\ST;
+use RoundingWell\HL7\DirtyFlag;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\ExtraComponents;
 use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\GenericPrimitive;
+use RoundingWell\HL7\Segment\PID;
 use RoundingWell\HL7\SegmentElement;
+use RoundingWell\HL7\Tests\Fixtures\FakeHydratingSegment;
 use RoundingWell\HL7\Tests\Fixtures\FakeSegment;
 use RoundingWell\HL7\TypeDefinition;
+use RoundingWell\HL7\Varies;
 
 #[CoversClass(AbstractSegment::class)]
+#[CoversClass(AbstractComposite::class)]
+#[CoversClass(AbstractPrimitive::class)]
+#[CoversClass(DirtyFlag::class)]
+#[CoversClass(ExtraComponents::class)]
+#[CoversClass(TypeDefinition::class)]
+#[CoversClass(Varies::class)]
 final class AbstractSegmentTest extends TestCase
 {
     public function testDerivesItsNameFromTheConcreteClass(): void
@@ -311,5 +325,148 @@ final class AbstractSegmentTest extends TestCase
         $segment->parse(new Encoding(), 'FakeSegment|a');
 
         $this->assertSame(['FakeSegment|a'], $segment->serializeLines(new Encoding()));
+    }
+
+    public function testParseSegmentsSerializesTheRawLineIncludingTrailingEmpties(): void
+    {
+        // A bound segment has not been written, so serialize must emit the wire line. The object
+        // path would trim the trailing empties and could not promise byte-exact output.
+        $segment = $this->bindLine('FakeSegment|a||c||');
+
+        $this->assertSame('FakeSegment|a||c||', $segment->serialize(new Encoding()));
+    }
+
+    public function testReadingABoundFieldKeepsTheRawLine(): void
+    {
+        // Callers read fields and then forward the message. Hydrating for the read must not
+        // discard the raw line, or a read-only round trip would normalize trailing empties.
+        $segment = $this->bindLine('FakeSegment|a~b||');
+
+        $this->assertSame('b', $this->fieldValue($segment, 1, 1));
+        $this->assertSame('FakeSegment|a~b||', $segment->serialize(new Encoding()));
+    }
+
+    public function testADifferentLineEndingDoesNotReencodeTheSegment(): void
+    {
+        // The line ending joins segments; it is not part of a segment line. Changing it must
+        // leave a bound line untouched, including trailing empties the object path would drop.
+        $segment = $this->bindLine('FakeSegment|a||');
+
+        $this->assertSame('FakeSegment|a||', $segment->serialize(new Encoding(lineEnding: "\n")));
+    }
+
+    public function testADifferentFieldSeparatorReencodesTheSegment(): void
+    {
+        // The raw line is only valid for the delimiters it was parsed with. A different field
+        // separator has to re-encode, and that object path trims trailing empties.
+        $segment = $this->bindLine('FakeSegment|a^b||');
+
+        $this->assertSame('FakeSegment#a^b', $segment->serialize(new Encoding(fieldSeparator: '#')));
+        // Re-encoding for another delimiter must not consume the line.
+        $this->assertSame('FakeSegment|a^b||', $segment->serialize(new Encoding()));
+    }
+
+    public function testWritingAFieldReencodesThatSegment(): void
+    {
+        // A write invalidates the raw line. The value just written has to appear, and the object
+        // path trims trailing empties the raw line had been preserving.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Set ID', ST::class));
+        $this->bindLine('FakeSegment|a||', $segment);
+
+        $field = $segment->getFieldRepetition(1, 0);
+        $this->assertInstanceOf(ST::class, $field);
+        $this->assertSame('a', $field->getValue());
+        $this->assertSame('FakeSegment|a||', $segment->serialize(new Encoding()));
+
+        $field->setValue('z');
+
+        $this->assertSame('FakeSegment|z', $segment->serialize(new Encoding()));
+    }
+
+    public function testClearingAFieldReencodesThatSegment(): void
+    {
+        // clear() is a write even though the new value is empty, so the raw line must die and
+        // the object path must trim the segment down to its name.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Set ID', ST::class));
+        $this->bindLine('FakeSegment|a||', $segment);
+
+        $field = $segment->getFieldRepetition(1, 0);
+        $this->assertInstanceOf(ST::class, $field);
+        $field->clear();
+
+        $this->assertSame('FakeSegment', $segment->serialize(new Encoding()));
+    }
+
+    public function testReplacingVariesDataReencodesThatSegment(): void
+    {
+        // setData() swaps the type of an extra subcomponent. That is a write, so the raw line
+        // must die even though the copied characters are unchanged; trailing empties then trim.
+        $segment = new FakeSegment();
+        $segment->add(new TypeDefinition('Set ID', ST::class));
+        $this->bindLine('FakeSegment|a&b||', $segment);
+
+        $field = $segment->getFieldRepetition(1, 0);
+        $this->assertInstanceOf(ST::class, $field);
+        $varies = $field->getExtraComponents()->getComponent(0);
+        $this->assertInstanceOf(Varies::class, $varies);
+
+        $replacement = new ST();
+        $varies->setData($replacement);
+
+        $this->assertSame($replacement, $varies->getData());
+        $this->assertSame('b', $replacement->getValue());
+        $this->assertSame('FakeSegment|a&b', $segment->serialize(new Encoding()));
+    }
+
+    public function testReadingANestedTypedFieldKeepsTheRawLine(): void
+    {
+        // Typed accessors funnel through getFieldRepetition, including nested composites such as
+        // a patient name. The read has to surface the wire value and still serialize the raw line.
+        $pid = new PID();
+        $pid->parseSegments(new Encoding(), [new SegmentElement('PID', 'PID|||||SMITH^JOHN')], [], 0);
+
+        $name = $pid->getPatientName()[0];
+
+        $this->assertSame('SMITH', $name->getFamilyName()->getSurname()->getValue());
+        $this->assertSame('JOHN', $name->getGivenName()->getValue());
+        $this->assertSame('PID|||||SMITH^JOHN', $pid->serialize(new Encoding()));
+    }
+
+    public function testSchemaQueriesDoNotParseFields(): void
+    {
+        // Names, counts, and repetition limits come from the definition table. Forcing a parse
+        // there would build the field graph for callers that only inspect the schema, and
+        // serialize of an unread segment must not parse either.
+        $segment = new FakeHydratingSegment();
+        $segment->add(new TypeDefinition('Set ID', isRequired: true, maxReps: 2));
+        $segment->parseSegments(
+            new Encoding(),
+            [new SegmentElement('FakeHydratingSegment', 'FakeHydratingSegment|a||')],
+            [],
+            0,
+        );
+
+        $this->assertSame(['Set ID'], $segment->getNames());
+        $this->assertSame(1, $segment->getFieldCount());
+        $this->assertTrue($segment->isRequired(1));
+        $this->assertSame(2, $segment->maxRepetitions(1));
+        $this->assertSame(['FakeHydratingSegment'], $segment->firstNames());
+        $this->assertSame('FakeHydratingSegment|a||', $segment->serialize(new Encoding()));
+        $this->assertSame(0, $segment->hydrations);
+
+        $segment->getField(1);
+        $segment->getLength(1);
+
+        $this->assertSame(1, $segment->hydrations);
+    }
+
+    private function bindLine(string $line, ?FakeSegment $segment = null): FakeSegment
+    {
+        $segment ??= new FakeSegment();
+        $segment->parseSegments(new Encoding(), [new SegmentElement($segment->getName(), $line)], [], 0);
+
+        return $segment;
     }
 }

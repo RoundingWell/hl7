@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Segment fields are parsed on first read or write. Until a field is written, `serialize()` emits
+  the original segment line, so a read-only round trip is byte-exact aside from the absent
+  trailing line ending. A write re-encodes only that segment and still trims its trailing empty
+  fields. An unread message keeps the raw lines instead of a field graph.
 - Parsing no longer builds throwaway structures in the parse walk: a definition's leading segment
   names are resolved once per group instead of once per candidate probe. An 111-segment `ADT_A01`
   with 100 `NK1` parses in 8.8 ms instead of 11.5 ms under PHP 8.5 with opcache on the CLI; what is

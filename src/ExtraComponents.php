@@ -19,6 +19,7 @@ use function count;
 final class ExtraComponents implements Countable
 {
     use CanAssertNumbers;
+    use CanTrackMutation;
 
     /** @var list<Varies> */
     private array $components = [];
@@ -29,8 +30,14 @@ final class ExtraComponents implements Countable
         return count($this->components);
     }
 
+    public function track(DirtyFlag $dirty): void
+    {
+        $this->dirty = $dirty;
+    }
+
     public function clear(): void
     {
+        $this->markDirty();
         $this->components = [];
     }
 
@@ -47,7 +54,7 @@ final class ExtraComponents implements Countable
         $this->assertNaturalNumber($number);
 
         for ($i = count($this->components); $i <= $number; $i++) {
-            $this->components[$i] ??= new Varies();
+            $this->components[$i] ??= $this->newComponent();
         }
 
         // Mago does not understand that the previous loop ensures the index is defined...
@@ -55,5 +62,16 @@ final class ExtraComponents implements Countable
         // @mago-expect analysis:nullable-return-statement
         // @mago-expect analysis:invalid-return-statement
         return $this->components[$number];
+    }
+
+    private function newComponent(): Varies
+    {
+        $component = new Varies();
+
+        if ($this->dirty !== null) {
+            $component->track($this->dirty);
+        }
+
+        return $component;
     }
 }

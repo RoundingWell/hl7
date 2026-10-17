@@ -50,7 +50,7 @@ final readonly class TypeDefinition
         return $this->maxReps;
     }
 
-    public function newInstance(): Type
+    public function newInstance(?DirtyFlag $dirty = null): Type
     {
         $instance = new ReflectionClass($this->type)->newInstanceArgs($this->args) ?? throw new RuntimeException(
             "Unable to create instance of {$this->type}",
@@ -58,6 +58,12 @@ final readonly class TypeDefinition
 
         // Pass the field name into the instance for debugging.
         $instance->setField($this->name);
+
+        // Field writes must reach the segment that owns the raw line, including writes that
+        // happen on a component created later. Types that cannot track are left alone.
+        if ($dirty !== null && $instance instanceof TracksMutation) {
+            $instance->track($dirty);
+        }
 
         return $instance;
     }

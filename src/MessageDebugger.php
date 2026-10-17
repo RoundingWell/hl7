@@ -63,6 +63,10 @@ final class MessageDebugger
     {
         $children = [];
 
+        // A bound generic segment has no definitions until its line is parsed, so the field count
+        // is 0 until something reads a field. debug() is that read: it must not count as a write.
+        $segment->getField(1);
+
         for ($number = 1; $number <= $segment->getFieldCount(); $number++) {
             $repetitions = $segment->getField($number);
             $indexed = count($repetitions) > 1;

@@ -12,11 +12,13 @@ use function array_keys;
 use function count;
 use function explode;
 
-abstract class AbstractComposite implements Composite
+// @mago-expect lint:too-many-methods
+abstract class AbstractComposite implements Composite, TracksMutation
 {
     use CanAssertNumbers;
     use CanHoldField;
     use CanJoinElements;
+    use CanTrackMutation;
 
     /** @var list<Type> */
     private array $components = [];
@@ -43,6 +45,13 @@ abstract class AbstractComposite implements Composite
     public function add(TypeDefinition $definition): void
     {
         $this->definitions[] = $definition;
+    }
+
+    #[Override]
+    public function track(DirtyFlag $dirty): void
+    {
+        $this->dirty = $dirty;
+        $this->extra->track($dirty);
     }
 
     #[Override]
@@ -81,7 +90,7 @@ abstract class AbstractComposite implements Composite
             "Component {$this->getName()}.{$number} is not defined",
         );
 
-        $component = $definition->newInstance();
+        $component = $definition->newInstance($this->dirty);
 
         // A composite occupying a component slot is nested one level down, so it parses its parts
         // as subcomponents. Field-level composites are created by the segment, never here, so
@@ -102,6 +111,7 @@ abstract class AbstractComposite implements Composite
     #[Override]
     public function clear(): void
     {
+        $this->markDirty();
         $this->components = [];
         $this->extra->clear();
     }
@@ -109,6 +119,8 @@ abstract class AbstractComposite implements Composite
     #[Override]
     public function parse(Encoding $encoding, string $data): void
     {
+        // Replacing the component list is a write, including a parse that immediately clears.
+        $this->markDirty();
         $this->clear();
 
         if ($data === '') {

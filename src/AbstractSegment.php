@@ -16,6 +16,7 @@ use function explode;
 use function max;
 
 // @mago-expect lint:too-many-methods
+// @mago-expect lint:cyclomatic-complexity
 abstract class AbstractSegment implements Segment
 {
     use CanAssertNumbers;
@@ -26,6 +27,18 @@ abstract class AbstractSegment implements Segment
 
     /** @var list<TypeDefinition> */
     private array $definitions = [];
+
+    /**
+     * Wire line captured at bind time. Null once the segment is written, or when it was built
+     * by hand and never bound. Serialization emits this verbatim while it is set.
+     */
+    private ?string $raw = null;
+
+    private ?Encoding $boundEncoding = null;
+
+    private bool $hydrated = false;
+
+    private ?DirtyFlag $dirty = null;
 
     public function add(TypeDefinition $definition): void
     {
@@ -51,6 +64,7 @@ abstract class AbstractSegment implements Segment
     public function getField(int $number): array
     {
         $this->assertPositiveNumber($number);
+        $this->hydrate();
 
         return $this->fields[$number - 1] ?? [];
     }
@@ -60,6 +74,9 @@ abstract class AbstractSegment implements Segment
     {
         $this->assertPositiveNumber($number);
         $this->assertNaturalNumber($repetition);
+        // Hydrate before the create-if-missing and bounds checks so a bound segment reports the
+        // wire's repetitions, and so those checks still throw the same messages.
+        $this->hydrate();
 
         // Field number is 1-based, but array indices are 0-based.
         $idx = $number - 1;
@@ -75,7 +92,7 @@ abstract class AbstractSegment implements Segment
 
         $this->assertRepetitionAllowed($number, $repetition);
 
-        return $this->fields[$idx][$repetition] = $this->getDefinition($number)->newInstance();
+        return $this->fields[$idx][$repetition] = $this->getDefinition($number)->newInstance($this->dirtyFlag());
     }
 
     /**
@@ -104,6 +121,7 @@ abstract class AbstractSegment implements Segment
     public function getLength(int $number): int
     {
         $this->assertPositiveNumber($number);
+        $this->hydrate();
 
         return count($this->fields[$number - 1] ?? []);
     }
@@ -149,13 +167,32 @@ abstract class AbstractSegment implements Segment
             "Cannot parse {$this->getName()} at #{$offset}, the segment stream is exhausted",
         );
 
-        $this->parse($encoding, $element->raw);
+        $this->bind($encoding, $element->raw);
 
         return $offset + 1;
     }
 
+    /**
+     * Keep the wire line and parse its fields on first read or write.
+     */
+    public function bind(Encoding $encoding, string $data): void
+    {
+        $this->raw = $data;
+        $this->boundEncoding = $encoding;
+        $this->hydrated = false;
+    }
+
     #[Override]
     public function parse(Encoding $encoding, string $data): void
+    {
+        // An explicit parse owns the fields, so a previously bound line must not win serialize().
+        $this->raw = null;
+        $this->boundEncoding = null;
+        $this->hydrated = true;
+        $this->populate($encoding, $data);
+    }
+
+    protected function populate(Encoding $encoding, string $data): void
     {
         $fields = explode($encoding->fieldSeparator, $data);
 
@@ -178,13 +215,39 @@ abstract class AbstractSegment implements Segment
     #[Override]
     public function serialize(Encoding $encoding): string
     {
+        $raw = $this->unchangedRaw($encoding);
+
+        if ($raw !== null) {
+            return $raw;
+        }
+
         // Treating the name and the serialized fields as trimmable parts means an empty fields
         // string (no non-empty fields) is dropped instead of leaving a dangling field separator.
         return $this->joinTrimmed([$this->getName(), $this->serializeFields($encoding, 1)], $encoding->fieldSeparator);
     }
 
+    /**
+     * The bound line, when it is still a valid encoding of this segment.
+     *
+     * A write drops the line. A different delimiter set cannot reuse it either; the line ending
+     * is not part of the line and does not invalidate it.
+     */
+    protected function unchangedRaw(Encoding $encoding): ?string
+    {
+        $raw = $this->raw;
+        $bound = $this->boundEncoding;
+
+        if ($raw === null || $bound === null || !$bound->sameDelimiters($encoding)) {
+            return null;
+        }
+
+        return $raw;
+    }
+
     protected function serializeFields(Encoding $encoding, int $from): string
     {
+        $this->hydrate();
+
         $fields = [];
 
         for ($number = $from; $number <= $this->getFieldCount(); $number++) {
@@ -199,5 +262,30 @@ abstract class AbstractSegment implements Segment
         }
 
         return $this->joinTrimmed($fields, $encoding->fieldSeparator);
+    }
+
+    private function hydrate(): void
+    {
+        $raw = $this->raw;
+        $encoding = $this->boundEncoding;
+
+        if ($this->hydrated || $raw === null || $encoding === null) {
+            return;
+        }
+
+        // Drop the line before parsing so field access inside populate cannot re-enter, and so
+        // the writes parse itself performs do not stick. Restoring afterwards is what makes a
+        // read keep the byte-exact line.
+        $this->raw = null;
+        $this->populate($encoding, $raw);
+        $this->raw = $raw;
+        $this->hydrated = true;
+    }
+
+    private function dirtyFlag(): DirtyFlag
+    {
+        return $this->dirty ??= new DirtyFlag(function (): void {
+            $this->raw = null;
+        });
     }
 }

@@ -38,6 +38,35 @@ final class EncodingTest extends TestCase
         $this->assertSame('%$/#', $encoding->encodingCharacters());
     }
 
+    public function testSameDelimitersIgnoresTheLineEnding(): void
+    {
+        // A segment line does not contain the line ending, so two encodings that differ only
+        // there still describe the same line and a bound segment may be emitted verbatim.
+        $this->assertTrue(new Encoding()->sameDelimiters(new Encoding(lineEnding: "\n")));
+    }
+
+    #[DataProvider('delimiterDifferences')]
+    public function testSameDelimitersRejectsADelimiterChange(Encoding $other): void
+    {
+        // Any delimiter that appears inside a segment line makes a previously bound line invalid.
+        $this->assertFalse(new Encoding()->sameDelimiters($other));
+    }
+
+    /**
+     * @return array<string, array{Encoding}>
+     */
+    public static function delimiterDifferences(): array
+    {
+        return [
+            'field separator' => [new Encoding(fieldSeparator: '#')],
+            'component separator' => [new Encoding(componentSeparator: '@')],
+            'repetition separator' => [new Encoding(repetitionSeparator: '!')],
+            'escape character' => [new Encoding(escapeCharacter: '/')],
+            'subcomponent separator' => [new Encoding(subcomponentSeparator: '*')],
+            'truncation character' => [new Encoding(truncationCharacter: '#')],
+        ];
+    }
+
     public function testDecodeReplacesStandardEscapeSequences(): void
     {
         $encoding = new Encoding();

@@ -8,6 +8,7 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
+use RoundingWell\HL7\GenericComposite;
 use RoundingWell\HL7\Segment\DG1;
 use RoundingWell\HL7\Segment\DRG;
 use RoundingWell\HL7\Segment\EVN;
@@ -98,5 +99,19 @@ final class SegmentFactoryTest extends TestCase
         $segment = $this->factory->parse('ZZ1|1|DUCK^DAISY');
 
         $this->assertSame('ZZ1', $segment->getName());
+    }
+
+    public function testParseKeepsTheRawLineUntilAFieldIsRead(): void
+    {
+        // Factory parsing binds the line. Trailing empties survive serialize, and a later read
+        // still returns the field without discarding that line.
+        $segment = $this->factory->parse('ZZ1|a||');
+
+        $this->assertSame('ZZ1|a||', $segment->serialize(new Encoding()));
+
+        $field = $segment->getFieldRepetition(1, 0);
+        $this->assertInstanceOf(GenericComposite::class, $field);
+
+        $this->assertSame('ZZ1|a||', $segment->serialize(new Encoding()));
     }
 }

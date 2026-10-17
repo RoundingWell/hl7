@@ -96,7 +96,7 @@ final class MSH extends AbstractSegment
     }
 
     #[Override]
-    public function parse(Encoding $encoding, string $data): void
+    protected function populate(Encoding $encoding, string $data): void
     {
         $fields = explode($encoding->fieldSeparator, $data);
 
@@ -126,8 +126,15 @@ final class MSH extends AbstractSegment
     #[Override]
     public function serialize(Encoding $encoding): string
     {
+        $raw = $this->unchangedRaw($encoding);
+
+        if ($raw !== null) {
+            return $raw;
+        }
+
         // The values for MSH.1 and MSH.2 MUST come from the encoding object, since all
-        // subsequent fields are encoded using these characters.
+        // subsequent fields are encoded using these characters. A bound line is emitted above
+        // instead, because this derivation would not reproduce trailing empties.
         $header = 'MSH' . $encoding->fieldSeparator . $encoding->encodingCharacters() . $encoding->fieldSeparator;
 
         return trim($header . $this->serializeFields($encoding, 3), $encoding->fieldSeparator);

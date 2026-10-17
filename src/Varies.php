@@ -7,13 +7,25 @@ namespace RoundingWell\HL7;
 use Exception;
 use Override;
 
-final class Varies implements Variable
+final class Varies implements Variable, TracksMutation
 {
+    use CanTrackMutation;
+
     private Type $data;
 
     public function __construct()
     {
         $this->data = new GenericPrimitive();
+    }
+
+    #[Override]
+    public function track(DirtyFlag $dirty): void
+    {
+        $this->dirty = $dirty;
+
+        if ($this->data instanceof TracksMutation) {
+            $this->data->track($dirty);
+        }
     }
 
     #[Override]
@@ -68,8 +80,15 @@ final class Varies implements Variable
     public function setData(Type $data): void
     {
         if ($this->data instanceof Primitive && $data instanceof Primitive) {
+            // Copy first so a rejected value throws before the segment line is dropped.
             $data->setValue($this->data->getValue());
             $this->data = $data;
+
+            if ($this->dirty !== null && $data instanceof TracksMutation) {
+                $data->track($this->dirty);
+            }
+
+            $this->markDirty();
 
             return;
         }

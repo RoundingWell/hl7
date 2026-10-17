@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use RoundingWell\HL7\Encoding;
 use RoundingWell\HL7\Exception\InvalidSegment;
 use RoundingWell\HL7\Segment\MSH;
+use RoundingWell\HL7\SegmentElement;
 
 use function implode;
 
@@ -174,5 +175,31 @@ final class MSHTest extends TestCase
         $this->assertStringStartsWith('MSH#@~\\&#', $serialized);
         $this->assertStringNotContainsString('|', $serialized);
         $this->assertStringNotContainsString('^', $serialized);
+    }
+
+    public function testSerializeEmitsTheRawLineWhenDelimitersMatch(): void
+    {
+        // MSH.1 and MSH.2 are derived from the encoding on the object path, and trailing empties
+        // are trimmed there. A bound segment whose delimiters still match must emit the wire line
+        // instead, trailing empties included.
+        $data = 'MSH|^~\\&|App||';
+
+        $msh = new MSH();
+        $msh->parseSegments(new Encoding(), [new SegmentElement('MSH', $data)], [], 0);
+
+        $this->assertSame($data, $msh->serialize(new Encoding()));
+    }
+
+    public function testSerializeReencodesABoundSegmentWhenDelimitersDiffer(): void
+    {
+        // A bound MSH is only valid under the delimiters it was parsed with. A new field
+        // separator must re-encode, deriving MSH.1 and MSH.2 from that encoding.
+        $msh = new MSH();
+        $msh->parseSegments(new Encoding(), [new SegmentElement('MSH', 'MSH|^~\\&|App')], [], 0);
+
+        $serialized = $msh->serialize(new Encoding(fieldSeparator: '#'));
+
+        $this->assertStringStartsWith('MSH#^~\\&#', $serialized);
+        $this->assertStringNotContainsString('|', $serialized);
     }
 }

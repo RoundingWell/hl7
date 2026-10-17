@@ -514,4 +514,30 @@ final class AbstractMessageTest extends TestCase
         $this->assertGreaterThanOrEqual(3, FakeCountingSegment::$instantiations);
         $this->assertLessThanOrEqual(4, FakeCountingSegment::$instantiations);
     }
+
+    public function testSerializeKeepsTrailingEmptyFieldsUntilASegmentIsWritten(): void
+    {
+        // Nothing was read or written, so each segment line is emitted as received. A line-ending
+        // change joins those same lines; it does not re-encode them.
+        $data = "MSH|^~\\&\rNK1|1||\rZFA|1|";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+
+        $this->assertSame($data, $message->serialize($this->encoding));
+        $this->assertSame("MSH|^~\\&\nNK1|1||\nZFA|1|", $message->serialize(new Encoding(lineEnding: "\n")));
+    }
+
+    public function testAFieldWriteReencodesOnlyThatSegment(): void
+    {
+        // A write invalidates the touched segment and no other. The rewritten NK1 goes through
+        // the object path (trailing empties trimmed, new value present); MSH and ZFA stay raw.
+        $data = "MSH|^~\\&\rNK1|1||\rZFA|1|";
+
+        $message = new FakeGroupMessage();
+        $message->parse($this->encoding, $data);
+        $message->getSegment('NK1', 0)->getFieldRepetition(1, 0)->parse($this->encoding, '9');
+
+        $this->assertSame("MSH|^~\\&\rNK1|9\rZFA|1|", $message->serialize($this->encoding));
+    }
 }

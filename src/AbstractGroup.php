@@ -243,8 +243,8 @@ abstract class AbstractGroup implements Group
             $structure = $this->getDefinition($name)->newInstance();
 
             // A group lead out of order is unsafe to re-consume, so only segments recover typed.
-            if ($structure instanceof Segment) {
-                $structure->parse($encoding, $element->raw);
+            if ($structure instanceof AbstractSegment) {
+                $structure->bind($encoding, $element->raw);
                 $this->append($name, $structure);
 
                 return;
@@ -252,7 +252,7 @@ abstract class AbstractGroup implements Group
         }
 
         $segment = new GenericSegment($element->name);
-        $segment->parse($encoding, $element->raw);
+        $segment->bind($encoding, $element->raw);
         $this->append($element->name, $segment);
     }
 

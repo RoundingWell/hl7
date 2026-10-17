@@ -37,6 +37,34 @@ final readonly class Encoding
     }
 
     /**
+     * Whether two encodings write a segment line the same way.
+     *
+     * The line ending joins lines and is not part of one, so it is ignored. Every other
+     * character appears inside the line; a difference means a bound line cannot be re-emitted.
+     */
+    public function sameDelimiters(self $other): bool
+    {
+        return $this->delimiters() === $other->delimiters();
+    }
+
+    /**
+     * Delimiters that occur inside a single segment line, in comparison order.
+     *
+     * @return list<string>
+     */
+    private function delimiters(): array
+    {
+        return [
+            $this->fieldSeparator,
+            $this->componentSeparator,
+            $this->repetitionSeparator,
+            $this->escapeCharacter,
+            $this->subcomponentSeparator,
+            $this->truncationCharacter,
+        ];
+    }
+
+    /**
      * Decode a wire value back to its raw form
      *
      * Structural \CODE\ sequences (\F\ \S\ \T\ \R\ \E\) become the delimiters they

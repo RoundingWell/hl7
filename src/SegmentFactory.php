@@ -19,13 +19,13 @@ final readonly class SegmentFactory
 
         $segment = $this->create($id);
 
-        // The segment parses its own name back off the data, so pass the full line.
-        $segment->parse($this->encoding, $data);
+        // Bind the full line. The segment peels its name off when a field is first read.
+        $segment->bind($this->encoding, $data);
 
         return $segment;
     }
 
-    private function create(string $id): Segment
+    private function create(string $id): AbstractSegment
     {
         return match ($id) {
             'MSH' => new Segment\MSH(),
