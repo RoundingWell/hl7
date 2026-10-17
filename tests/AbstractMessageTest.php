@@ -502,14 +502,16 @@ final class AbstractMessageTest extends TestCase
     public function testParseInstantiatesADefinitionOnceBeyondItsParsedSegments(): void
     {
         // Finding what a structure can begin with must not build a throwaway structure for every
-        // candidate the walk probes. Three ZK1 segments cost three parsed instances plus one probe
-        // to answer for the definition; a walk that probes per segment pays many more.
+        // candidate the walk probes. Three ZK1 segments need three parsed instances, and resolving
+        // the definition's first names may add one more; a walk that probes per segment pays many
+        // more than that (ten for this message, one per segment beyond it).
         FakeCountingSegment::reset();
 
         $message = new FakeCountingMessage();
         $message->parse($this->encoding, "MSH|^~\\&\rZK1|1\rZK1|2\rZK1|3");
 
         $this->assertCount(3, $message->getAll('ZK1'));
-        $this->assertSame(4, FakeCountingSegment::$instantiations);
+        $this->assertGreaterThanOrEqual(3, FakeCountingSegment::$instantiations);
+        $this->assertLessThanOrEqual(4, FakeCountingSegment::$instantiations);
     }
 }
