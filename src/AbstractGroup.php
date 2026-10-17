@@ -37,6 +37,17 @@ abstract class AbstractGroup implements Group
     /** @var array<string, StructureDefinition> */
     private array $definitions = [];
 
+    /**
+     * Memoized {@see firstNamesOf()} per definition key.
+     *
+     * A definition never changes once {@see add()} accepts it, and resolving its first names
+     * otherwise constructs a structure (and, for a typed segment, its whole field table) only to
+     * read one or two strings and discard it — once per candidate the walk probes.
+     *
+     * @var array<string, list<string>>
+     */
+    private array $firstNames = [];
+
     public function add(string $name, StructureDefinition $definition): void
     {
         if ($this->definitions[$name] ?? null) {
@@ -317,7 +328,7 @@ abstract class AbstractGroup implements Group
      */
     private function firstNamesOf(string $name): array
     {
-        return $this->getDefinition($name)->newInstance()->firstNames();
+        return $this->firstNames[$name] ??= $this->getDefinition($name)->newInstance()->firstNames();
     }
 
     /**
