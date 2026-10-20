@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   review:
-    uses: antongulin/robin/.github/workflows/review.yml@cbf9e48c905896c449d7f02c4854f1abe9c4b010 # v2.11.0
+    uses: antongulin/robin/.github/workflows/review.yml@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9 # v2.12.0
     with:
       review-on-synchronize: true
     secrets:
