@@ -1,0 +1,24 @@
+name: SAST
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep@sha256:3db5c7af55eb1f512eac0abf0ab69a97b52c74b5e9a27314c221aee1a78d7ab2 # 1.181.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Scan
+        run: semgrep scan --config=p/default --config=p/php --metrics=off
