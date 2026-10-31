@@ -16,6 +16,7 @@ jobs:
     uses: antongulin/robin/.github/workflows/review.yml@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9 # v2.12.0
     with:
       review-on-synchronize: true
+      runner: '"blacksmith-2vcpu-ubuntu-2604"'
     secrets:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
