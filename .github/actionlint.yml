@@ -2,3 +2,5 @@ self-hosted-runner:
   labels:
     - blacksmith-2vcpu-ubuntu-2404
     - blacksmith-2vcpu-ubuntu-2604
+    # GitHub-hosted, but unknown to actionlint 1.7.12
+    - ubuntu-26.04
