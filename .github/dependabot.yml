@@ -1,6 +1,15 @@
 version: 2
+registries:
+  github-composer:
+    type: git
+    url: https://github.com
+    username: x-access-token
+    password: ${{ secrets.GH_PRIVATE_ACCESS }}
+
 updates:
 - package-ecosystem: composer
+  registries:
+    - github-composer
   directory: "/"
   schedule:
     interval: daily
