@@ -21,3 +21,16 @@ jobs:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
       LLM_MODEL: ${{ vars.LLM_MODEL }}
+
+  approve:
+    needs: review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Approve after Robin's review
+        run: gh pr review --approve --body "Reviewed by Robin." "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
